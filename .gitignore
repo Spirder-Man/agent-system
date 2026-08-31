@@ -132,3 +132,34 @@ logs/E2E-*
 # AI 对话日志（不纳入版本控制）
 chatlog/
 .chatlog/
+
+# === 2026-08-31 新增：工作区产物与本地二进制收敛 ===
+
+# PowerShell 空重定向误生成文件
+$null
+
+# Vitest 结果转储（正式覆盖率走 CI artifact，禁止提交）
+agent1-web/vitest-results*.json
+
+# 数据库本地 dump（可能含环境数据，禁止提交）
+db/backups/
+
+# 发布产物与本地工具依赖
+/publish/
+tools/ffmpeg-npm/
+tools/ffmpeg.zip
+
+# 系统血谱本地分发目录（源在 docs/architecture/）
+bloodmap-dist/
+
+# 血谱可视化大体积媒体与构建生成 JSON
+docs/architecture/media/*.mp4
+docs/architecture/data/*.json
+
+# 软著申请二进制包（markdown 说明可入库，zip/pdf 不入库）
+docs/软著申请材料/*.zip
+docs/软著申请材料/*.pdf
+
+# 编码损坏的字段明细副本（保留 docs/数据库化石/全库15表字段明细_20260811.csv）
+docs/*20260811.csv
+!docs/数据库化石/全库15表字段明细_20260811.csv
