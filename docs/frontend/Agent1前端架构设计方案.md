@@ -2,7 +2,31 @@
 
 > **版本**: v1.0 | **日期**: 2026-07-10 | **作者**: 全栈架构师角色
 >
-> **定位**: 本文档是前端开发的唯一架构依据，所有页面、组件、Store、路由设计均以此为基准。
+> **定位（2026-08-31 修订）**: 本文是 2026-07-10 的设计原稿，保留交互、契约与 MSW 并行开发说明。
+> **页面 / 路由 / 文件名以仓库实现为准**：[`agent1-web/src/router/index.ts`](../../agent1-web/src/router/index.ts) 与 `agent1-web/src/pages/*.vue`。
+> 文中旧「设计文件名」仅作历史对照，勿再当作实现清单。Sprint 0–n 已由 `agent1-web`（包版本 2.5.0）覆盖，文末 Sprint 表仅作历史。
+
+### 实现对照表（设计名 → 仓库路径）
+
+| 设计文档中的名称 | 仓库实际路径 / 路由 |
+|------------------|---------------------|
+| `InspectionPlanListPage` | `pages/InspectionPlansPage.vue` → `/inspection/plans` |
+| `InspectionPlanCreatePage` / `InspectionExecutePage` | 无独立页；创建/执行挂在计划详情与轮次流 |
+| `AssetListPage` | `pages/AssetsPage.vue` → `/assets` |
+| `AuditLogPage` | `pages/AuditPage.vue` → `/audit`（admin） |
+| `SystemStatusPage` | `pages/SystemMonitorPage.vue` → `/system`（admin） |
+| （设计未列）设置 | `pages/SettingsPage.vue` → `/settings`（admin） |
+| （设计未列）AI 对话 | `pages/AIChatPage.vue` → `/chat` |
+| （设计未列）评测 | `pages/EvalPage.vue` → `/eval` |
+| （设计未列）多模态 | `pages/MultimodalPage.vue` → `/multimodal` |
+| （设计未列）知识库 | `pages/KnowledgeBasePage.vue` → `/knowledgebase` |
+| （设计未列）库诊断 / 工具诊断 | `DatabaseDiagnosticsPage` → `/database`；`DiagnosticsPage` → `/diagnostics` |
+| （设计未列）监管核查 | `pages/RegulatoryAuditPage.vue` → `/regulatory` |
+| [预留] 应急响应 | **已落地** `pages/EmergencyPage.vue` → `/emergency` |
+| [预留] 知识图谱 | **已落地** `pages/KnowledgeGraphPage.vue` → `/knowledgegraph` |
+| [预留] GHS 识图 | **已落地** `LookupHazardLabel` + `/multimodal` |
+
+技术栈以本文 §2.6.1 为准（Vue 3 + Pinia + Element Plus + TanStack Vue Query + MSW），与 `agent1-web/package.json` 一致。
 
 ---
 
@@ -18,12 +42,12 @@
 | `ReActStream` | 4 | ReAct 流式推理 | SSE 实时工具调用状态 |
 | `Reflection` | 5 | 自我验证反思层 | [内部] 对前端透明 |
 | `RAG` | 6 | 检索增强生成 | 知识库文档引用角标 |
-| `UnifiedDialog` | 7 | 统一对话入口 | 对话式交互界面 |
+| `UnifiedDialog` | 7 | 统一对话入口 | 对话式交互界面（`/chat`） |
 | `ComplianceCheck` | 8 | 合规审核专项 | 合规自查页核心引擎 |
 | `TicketFollowup` | 9 | 整改工单跟进 | 工单详情页状态流转 |
-| `RegulatoryAudit` | 10 | 法规审计专项 | 巡检执行引擎 |
-| `EmergencyResponse` | 11 | 应急响应 | [预留] 应急响应页面 |
-| `KnowledgeGraph` | 12 | 知识图谱查询 | [预留] 知识图谱可视化 |
+| `RegulatoryAudit` | 10 | 法规审计专项 | `/regulatory` 监管核查页 |
+| `EmergencyResponse` | 11 | 应急响应 | **已落地** `/emergency`（`EmergencyPage.vue`） |
+| `KnowledgeGraph` | 12 | 知识图谱查询 | **已落地** `/knowledgegraph`（`KnowledgeGraphPage.vue`） |
 
 ## 1.2 ChemicalComplianceTools — 9 个 KernelFunction
 
@@ -37,7 +61,7 @@
 | `CheckRegulationVersion` | regulationNumber | 法规版本跟踪 | [辅助] 法规引用校验 |
 | `GetCurrentTime` | — | 获取当前时间 | [辅助] 时间戳 |
 | `Calculate` | expression | 数学计算 | [辅助] 数值计算 |
-| `LookupHazardLabel` | imagePath | GHS 标签识别 (多模态) | [预留] 图像上传识别 |
+| `LookupHazardLabel` | imagePath | GHS 标签识别 (多模态) | **已落地** `/multimodal` 图像上传识别 |
 
 **3 级检索链路**:
 ```
@@ -907,21 +931,33 @@ agent1-web/src/
 │   ├── DashboardPage.vue
 │   ├── ComplianceCheckPage.vue
 │   ├── ComplianceHistoryPage.vue
-│   ├── InspectionPlanListPage.vue
-│   ├── InspectionPlanCreatePage.vue
+│   ├── InspectionPlansPage.vue          # 设计名曾用 InspectionPlanListPage
 │   ├── InspectionPlanDetailPage.vue
-│   ├── InspectionExecutePage.vue
+│   ├── InspectionRoundsPage.vue
 │   ├── InspectionRoundDetailPage.vue
 │   ├── InspectionReportPage.vue
 │   ├── TicketListPage.vue
 │   ├── TicketDetailPage.vue
-│   ├── AssetListPage.vue
+│   ├── AssetsPage.vue                   # 设计名曾用 AssetListPage
 │   ├── AssetDetailPage.vue
-│   ├── AuditLogPage.vue
-│   ├── SystemStatusPage.vue
-│   └── ForbiddenPage.vue
+│   ├── HazardQueryPage.vue
+│   ├── StorageCompatibilityPage.vue
+│   ├── AIChatPage.vue
+│   ├── KnowledgeBasePage.vue
+│   ├── KnowledgeGraphPage.vue           # 已落地（原标注预留）
+│   ├── RegulatoryAuditPage.vue
+│   ├── EmergencyPage.vue                # 已落地（原标注预留）
+│   ├── MultimodalPage.vue               # GHS/现场识图（原 LookupHazardLabel 预留）
+│   ├── EvalPage.vue
+│   ├── DiagnosticsPage.vue
+│   ├── DatabaseDiagnosticsPage.vue
+│   ├── AuditPage.vue                    # 设计名曾用 AuditLogPage
+│   ├── SettingsPage.vue
+│   ├── SystemMonitorPage.vue            # 设计名曾用 SystemStatusPage
+│   ├── ForbiddenPage.vue
+│   └── PlaceholderPage.vue
 ├── router/
-│   └── index.ts              # 路由配置 + 导航守卫
+│   └── index.ts              # 路由配置 + 导航守卫（实现真值源）
 ├── stores/
 │   ├── auth.ts
 │   ├── compliance.ts
@@ -932,12 +968,14 @@ agent1-web/src/
 │   ├── audit.ts
 │   └── system.ts
 ├── types/
-│   └── api.ts                # API 类型定义 (已存在, 需扩展)
+│   └── api.ts                # API 类型定义
 └── utils/
     ├── format.ts             # 日期/数字格式化
     ├── validation.ts         # Zod Schema 定义
     └── constants.ts          # 常量 (状态枚举, 颜色映射等)
 ```
+
+> 上表以 2026-08-31 仓库 `agent1-web/src/pages` 为准。创建巡检计划 / 执行等能力若不存在独立 `*Create*` / `*Execute*` 页面，则挂在计划详情与轮次相关路由上。
 
 ### 2.6.4 开发环境启动
 
@@ -1733,6 +1771,8 @@ const routes = [
 ---
 
 ## 补充清单：Sprint 拆分建议
+
+> **历史计划**：Sprint 0–n 已由仓库 `agent1-web` 覆盖；下表仅作 2026-07-10 规划留档，交付物以对照表与 `src/router/index.ts` 为准。
 
 | Sprint | 内容 | 交付物 |
 |--------|------|--------|

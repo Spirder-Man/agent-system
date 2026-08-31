@@ -1,6 +1,8 @@
 # Agent1 — 化工园区危化品合规审查 AI Agent
 
-> **版本**：v4.8 | **编译**：0 错误 | **测试**：1565 用例（对基线 NEW_FAILURES=0） | **分支**：`linux原生编译模型llama.cpp`
+> **版本**：v4.8 | **编译**：0 错误 | **测试**：1565 用例（对基线 NEW_FAILURES=0） | **当前分支**：`master`（`origin/master`）
+>
+> 另有历史分支 `linux原生编译模型llama.cpp` / `feature/partner-dev`，**不是当前检出**。
 
 基于 .NET 8 + Semantic Kernel + **llama.cpp 原生编译**构建的企业级化工园区危化品合规审查 AI Agent。支持 REST API、JWT 认证、PostgreSQL+pgvector 混合检索、OpenTelemetry 可观测性、等保三级审计（SHA256 哈希链），**针对 NVIDIA GPU (RTX 3090/3080 Ti) Linux 环境 RAG 全链路 GPU 加速**。
 
@@ -12,6 +14,8 @@
 │  AI 推理引擎  │  SK Auto FC + 三层防御 + GPU嵌入   │
 │  化工合规工具  │  8 个 [KernelFunction] + Token预算 │
 │  知识库       │  BM25+Vector+RRF+增量更新          │
+│  多模态视觉   │  Qwen2.5-VL (:8083) OCR/GHS 识图   │
+│  认知漂移监测  │  锚点/探针调度（api/Drift）          │
 │  化工业务模块  │  合规自查/工单/监管/应急/图谱      │
 │  基础设施     │  SHA256审计链/安全双防线/健康检查   │
 │  可观测性     │  PipelineMetrics/TraceId/事件溯源  │
@@ -27,19 +31,22 @@ Agent1/                 # .NET 8 核心类库
 ├── Commands/           # 命令模式（14 个菜单命令）
 ├── Modules/            # 推理模块（CoT/ReAct/Reflection/RAG/合规检查等 12 个）
 ├── Services/
-│   ├── AI/             # LLM 推理 + Token预算 + 反射验证 + 熔断器
-│   ├── Compliance/     # 化工合规（双通道解耦架构 + 58种危化品数据库）
+│   ├── AI/             # LLM 推理 + Token预算 + 反射验证 + 熔断器 + 多模态
+│   ├── Compliance/     # 化工合规（双通道解耦架构 + 危化品结构化数据）
 │   ├── Knowledge/      # 知识库（BM25+向量混合检索 + Reranker + 缓存）
 │   ├── Dialog/         # 对话管理 + 意图路由
 │   ├── Memory/         # 记忆系统 + 响应缓存
 │   ├── Infrastructure/ # 数据库 + 审计 + 指标 + 脱敏
+│   ├── Orchestration/  # 确定性规则引擎 + 巡检编排 + 定时扫描
+│   ├── DriftMonitor/   # 认知漂移锚点 / 探针 / 度量
+│   ├── Security/       # 令牌黑名单 + 设备指纹
 │   └── Eval/           # T13 无状态评测引擎
 ├── Config/             # 配置中心
 └── Program.cs          # 控制台入口
-Agent1.Api/             # Web API 层（15 个 Controller + 5 个 Middleware + ScanProgressService 异步扫描）
+Agent1.Api/             # Web API 层（16 个 Controller，含 DriftController + 5 个 Middleware + ScanProgressService）
 Agent1.Tests/           # xUnit 测试（1565 用例）
 agent1-web/             # Vue 3 前端（MSW Mock 并行开发）
-docs/                   # 项目文档（架构/部署/测试/排障）
+docs/                   # 项目文档（架构/部署/测试/排障/数据库化石）
 scripts/                # 开发者工具箱（日志下载/远程监控）
 ```
 
@@ -61,9 +68,11 @@ scripts/                # 开发者工具箱（日志下载/远程监控）
 - **双通道解耦架构** ★：法规引用归 C# 确定性代码（100% 准确），推理分析归 LLM — 四道防线防幻觉
 - **LLM 降级体系 v2** ★：门卫(信号词粗筛) → 责任链(多Handler精细匹配) → 规则引擎确定性兜底。新增场景仅需一行注册
 - **RAG GPU 全链路加速**：批量嵌入 + GPU 向量索引 + Cross-Encoder Reranker + 查询缓存
-- **结构化化学品数据库**：58 种危化品（CAS/UN编号/闪点/爆炸极限）+ 20 组储存禁忌 + 安全距离
-- **8 个 AI 工具**：危险类别查询/储存兼容性/安全距离/化学品属性/法规引用 + GHS 标签识别
+- **结构化化学品数据库**：种子/文档口径约 58 种危化品（CAS/UN编号/闪点/爆炸极限）+ 储存禁忌 + 安全距离。**口径说明**：README/种子数字 ≠ PG `chemical_substances` 实测行数；台账 [#21](docs/数据库化石/全量问题台账.md) 记录实测约 35 种 vs GB18218 重点监管 74 种覆盖缺口，勿把营销口径与库表当成同一事实
+- **8 个 AI 工具**：危险类别查询/储存兼容性/安全距离/化学品属性/法规引用 + GHS 标签识别（多模态）
 - **12 个推理模块**：CoT/ReAct/Reflection/RAG/合规自查/工单跟进/监管核查/应急响应/知识图谱
+- **多模态视觉**：Qwen2.5-VL（llama-server :8083）— 扫描件 PDF OCR 回退 + GHS/现场识图
+- **认知漂移监测**：锚点注册表 + 探针调度 + `api/Drift`（phase 1–3 已合入主干）
 - **等保三级审计**：SHA256 哈希链防篡改 + 启动自愈
 
 ## 🚀 快速开始
@@ -143,22 +152,33 @@ Vue 3 + TypeScript + Element Plus + Vite 5，支持 MSW Mock 前后端并行开�
 
 ## 🔄 CI/CD
 
-Push → `build-and-test`（编译+单元测试+架构收敛）→ `integration-test`（PostgreSQL 集成）→ `docker`（仅 main 分支，推送 GHCR）→ `notify`（失败 QQ 邮箱告警）
+Push / PR → `build-and-test`（编译 + 单元/API 测试 + 覆盖率门禁 + 架构收敛）→ `frontend-test`（Vitest + 覆盖率）→ `integration-test`（pgvector 上跑 `Category=Integration`）→ `docker`（主要跟 main，推送 GHCR）→ `benchmark`（HTTP 精度压测 + 性能基线）→ `notify`（邮件告警）→ `staging-deploy`（可选，SSH 预发 + health 冒烟，依赖 secrets）
 
 ## 📁 文档
 
 ```
 docs/
-├── architecture/         # 架构设计
+├── architecture/         # 架构设计 + 系统血谱
+├── frontend/             # 前端架构方案（实现以 agent1-web 为准）
 ├── deploy/               # 部署运维
 ├── technical-principles/ # 技术原理
 ├── testing/              # 测试方案与手册
 ├── troubleshooting/      # 故障排查
 ├── project/              # Bug知识库 + 自检清单
+├── 数据库化石/           # 全量表精读台账 + 三层考古 + 治理方案
 └── learning-notes/       # 学习笔记
 ```
 
 ## 📋 近期更新
+
+### v4.8 之后已合入主干（README 此前未写全，截至 2026-08-31）
+
+> 版本号仍标 **v4.8**，下列能力已在 `master` 合入，功能全景已同步。不新编 v4.9。
+
+- **认知漂移监测 phase 1–3**：锚点注册表 / 测量链路 / 探针调度器 + `DriftController`
+- **Qwen2.5-VL**：扫描件 PDF OCR 回退管线；视觉服务端口 8083（与精排 8082 分离）
+- **知识管线**：Bug-039/041/042/043 检索与入库修复；embedding `-b/-ub 2048` 修超长 OCR 条款块；乱码闸门可证伪锚点
+- **数据库台账批次**：安全规则（王水等）/ 记忆空心化与 Upsert / 测试误删防护等已核销条目见 [全量问题台账](docs/数据库化石/全量问题台账.md)（核销率与剩余 P1 #10 水印块以台账为准）
 
 ### v4.8 — 十项问题分批修复 + 系统血谱方法论落地（2026-07-28）
 
@@ -228,4 +248,4 @@ docs/
 
 ---
 
-**文档版本**：v4.21 | **最后更新**：2026-07-28 | **许可证**：MIT
+**文档版本**：v4.8（事实对齐修订） | **最后更新**：2026-08-31 | **许可证**：MIT
