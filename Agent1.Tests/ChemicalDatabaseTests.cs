@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Agent1.Models;
 using Agent1.Services;
+using Agent1.Tests.Stubs;
 using Xunit;
 using FluentAssertions;
 
@@ -15,6 +16,12 @@ namespace Agent1.Tests
     // ═══════════════════════════════════════════
     public class ChemicalSubstanceDatabaseTests
     {
+        // 静态门面注入：d05aec04 重构后需注入图服务，单测用内存 Stub（与 migration 002 同步）。
+        public ChemicalSubstanceDatabaseTests()
+        {
+            ChemicalSubstanceDatabase.SetGraph(new StubChemicalKnowledgeGraph());
+        }
+
         [Fact]
         public void Lookup_ByName_ReturnsSubstance()
         {

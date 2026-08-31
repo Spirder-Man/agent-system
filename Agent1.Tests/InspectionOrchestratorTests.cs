@@ -31,10 +31,13 @@ public class InspectionOrchestratorTests : IDisposable
 
     public InspectionOrchestratorTests()
     {
-        _dataFile = Path.Combine(AppContext.BaseDirectory, "Data", "inspection-store.json");
+        // 隔离存储路径：默认 inspection-store.json 被多个测试类并行读写（CleanupFile
+        // 删除窗口内会被其他类 Save 写回），导致 GetAllPlans_EmptyRepo 读到残留数据。
+        // 同 ApiAndMiddlewareTests 隔离模式：临时目录 + Guid 唯一文件。
+        _dataFile = Path.Combine(Path.GetTempPath(), $"inspection-orchestrator-{Guid.NewGuid():N}.json");
         CleanupFile();
 
-        _repo = new InspectionRepository();
+        _repo = new InspectionRepository(_dataFile);
         _auditMock = new Mock<IAuditService>(MockBehavior.Loose);
         _kbMock = new Mock<IKnowledgeBaseService>(MockBehavior.Loose);
         _llmMock = new Mock<ILlmService>(MockBehavior.Loose);

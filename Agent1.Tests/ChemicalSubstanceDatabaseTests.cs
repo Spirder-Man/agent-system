@@ -1,6 +1,7 @@
 using System.Linq;
 using Agent1.Models;
 using Agent1.Services;
+using Agent1.Tests.Stubs;
 using Xunit;
 using FluentAssertions;
 
@@ -9,6 +10,12 @@ using FluentAssertions;
 /// </summary>
 public class ChemicalSubstanceDatabaseTests
 {
+    // 静态门面注入：d05aec04 重构后 ChemicalSubstanceDatabase 变为 ChemicalKnowledgeGraph
+    // 的门面（数据在 PostgreSQL），单测环境注入内存 Stub（与 migration 002 种子同步）。
+    public ChemicalSubstanceDatabaseTests()
+    {
+        ChemicalSubstanceDatabase.SetGraph(new StubChemicalKnowledgeGraph());
+    }
     // ════════════════════════════════════════
     // 基础查询测试
     // ════════════════════════════════════════

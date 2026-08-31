@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
 using Agent1.Models;
 using Agent1.Services;
 using Agent1.Services.AI;
@@ -21,6 +22,7 @@ public class EvalController : ControllerBase
     private readonly ILlmService _llmService;
     private readonly IKnowledgeBaseService _knowledgeBase;
     private readonly ILogger<EvalController> _logger;
+    private readonly Func<CancellationToken, Task<bool>>? _inferenceProbe;
 
     // 简易任务状态跟踪（进程级）
     private static readonly ConcurrentDictionary<string, EvalTaskStatus> TaskStore = new();
@@ -29,22 +31,37 @@ public class EvalController : ControllerBase
         AgentDialog agentDialog,
         ILlmService llmService,
         IKnowledgeBaseService knowledgeBase,
-        ILogger<EvalController> logger)
+        ILogger<EvalController> logger,
+        Func<CancellationToken, Task<bool>>? inferenceProbe = null)
     {
         _agentDialog = agentDialog;
         _llmService = llmService;
         _knowledgeBase = knowledgeBase;
         _logger = logger;
+        _inferenceProbe = inferenceProbe;
     }
 
     /// <summary>
     /// 启动合规评测任务 — 异步后台执行 50 条业务评测。
     /// 立即返回 taskId，前端轮询 GET /api/eval/status/{taskId} 获取进度。
+    /// 推理服务离线时返回 503（GPU 机按需开启，需先启动推理）。
     /// </summary>
     [HttpPost("run")]
     [Authorize(Policy = "Auditor")]
-    public IActionResult RunEval()
+    public async Task<IActionResult> RunEval()
     {
+        // 推理分离部署：GPU 机按需开启，经 SSH 隧道映射到本机 localhost:8080。
+        // 入口先做 300ms TCP 探测，离线时快速失败，避免任务排队后后台整体报错。
+        var online = _inferenceProbe != null
+            ? await _inferenceProbe(HttpContext.RequestAborted)
+            : await ProbeInferenceAsync("localhost", 8080, HttpContext.RequestAborted);
+        if (!online)
+        {
+            _logger.LogWarning("评测入口拒绝: 推理服务离线 (localhost:8080 不可达)，请开启 GPU 实例");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { error = "推理服务离线，请开启 GPU 实例" });
+        }
+
         var taskId = Guid.NewGuid().ToString("N")[..8];
         var cts = new CancellationTokenSource();
         TaskStore[taskId] = new EvalTaskStatus
@@ -88,6 +105,27 @@ public class EvalController : ControllerBase
             status = "queued",
             checkUrl = $"/api/eval/status/{taskId}"
         });
+    }
+
+    /// <summary>
+    /// TCP 探测推理服务是否在线（300ms 超时）。
+    /// 分离部署下 API 所在工程机经 SSH 隧道在 localhost:8080 映射 GPU 推理端口，
+    /// 连接成功视为在线；连接被拒或超时视为离线。
+    /// </summary>
+    public static async Task<bool> ProbeInferenceAsync(string host, int port, CancellationToken ct)
+    {
+        try
+        {
+            using var client = new TcpClient();
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(300);
+            await client.ConnectAsync(host, port, timeoutCts.Token);
+            return true;
+        }
+        catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+        {
+            return false;
+        }
     }
 
     /// <summary>查询评测任务状态与结果</summary>

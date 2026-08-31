@@ -274,7 +274,10 @@ namespace Agent1.Services.Orchestration
                 return null;
 
             var distances = _graph.GetAllSafetyDistances();
-            foreach (var sd in distances)
+            // [#31 FIX 同源] 特化条目优先：按 FacilityPair 长度倒序遍历，
+            // 避免泛化条目（储罐-储罐 15m）遮蔽特化条目（液化烃储罐-厂区围墙 35m）。
+            // 与 ChemicalKnowledgeGraph.GetSafetyDistance 的模糊命中排序策略一致。
+            foreach (var sd in distances.OrderByDescending(d => d.FacilityPair.Length))
             {
                 if (query.Contains(sd.FacilityPair, StringComparison.OrdinalIgnoreCase) ||
                     sd.FacilityPair.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)

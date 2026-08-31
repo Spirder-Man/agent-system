@@ -28,12 +28,25 @@ namespace Agent1.Services
         private readonly string _modelId;
         private readonly Uri _endpoint;
 
-        public MultimodalService()
+        public MultimodalService() : this(BuildDefaultHttpClient())
+        {
+        }
+
+        /// <summary>
+        /// 测试注入构造：允许外部提供 HttpClient（本地 Mock 服务器 / 自定义超时），
+        /// 生产路径仍使用无参构造（默认连接池 + 3 分钟超时），行为完全不变。
+        /// </summary>
+        public MultimodalService(HttpClient httpClient)
         {
             _modelId = ModelConfig.MultimodalModelId;
-            _endpoint = ModelConfig.MultimodalEndpoint;
+            _endpoint = httpClient.BaseAddress ?? ModelConfig.MultimodalEndpoint;
+            _httpClient = httpClient;
+        }
 
-            _httpClient = new HttpClient(new SocketsHttpHandler
+        private static HttpClient BuildDefaultHttpClient()
+        {
+            var endpoint = ModelConfig.MultimodalEndpoint;
+            return new HttpClient(new SocketsHttpHandler
             {
                 PooledConnectionLifetime = TimeSpan.FromMinutes(5),
                 MaxConnectionsPerServer = 2,  // 视觉模型推理慢，限制并发
@@ -41,7 +54,7 @@ namespace Agent1.Services
             })
             {
                 Timeout = TimeSpan.FromMinutes(3),
-                BaseAddress = _endpoint
+                BaseAddress = endpoint
             };
         }
 

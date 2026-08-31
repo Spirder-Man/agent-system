@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -1191,7 +1192,8 @@ public class EvalControllerTests
     private static EvalController CreateController(
         AgentDialog? agentDialog = null,
         ILlmService? llmService = null,
-        IKnowledgeBaseService? knowledgeBase = null)
+        IKnowledgeBaseService? knowledgeBase = null,
+        Func<CancellationToken, Task<bool>>? inferenceProbe = null)
     {
         agentDialog ??= new AgentDialog(
             Mock.Of<ISessionService>(),
@@ -1204,7 +1206,10 @@ public class EvalControllerTests
         knowledgeBase ??= Mock.Of<IKnowledgeBaseService>();
         var logger = Mock.Of<ILogger<EvalController>>();
 
-        var controller = new EvalController(agentDialog, llmService, knowledgeBase, logger);
+        // 默认探测恒在线：测试机无 8080 推理服务，避免误触发 503
+        var controller = new EvalController(
+            agentDialog, llmService, knowledgeBase, logger,
+            inferenceProbe ?? (_ => Task.FromResult(true)));
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
@@ -1213,10 +1218,10 @@ public class EvalControllerTests
     }
 
     [Fact]
-    public void RunEval_ShouldReturnAccepted()
+    public async Task RunEval_ShouldReturnAccepted()
     {
         var controller = CreateController();
-        var result = controller.RunEval();
+        var result = await controller.RunEval();
 
         // 返回 202 Accepted，包含 taskId
         result.Should().BeOfType<AcceptedResult>();
@@ -1229,6 +1234,54 @@ public class EvalControllerTests
     }
 
     [Fact]
+    public async Task RunEval_InferenceOffline_ShouldReturn503()
+    {
+        var controller = CreateController(inferenceProbe: _ => Task.FromResult(false));
+
+        var result = await controller.RunEval();
+
+        result.Should().BeOfType<ObjectResult>();
+        var objectResult = (ObjectResult)result;
+        objectResult.StatusCode.Should().Be(503);
+        var error = objectResult.Value!.GetType()
+            .GetProperty("error")!.GetValue(objectResult.Value) as string;
+        error.Should().Contain("推理服务离线");
+    }
+
+    [Fact]
+    public async Task ProbeInferenceAsync_ConnectionRefused_ShouldReturnFalse()
+    {
+        // 占位监听器：拿一个刚释放的端口，探测它应被拒绝 → false（正反两套真实 TCP 验证）
+        var placeholder = new TcpListener(IPAddress.Loopback, 0);
+        placeholder.Start();
+        var port = ((IPEndPoint)placeholder.LocalEndpoint).Port;
+        placeholder.Stop();
+
+        var result = await EvalController.ProbeInferenceAsync("127.0.0.1", port, CancellationToken.None);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProbeInferenceAsync_Connected_ShouldReturnTrue()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            var result = await EvalController.ProbeInferenceAsync("127.0.0.1", port, CancellationToken.None);
+
+            result.Should().BeTrue();
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    [Fact]
     public void GetStatus_NonexistentTask_ShouldReturnNotFound()
     {
         var controller = CreateController();
@@ -1237,11 +1290,11 @@ public class EvalControllerTests
     }
 
     [Fact]
-    public void GetStatus_QueuedTask_ShouldReturnOk()
+    public async Task GetStatus_QueuedTask_ShouldReturnOk()
     {
         var controller = CreateController();
         // 先启动评测，然后立即查询状态（后台任务异步运行，状态应为 queued）
-        var runResult = controller.RunEval();
+        var runResult = await controller.RunEval();
         var acceptedResult = (AcceptedResult)runResult;
         var taskId = acceptedResult.Value!.GetType()
             .GetProperty("taskId")!.GetValue(acceptedResult.Value) as string;
@@ -1257,11 +1310,11 @@ public class EvalControllerTests
     }
 
     [Fact]
-    public void RunEval_MultipleCalls_ShouldReturnUniqueTaskIds()
+    public async Task RunEval_MultipleCalls_ShouldReturnUniqueTaskIds()
     {
         var controller = CreateController();
-        var result1 = (AcceptedResult)controller.RunEval();
-        var result2 = (AcceptedResult)controller.RunEval();
+        var result1 = (AcceptedResult)await controller.RunEval();
+        var result2 = (AcceptedResult)await controller.RunEval();
 
         var taskId1 = result1.Value!.GetType()
             .GetProperty("taskId")!.GetValue(result1.Value) as string;
@@ -1280,10 +1333,10 @@ public class EvalControllerTests
     }
 
     [Fact]
-    public void CancelEval_ExistingTask_ShouldReturnOk()
+    public async Task CancelEval_ExistingTask_ShouldReturnOk()
     {
         var controller = CreateController();
-        var runResult = controller.RunEval();
+        var runResult = await controller.RunEval();
         var acceptedResult = (AcceptedResult)runResult;
         var taskId = acceptedResult.Value!.GetType()
             .GetProperty("taskId")!.GetValue(acceptedResult.Value) as string;
@@ -1301,10 +1354,10 @@ public class EvalControllerTests
     }
 
     [Fact]
-    public void CancelEval_AlreadyCancelled_ShouldReturnNotFound()
+    public async Task CancelEval_AlreadyCancelled_ShouldReturnNotFound()
     {
         var controller = CreateController();
-        var runResult = controller.RunEval();
+        var runResult = await controller.RunEval();
         var acceptedResult = (AcceptedResult)runResult;
         var taskId = acceptedResult.Value!.GetType()
             .GetProperty("taskId")!.GetValue(acceptedResult.Value) as string;

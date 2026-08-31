@@ -110,14 +110,16 @@ public class DataRetentionTests : IAsyncLifetime
     public async Task E2E_WriteKnowledgeDocument_RowVisibleToIndependentReader()
     {
         // 阶段1：模拟 E2E 中知识管道写入（文档 + 分块）
+        // SourcePath/ContentHash 带 Guid 后缀：数据库唯一约束防历史残留（23505 冲突）
+        var sourceFile = $"retention-{RetentionMarker}-{Guid.NewGuid():N}.pdf";
         var docId = await _writer.InsertDocumentAsync(new KnowledgeDocumentRecord
         {
-            FileName = $"retention-{RetentionMarker}.pdf",
-            SourcePath = $"retention-{RetentionMarker}.pdf",
+            FileName = sourceFile,
+            SourcePath = sourceFile,
             FileFormat = "pdf",
             RegulationType = "国标",
             Priority = "高",
-            ContentHash = $"hash-{RetentionMarker}"
+            ContentHash = $"hash-{RetentionMarker}-{Guid.NewGuid():N}"
         });
 
         await _writer.InsertChunkAsync(new ChemicalDocumentRecord
@@ -125,7 +127,7 @@ public class DataRetentionTests : IAsyncLifetime
             Content = $"数据留存断言分块 {RetentionMarker}",
             RegulationType = "国标",
             Priority = "高",
-            SourceFile = $"retention-{RetentionMarker}.pdf",
+            SourceFile = sourceFile,
             PageNumber = 1
         }, docId);
 
@@ -136,7 +138,7 @@ public class DataRetentionTests : IAsyncLifetime
         var docs = await reader.GetAllChemicalDocumentTextsAsync();
 
         docs.Should().Contain(d =>
-            d.SourceFile == $"retention-{RetentionMarker}.pdf" &&
+            d.SourceFile == sourceFile &&
             d.Content.Contains(RetentionMarker),
             "E2E 写入的知识文档必须在数据库中留存（独立连接可查）");
     }

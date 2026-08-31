@@ -1221,6 +1221,12 @@ public class ConclusionVerifierAdditionalTests
 
 public class KnowledgeGraphServiceTests
 {
+    public KnowledgeGraphServiceTests()
+    {
+        // BuildFromSubstanceDatabase 走 ChemicalSubstanceDatabase 静态门面，单测注入内存 Stub
+        ChemicalSubstanceDatabase.SetGraph(new StubChemicalKnowledgeGraph());
+    }
+
     private KnowledgeGraphService CreateGraph()
     {
         var mockKb = new Mock<IKnowledgeBaseService>();
@@ -1318,6 +1324,12 @@ public class KnowledgeGraphServiceTests
 
 public class EmergencyResponseServiceTests
 {
+    public EmergencyResponseServiceTests()
+    {
+        // GeneratePlanAsync 查询化学品理化数据走 ChemicalSubstanceDatabase 静态门面，注入内存 Stub
+        ChemicalSubstanceDatabase.SetGraph(new StubChemicalKnowledgeGraph());
+    }
+
     private EmergencyResponseService CreateService()
     {
         var mockLlm = new Mock<ILlmService>();
