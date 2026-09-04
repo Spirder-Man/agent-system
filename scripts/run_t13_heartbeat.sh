@@ -12,7 +12,7 @@ cd "$PROJECT_DIR"
 printf "5\n5\n0\n0\n" > /tmp/t13_input.txt
 
 # Start in background
-DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWORD=7758521 \
+DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme \
   dotnet run --project Agent1 -c Release --no-build < /tmp/t13_input.txt > "$LOG" 2>&1 &
 PID=$!
 echo "PID=$PID"

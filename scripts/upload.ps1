@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # Agent1 容器化部署 — 一键 SCP 上传脚本
 # 将 Docker 构建所需文件批量上传至 a800-prod
 # ==========================================
@@ -94,8 +94,8 @@ if (-not (Test-Path $envPath)) {
 # 快速检查 .env 中关键变量是否已填写
 $envContent = Get-Content $envPath -Raw -Encoding UTF8
 $warnings = @()
-if ($envContent -match 'DB_PASSWORD=7758521')        { $warnings += "DB_PASSWORD 是默认值" }
-if ($envContent -match 'JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx') { $warnings += "JWT_KEY 是默认值" }
+if ($envContent -match 'DB_PASSWORD=changeme')        { $warnings += "DB_PASSWORD 是默认值" }
+if ($envContent -match 'JWT_KEY=your-jwt-key-at-least-32-chars') { $warnings += "JWT_KEY 是默认值" }
 if ($envContent -match 'ALERT_EMAIL_PASSWORD=你的QQ邮箱授权码')      { $warnings += "ALERT_EMAIL_PASSWORD 未填写" }
 if ($warnings.Count -gt 0) {
     Write-Host "  警告: 以下配置使用了默认值，生产环境请务必修改：" -ForegroundColor DarkYellow

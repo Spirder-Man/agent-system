@@ -57,7 +57,7 @@
   0. 退出
 
 请输入选项: root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# ^C
-root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazws     x DB_PASSWORD=7758521 dotnet run --project Agent1
+root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme dotnet run --project Agent1
 [21:57:44 INF] ══════════════════════════════════════════
 [21:57:44 INF] ══════════════════════════════════════════
 [21:57:44 INF]         化工园区危化品合规审核AI Agent v1.0.0
@@ -132,7 +132,7 @@ root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# DOTNET_ENVI
 ║  如果你收到这封邮件，说明告警通道已成功打通 ✅
 ╚══════════════════════════════════════════╝
 
-✅ 测试告警已发送！请检查收件箱 lcy.050801@qq.com
+✅ 测试告警已发送！请检查收件箱 admin@example.com
 
 请选择功能:
    0. 退出
@@ -165,7 +165,7 @@ root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# DOTNET_ENVI
   数据库名: chemical_park_ai_agent
   数据库版本: PostgreSQL 16.14 (Ubuntu 16.14-1.pgdg22.04+1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.     0, 64-bit
   当前用户: postgres
-  连接字符串: Host=localhost;Port=5432;Database=chemical_park_ai_agent;Username=postgres;Timeout=10;Maximum Pool Size=50;Password=7758521
+  连接字符串: Host=localhost;Port=5432;Database=chemical_park_ai_agent;Username=postgres;Timeout=10;Maximum Pool Size=50;Password=changeme
 
 📋 数据库表列表:
    ✅ sessions
@@ -1681,7 +1681,7 @@ root@autodl-container-v32vgj7pyh-76edd440:~/autodl-tmp/agent-system# DOTNET_ENVI
 ║  如果你收到这封邮件，说明告警通道已成功打通 ✅
 ╚══════════════════════════════════════════╝
 
-✅ 测试告警已发送！请检查收件箱 lcy.050801@qq.com
+✅ 测试告警已发送！请检查收件箱 admin@example.com
 
 请选择功能:
    0. 退出

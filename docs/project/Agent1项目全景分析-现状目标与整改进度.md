@@ -130,7 +130,7 @@ ChemicalComplianceTools (621行)
 
 | 架构特性 | 目标要求 | 当前状态 | 差距评估 |
 |---------|---------|---------|---------|
-| **等保三级审计** | 操作日志≥180天留存、不可篡改、敏感信息脱敏 | ✅ 已实现 `AuditService` + PostgreSQL持久化 + `SensitiveDataMasker` + SHA256哈希链 | -- |
+| **参照等保审计控制点** | 操作日志≥180天留存、不可篡改、敏感信息脱敏 | ✅ 已实现 `AuditService` + PostgreSQL持久化 + `SensitiveDataMasker` + SHA256哈希链 | -- |
 | **JWT认证** | RBAC角色控制（admin/auditor/viewer） | ✅ 已实现 3级角色 + BCrypt密码升级 | -- |
 | **配置外化** | 12-Factor App，敏感信息环境变量注入 | ✅ 已实现 `appsettings.json` + 环境变量覆盖 + Fail-Fast验证 | -- |
 | **结构化日志** | Serilog → Console + File + Seq | ✅ 已实现 三路输出 | -- |
@@ -285,7 +285,7 @@ AI推理引擎
 |--------|------|-----------|---------|
 | P0 | API 健康检查端点 /health /ready | 2h | 生产运维 | ✅ 已存在 |
 | P0 | 循环依赖改用 Lazy\<T\> | 4h | 代码质量 | ✅ 已完成 |
-| P1 | 审计日志哈希链完整性校验 | 8h | 等保合规 | ✅ 已完成 |
+| P1 | 审计日志哈希链完整性校验 | 8h | 参照等保控制点 | ✅ 已完成 |
 | P1 | 知识库增量更新机制 | 16h | 运维效率 | ✅ 已完成 |
 | P1 | TicketFollowup 模块实现 | 24h | 业务闭环 | ✅ 已完成 |
 | P2 | 命令模式重构 Program.cs 菜单 | 8h | 代码可维护性 | ✅ 已完成 |

@@ -75,5 +75,5 @@ Write-Host "  Full daily pipeline:" -ForegroundColor Cyan
 Write-Host "    2:50 AM  AutoDL web: power-on" -ForegroundColor White
 Write-Host "    3:00 AM  Remote cron: post-deploy-eval.sh" -ForegroundColor White
 Write-Host "    3:25 AM  Remote cron: post-deploy-analyze.sh" -ForegroundColor White
-Write-Host "    4:00 AM  Local: download + email to lcy.050801@qq.com" -ForegroundColor White
+Write-Host "    4:00 AM  Local: download + email to admin@example.com" -ForegroundColor White
 Write-Host "    4:00 AM  AutoDL web: power-off" -ForegroundColor White

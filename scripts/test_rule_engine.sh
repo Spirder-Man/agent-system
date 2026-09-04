@@ -14,7 +14,7 @@ echo "" >> $LOG
 echo "--- 2. 获取 Token ---" >> $LOG
 LOGIN_RESP=$(curl -s -X POST http://localhost:5001/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}')
+  -d '{"username":"admin","password":"changeme"}')
 echo "Login: $LOGIN_RESP" >> $LOG
 TOKEN=$(echo "$LOGIN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])" 2>/dev/null)
 echo "Token长度: ${#TOKEN}" >> $LOG

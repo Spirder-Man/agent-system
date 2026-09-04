@@ -286,7 +286,7 @@ namespace Agent1.Services.Orchestration
         // ═══════════════════════════════════════
 
         /// <summary>
-        /// 生成巡检报告 — 含 SHA256 审计哈希（等保三级要求）。
+        /// 生成巡检报告 — 含 SHA256 审计哈希（参照等保审计控制点，非已测评）。
         /// </summary>
         public InspectionReport GenerateReport(string roundId, string generatedBy)
         {

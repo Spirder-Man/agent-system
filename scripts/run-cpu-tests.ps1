@@ -8,9 +8,9 @@ $env:DOTNET_CLI_UI_LANGUAGE = "zh-CN"                     # Fix: dotnet CLI loca
 # =====================================================================
 $ErrorActionPreference = "Continue"
 
-$env:DB_PASSWORD = "7758521"
-$env:ALERT_EMAIL_PASSWORD = "dlyayiibtlwldefb"
-$env:ALERT_RECIPIENT_EMAILS = "lcy.050801@qq.com"
+$env:DB_PASSWORD = "changeme"
+$env:ALERT_EMAIL_PASSWORD = "your-smtp-auth-code"
+$env:ALERT_RECIPIENT_EMAILS = "admin@example.com"
 $env:KNOWLEDGE_BASE_PATH = "knowledgebase"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"

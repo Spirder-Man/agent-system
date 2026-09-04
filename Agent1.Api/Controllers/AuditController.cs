@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Agent1.Api.Controllers;
 
 /// <summary>
-/// 审计日志 API — 等保三级操作审计。
+/// 审计日志 API — 参照等保审计控制点的操作审计（非已测评）。
 /// 仅 admin 角色可访问，提供日志查询 + SHA256 哈希链完整性验证。
 /// </summary>
 [ApiController]

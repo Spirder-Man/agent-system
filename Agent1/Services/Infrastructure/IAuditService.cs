@@ -1,7 +1,7 @@
 namespace Agent1.Services
 {
     /// <summary>
-    /// 等保三级操作审计接口
+    /// 参照等保审计控制点的操作审计接口（非已测评）
     /// </summary>
     public interface IAuditService
     {

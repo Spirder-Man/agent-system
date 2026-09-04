@@ -1,0 +1,21 @@
+Agent1 — 化工园区危化品合规审查 AI Agent
+Copyright (c) 2026 刘超越
+
+This product is licensed under the MIT License. See LICENSE.
+
+本仓库不包含国家标准（GB）全文。法规原文须由使用方自备合法副本，放入运行时目录 knowledgebase/（该目录不纳入版本库）。开源仓仅提供数据库 schema、危化品结构化种子（名称/CAS/禁忌/安全距离等元数据）与评测样例。
+
+本仓库不是已定级、已备案或已测评的网络安全等级保护对象。应用层参照 GB/T 22239-2019 第三级中与安全审计、访问控制相关的控制点（操作日志默认留存 180 天、SHA256 哈希链、JWT 三角色）。生产部署须由网络运营者按《网络安全法》对所在信息系统自行定级、备案、测评。详见 docs/project/等级保护口径.md。
+
+Third-party components (see THIRD_PARTY_NOTICES.md for versions and full direct-dependency list):
+
+- .NET runtime / ASP.NET Core / Microsoft.Extensions.Configuration — MIT (Microsoft)
+- Microsoft.SemanticKernel 及 OpenAI / Ollama 连接器 — MIT
+- llama.cpp — MIT（运行时自备，不随本仓分发二进制）
+- PostgreSQL 16 + pgvector — PostgreSQL License
+- Npgsql / Dapper / Pgvector.NET — MIT / Apache-2.0 as published by each project
+- Vue 3, Vite, Element Plus, Pinia, Vue Router, Axios, ECharts — MIT
+- Serilog, OpenTelemetry, Swashbuckle, BCrypt.Net-Next, MailKit, PdfPig, DocumentFormat.OpenXml — licenses of the respective upstream projects
+- PDFtoImage — AGPL-3.0-or-later（NuGet）；原生 PDFium 见上游
+- highlight.js — BSD-3-Clause
+- SSH.NET、xunit、前端其余直接依赖 — 见 THIRD_PARTY_NOTICES.md

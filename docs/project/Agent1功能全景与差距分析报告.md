@@ -31,7 +31,7 @@
 ──────────────────────────────────────────────────────────────
 基础设施 (Infrastructure)
 ───────────────────────
- I1. Prompt注入防护    I2. 输出安全校验    I3. 审计日志(等保三级)
+ I1. Prompt注入防护    I2. 输出安全校验    I3. 审计日志(参照等保审计控制点)
  I4. 6步流水线可观测   I5. 事件溯源        I6. 7步耗时指标
  I7. 熔断器降级        I8. 定时自动扫描    I9. 数据持久化
  I10. 能力动态路由     I11. 状态机驱动     I12. 事件订阅发布
@@ -68,7 +68,7 @@
 | D5 | 知识图谱查询 | ✅ | `KnowledgeGraphModule` | |
 | I1 | Prompt注入防护 | ✅ | `SafetyGuardService.ValidateInput` | ✅ 集成 |
 | I2 | 输出安全校验 | ✅ | `SafetyGuardService.ValidateOutput` | ✅ 集成 |
-| I3 | 审计日志(等保) | ✅ | `AuditService` + SHA256哈希链 | |
+| I3 | 审计日志(参照等保审计控制点) | ✅ | `AuditService` + SHA256哈希链 | |
 | I4 | 6步流水线可观测 | ✅ | `PipelineMetrics` + TraceId + Serilog | ✅ 新增 |
 | I5 | 事件溯源 | ✅ | `PipelineEvent` + `IEventStore` + 9类事件 | ✅ 新增 |
 | I6 | 7步耗时指标 | ✅ | `PipelineMetrics` 16个字段 | ✅ 新增 |

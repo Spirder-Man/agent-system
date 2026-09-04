@@ -43,7 +43,7 @@ su - postgres -c "psql -d chemical_park_ai_agent -c 'SELECT 1'"
 
 ```bash
 # 重置 postgres 密码
-su - postgres -c "psql -c \"ALTER USER postgres PASSWORD '7758521'\""
+su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'changeme'\""
 
 # 或者改 pg_hba.conf 为 trust 模式（开发环境）
 # 找到 host all all 127.0.0.1/32 那行，把 scram-sha-256 改为 trust
@@ -190,8 +190,8 @@ dotnet build Agent1/Agent1.csproj -c Release
 ```bash
 cd /root/autodl-tmp/agent-system
 DOTNET_ENVIRONMENT=Production \
-JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx \
-DB_PASSWORD=7758521 \
+JWT_KEY=your-jwt-key-at-least-32-chars \
+DB_PASSWORD=changeme \
 dotnet run --project Agent1
 ```
 
@@ -330,7 +330,7 @@ curl http://localhost:5000/health/live
 # 登录获取 Token
 curl -s -X POST http://localhost:5000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}' | python3 -m json.tool
+  -d '{"username":"admin","password":"changeme"}' | python3 -m json.tool
 
 # 储存兼容性检查（替换 <token>）
 curl -s -X POST http://localhost:5000/api/compliance/storage/check \
@@ -387,5 +387,5 @@ sleep 5
 
 # 5. 编译运行
 dotnet build Agent1/Agent1.csproj -c Release && \
-DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWORD=7758521 dotnet run --project Agent1
+DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme dotnet run --project Agent1
 ```

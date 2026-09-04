@@ -65,10 +65,10 @@ dotnet build Agent1/Agent1.csproj -c Release
 
 ```bash
 DOTNET_ENVIRONMENT=Production \
-JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx \
-DB_PASSWORD=7758521 \
-ALERT_EMAIL_PASSWORD=dlyayiibtlwldefb \
-ALERT_RECIPIENT_EMAILS=lcy.050801@qq.com \
+JWT_KEY=your-jwt-key-at-least-32-chars \
+DB_PASSWORD=changeme \
+ALERT_EMAIL_PASSWORD=your-smtp-auth-code \
+ALERT_RECIPIENT_EMAILS=admin@example.com \
     dotnet run --project Agent1
 ```
 
@@ -231,7 +231,7 @@ export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=chemical_park_ai_agent
 export DB_USERNAME=postgres
-export DB_PASSWORD=7758521
+export DB_PASSWORD=changeme
 
 dotnet test Agent1.Tests/Agent1.Tests.csproj --filter "Category=Integration" --no-restore
 ```

@@ -23,7 +23,7 @@
 |---------|------|------|
 | **化工知识库加载** | 部分完成 | ChemicalRAG已创建，但需完善 |
 | **IntegrationService** | 缺失 | 工业系统集成接口（ERP/WMS/EHS） |
-| **AuditService** | 缺失 | 等保三级操作审计 |
+| **AuditService** | 缺失 | 参照等保审计控制点的操作审计 |
 | **化工专用推理模块** | 缺失 | ComplianceCheckModule等3个模块 |
 | **化工配置模型** | 缺失 | 需要完整的化工场景配置 |
 
@@ -48,7 +48,7 @@ namespace Agent1.Config
         // 工业系统集成配置
         public IntegrationConfig Integration { get; set; } = new();
         
-        // 等保三级审计配置
+        // 参照等保审计控制点的配置
         public AuditConfig Audit { get; set; } = new();
     }
     
@@ -95,11 +95,11 @@ namespace Agent1.Config
         public string EHSApiBaseUrl { get; set; } = string.Empty;
     }
     
-    // 等保三级审计配置
+    // 参照等保审计控制点的配置
     public class AuditConfig
     {
         public bool EnableOperationLog { get; set; } = true;
-        public int AuditLogRetentionDays { get; set; } = 180; // 等保三级要求6个月
+        public int AuditLogRetentionDays { get; set; } = 180; // 参照 GB/T 22239 审计记录留存（不少于6个月）
         public bool EnableDataEncryption { get; set; } = true;
     }
 }
@@ -183,12 +183,12 @@ namespace Agent1.Services
 }
 ```
 
-#### IAuditService.cs（等保三级审计接口）
+#### IAuditService.cs（参照等保审计控制点的接口）
 ```csharp
 namespace Agent1.Services
 {
     /// <summary>
-    /// 等保三级操作审计接口
+    /// 参照等保审计控制点的操作审计接口
     /// </summary>
     public interface IAuditService
     {
@@ -671,8 +671,8 @@ Agent1/
 ├── Services/
 │   ├── IIntegrationService.cs      (工业系统集成接口)
 │   ├── IntegrationService.cs       (工业系统集成实现)
-│   ├── IAuditService.cs            (等保审计接口)
-│   └── AuditService.cs             (等保审计实现)
+│   ├── IAuditService.cs            (参照等保审计控制点的接口)
+│   └── AuditService.cs             (参照等保审计控制点的实现)
 └── Modules/
     └── ComplianceCheckModule.cs    (日常合规自查模块)
 ```
@@ -695,7 +695,7 @@ Agent1/
 | **P0** | 创建化工配置模型 | 基础工作，所有功能依赖 |
 | **P0** | 创建化工知识库加载 | 核心功能必备 |
 | **P0** | 创建IntegrationService接口 | 化工系统集成必备 |
-| **P0** | 创建AuditService接口 | 等保三级必备 |
+| **P0** | 创建AuditService接口 | 参照等保审计控制点的必备项（非已测评） |
 | **P1** | 创建ComplianceCheckModule | 第一个可用的化工模块 |
 | **P1** | 修改ModelConfig/ModuleType等 | 兼容性更新 |
 | **P2** | 创建TicketFollowupModule | 后续扩展 |
@@ -709,5 +709,5 @@ Agent1/
 ✅ **移除所有温度传感器等工业遗留代码**  
 ✅ **完全基于适配方案进行架构整改**  
 ✅ **配置外部化，无硬编码**  
-✅ **支持等保三级审计**  
+✅ 参照 GB/T 22239 第三级部分控制点的审计（非已测评）  
 ✅ **支持工业系统集成（预留接口）**

@@ -124,7 +124,7 @@ public interface IIntegrationService
 
 ---
 
-#### 3.1.3 新增 AuditService（等保三级审计）
+#### 3.1.3 新增 AuditService（参照等保审计控制点）
 
 **接口设计：**
 ```csharp
@@ -244,7 +244,7 @@ public static class ModelConfig
     public static class ChemicalParkConfig
     {
         public const string KnowledgeBasePath = "./data/chemical-knowledge";
-        public const string AuditLogRetentionDays = "180"; // 等保三级要求6个月
+        public const string AuditLogRetentionDays = "180"; // 参照 GB/T 22239 审计记录留存（不少于6个月）
         public const bool EnableDataEncryption = true;
     }
 }
@@ -275,7 +275,7 @@ public enum ModuleType
 
 ---
 
-## 四、等保三级安全措施
+## 四、参照 GB/T 22239 第三级部分控制点的安全措施（非已测评）
 
 ### 4.1 数据安全
 
@@ -321,7 +321,7 @@ public enum ModuleType
 3. 完善 IntegrationService（ERP/WMS全对接）
 
 ### 阶段4：安全加固（1周）
-1. 等保三级安全措施
+1. 参照 GB/T 22239 第三级部分控制点的安全措施（非已测评）
 2. 数据加密
 3. 权限控制
 
@@ -369,7 +369,7 @@ Agent1/
 ✅ **不需要重构**，现有架构完全符合要求  
 ✅ **仅需增量扩展**，保留所有现有功能  
 ✅ **向后兼容**，原有推理模块继续使用  
-✅ **等保三级**，通过扩展审计/权限/加密实现  
+✅ 参照 GB/T 22239 第三级部分控制点（非已测评），通过扩展审计/权限/加密实现  
 ✅ **私有化部署**，所有数据/模型100%本地
 
 ---

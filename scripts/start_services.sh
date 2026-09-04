@@ -40,18 +40,24 @@ sleep 30
 # ===== 3. .NET API (端口 5001) =====
 echo "[3/3] 启动 .NET API (端口 5001)..."
 
-# 加载环境变量
-export LLM_ENDPOINT="http://localhost:8080/v1"
-export EMBEDDING_ENDPOINT="http://localhost:8081/v1"
-export DB_HOST="localhost"
-export DB_NAME="chemical_park_ai_agent"
-export DB_USER="postgres"
-export DB_PASSWORD="postgres123"
-export ASPNETCORE_URLS="http://0.0.0.0:5001"
+PROJECT_DIR="${PROJECT_DIR:-/root/autodl-tmp/agent-system}"
+if [ -f "$PROJECT_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/.env"
+  set +a
+fi
+: "${DB_PASSWORD:?Set DB_PASSWORD in .env}"
+: "${JWT_KEY:?Set JWT_KEY in .env}"
+: "${AUTH_ACCOUNTS_JSON:?Set AUTH_ACCOUNTS_JSON in .env}"
+
+export LLM_ENDPOINT="${LLM_ENDPOINT:-http://localhost:8080/v1}"
+export EMBEDDING_ENDPOINT="${EMBEDDING_ENDPOINT:-http://localhost:8081/v1}"
+export DB_HOST="${DB_HOST:-localhost}"
+export DB_NAME="${DB_NAME:-chemical_park_ai_agent}"
+export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5001}"
 export DOTNET_USE_POLLING_FILE_WATCHER=true
-export KNOWLEDGE_BASE_PATH="/root/autodl-tmp/knowledgebase"
-export JWT_KEY="Agent1-Production-JWT-Key-2024-Secure"
-export AUTH_ACCOUNTS_JSON='[{"Username":"admin","Password":"7758521","Role":"admin"},{"Username":"auditor","Password":"7758521","Role":"auditor"}]'
+export KNOWLEDGE_BASE_PATH="${KNOWLEDGE_BASE_PATH:-/root/autodl-tmp/knowledgebase}"
 
 cd $PROJECT_DIR
 nohup dotnet run --project Agent1.Api -c Release --no-launch-profile \

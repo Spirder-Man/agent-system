@@ -303,8 +303,8 @@ namespace Agent1.Tests
             AppConfig.Load(config);
             var audit = AppConfig.Instance.Audit;
 
-            audit.EnableOperationLog.Should().BeTrue("等保三级要求操作日志");
-            audit.AuditLogRetentionDays.Should().Be(180, "等保三级要求6个月留存");
+            audit.EnableOperationLog.Should().BeTrue("参照 GB/T 22239 审计控制点：默认开启操作日志");
+            audit.AuditLogRetentionDays.Should().Be(180, "参照 GB/T 22239 审计记录留存（不少于6个月）");
             audit.EnableDataEncryption.Should().BeTrue("默认启用数据加密");
         }
 
@@ -363,7 +363,7 @@ namespace Agent1.Tests
             finally
             {
                 // 恢复原值而非删除 — 删除会污染后续测试（CustomApiWebApplicationFactory
-                // 在 DB_PASSWORD 为空时会注入错误密码 test_pwd_7758521，导致全量测试失败）
+                // 在 DB_PASSWORD 为空时会注入错误密码 test_pwd_ci，导致全量测试失败）
                 Environment.SetEnvironmentVariable("DB_PASSWORD", savedDbPassword);
             }
         }

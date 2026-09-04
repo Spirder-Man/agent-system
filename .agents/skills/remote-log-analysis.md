@@ -102,8 +102,8 @@ echo "ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:?NOT SET}"
 
 | 缺失变量 | 修复 |
 |---------|------|
-| `DB_PASSWORD` | `export DB_PASSWORD=7758521` |
-| `JWT_KEY` | `export JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx` |
+| `DB_PASSWORD` | `export DB_PASSWORD=changeme` |
+| `JWT_KEY` | `export JWT_KEY=your-jwt-key-at-least-32-chars` |
 | `ASPNETCORE_ENVIRONMENT` | `export ASPNETCORE_ENVIRONMENT=Production` |
 
 </details>
@@ -132,8 +132,8 @@ echo "等待模型加载 (约20秒)..." && sleep 20
 
 ```bash
 export ASPNETCORE_URLS="http://0.0.0.0:5000"
-export DB_PASSWORD=7758521
-export JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx
+export DB_PASSWORD=changeme
+export JWT_KEY=your-jwt-key-at-least-32-chars
 export ASPNETCORE_ENVIRONMENT=Production
 cd /root/autodl-tmp/agent-system
 nohup dotnet run --project Agent1.Api -c Release --no-launch-profile \
