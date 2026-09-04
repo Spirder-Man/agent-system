@@ -48,7 +48,7 @@ services:
       - DB_NAME=${DB_NAME:-chemical_park_ai_agent}
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_KEY=${JWT_KEY:-your-jwt-key-at-least-32-chars}
+      - JWT_KEY=${JWT_KEY:-change-me-jwt-key-at-least-32-chars}
       - 'AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-[{"Username":"admin","Password":"changeme","Role":"admin"},{"Username":"auditor","Password":"changeme","Role":"auditor"}]}'
       - LLM_OPTIONAL=true
       - KNOWLEDGE_BASE_PATH=/app/knowledgebase
