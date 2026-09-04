@@ -9,9 +9,9 @@ import { test as base, expect, type Page } from '@playwright/test';
 
 // ── 测试账号（对齐远程 .env 中 AUTH_ACCOUNTS_JSON） ──
 export const ACCOUNTS = {
-  admin: { username: 'admin', password: '7758521' },
-  auditor: { username: 'auditor', password: '7758521' },
-  viewer: { username: 'viewer', password: '7758521' },
+  admin: { username: 'admin', password: 'changeme' },
+  auditor: { username: 'auditor', password: 'changeme' },
+  viewer: { username: 'viewer', password: 'changeme' },
 } as const;
 
 export type Role = keyof typeof ACCOUNTS;

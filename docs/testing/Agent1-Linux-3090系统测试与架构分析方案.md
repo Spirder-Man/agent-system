@@ -60,8 +60,8 @@ cd $WORKDIR/agent-system
 dotnet build Agent1/Agent1.csproj -c Release
 
 DOTNET_ENVIRONMENT=Production \
-JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx \
-DB_PASSWORD=7758521 \
+JWT_KEY=your-jwt-key-at-least-32-chars \
+DB_PASSWORD=changeme \
 dotnet run --project Agent1
 ```
 
@@ -177,7 +177,7 @@ curl http://localhost:5000/health
 # 合规检查 API
 TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+  -d '{"username":"admin","password":"changeme"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 
 curl -s -X POST http://localhost:5000/api/compliance/check \
   -H "Authorization: Bearer $TOKEN" \

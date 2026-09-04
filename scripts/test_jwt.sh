@@ -18,7 +18,7 @@ ls -la /root/autodl-tmp/agent-system/Agent1.Api/bin/Release/net8.0/appsettings*.
 echo ""
 
 echo "=== Login and decode JWT ==="
-LOGIN=$(curl -s -X POST http://localhost:5001/api/Auth/login -H 'Content-Type: application/json' -d '{"username":"admin","password":"7758521"}')
+LOGIN=$(curl -s -X POST http://localhost:5001/api/Auth/login -H 'Content-Type: application/json' -d '{"username":"admin","password":"changeme"}')
 TOKEN=$(echo "$LOGIN" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 echo "Token length: ${#TOKEN}"
 

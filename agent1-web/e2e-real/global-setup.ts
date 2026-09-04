@@ -13,7 +13,7 @@
 
 import { type FullConfig } from '@playwright/test';
 
-const ACCOUNT = { username: 'admin', password: '7758521' };
+const ACCOUNT = { username: 'admin', password: 'changeme' };
 
 interface ApiClient {
   get: (url: string) => Promise<{ status: number; data: unknown }>;

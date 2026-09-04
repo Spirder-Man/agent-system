@@ -46,7 +46,7 @@ public class DataRetentionTests : IAsyncLifetime
                 Port = port,
                 DatabaseName = Environment.GetEnvironmentVariable("DB_NAME") ?? "chemical_park_ai_agent",
                 Username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "postgres",
-                Password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "7758521"
+                Password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "changeme"
             }
         };
         _writer = new DatabaseService(_config);

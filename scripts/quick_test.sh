@@ -5,7 +5,7 @@ echo "=== Quick Test: 双层门卫+Handler闭环 ===" > $LOG
 # 获取 token
 TOKEN=$(curl -s -X POST http://localhost:5001/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}' \
+  -d '{"username":"admin","password":"changeme"}' \
   | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
 
 test_q() {

@@ -21,16 +21,16 @@ if [ -f "$PROJECT_DIR/.env" ]; then
   set +a
 fi
 
-# 默认值（如果 .env 加载失败）
-DB_PASSWORD=${DB_PASSWORD:-12345678}
-JWT_KEY=${JWT_KEY:-G01UL9fjNTr5DPBxewoC68cX3zqKaudOW4VygYn7lFRZ2MJQ}
-AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-'[{"Username":"admin","Role":"admin","Password":"123456789"},{"Username":"auditor","Role":"auditor","Password":"123456789"}]'}
-ALERT_ENABLED=${ALERT_ENABLED:-true}
-ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS:-lcy.050801@qq.com}
-ALERT_SMTP_HOST=${ALERT_SMTP_HOST:-smtp.qq.com}
+if [ -z "${DB_PASSWORD:-}" ] || [ -z "${JWT_KEY:-}" ] || [ -z "${AUTH_ACCOUNTS_JSON:-}" ]; then
+  echo "缺少 DB_PASSWORD / JWT_KEY / AUTH_ACCOUNTS_JSON。请在项目根目录配置 .env（参考 .env.example）"
+  exit 1
+fi
+ALERT_ENABLED=${ALERT_ENABLED:-false}
+ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS:-admin@example.com}
+ALERT_SMTP_HOST=${ALERT_SMTP_HOST:-smtp.example.com}
 ALERT_SMTP_PORT=${ALERT_SMTP_PORT:-587}
-ALERT_SMTP_USER=${ALERT_SMTP_USER:-2732232706@qq.com}
-ALERT_SMTP_PASS=${ALERT_SMTP_PASS:-gqczheqvhdviddfb}
+ALERT_SMTP_USER=${ALERT_SMTP_USER:-}
+ALERT_SMTP_PASS=${ALERT_SMTP_PASS:-}
 
 # 代理转发地址：前端 Vite → 后端 API（同机，不走 SSH 隧道）
 VITE_PROXY_TARGET="http://127.0.0.1:5001"

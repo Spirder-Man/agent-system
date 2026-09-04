@@ -545,7 +545,7 @@ app.MapPost("/alert/test", async (AlertDispatcher dispatcher, ILogger<Program> l
         logger.LogInformation("告警测试邮件已发送");
         return Results.Ok(new
         {
-            message = "测试告警已发送，请检查邮箱 lcy.050801@qq.com",
+            message = "测试告警已发送，请检查 ALERT_RECIPIENT_EMAILS 配置的收件箱",
             timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             runId = RunIdGenerator.Current
         });

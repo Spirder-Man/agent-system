@@ -206,7 +206,7 @@ curl http://localhost:8080/health
 # 登录获取 Token
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"7758521"}'
+  -d '{"username":"admin","password":"changeme"}'
 
 # 查询化学品合规
 curl -X POST http://localhost:8080/api/compliance/hazard/query \

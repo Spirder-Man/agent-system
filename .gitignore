@@ -1,5 +1,15 @@
 # 敏感配置文件（本地环境变量，禁止提交）
 .env
+.env.bak*
+.env.*
+!.env.example
+
+# 本地归档（含历史密钥备份与对话日志，不入库）
+_archive/
+
+# 本地模型权重（评委自备，禁止提交）
+models/
+*.gguf
 
 # 守护进程 PID 文件（运行时动态生成）
 .bloodmap_guard.pid

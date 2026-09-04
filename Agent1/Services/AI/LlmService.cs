@@ -780,6 +780,14 @@ namespace Agent1.Services
         /// </summary>
         private void CheckCircuitBreaker()
         {
+            var llmOptional = Environment.GetEnvironmentVariable("LLM_OPTIONAL");
+            if (string.Equals(llmOptional, "true", StringComparison.OrdinalIgnoreCase)
+                || llmOptional == "1")
+            {
+                throw new CircuitBreakerOpenException(
+                    "LLM_OPTIONAL=true：跳过 LLM，走确定性规则引擎");
+            }
+
             lock (_circuitLock)
             {
                 if (_consecutiveFailures >= MaxConsecutiveFailures && _circuitOpenTime.HasValue)

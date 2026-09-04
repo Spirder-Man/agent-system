@@ -18,7 +18,7 @@ run_test() {
 
     echo "$input" > /tmp/agent_test_input.txt
 
-    timeout "$TIMEOUT" bash -c "cd '$PROJECT_DIR' && DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWORD=7758521 dotnet run --project Agent1 -c Release --no-build < /tmp/agent_test_input.txt" > "$log" 2>&1
+    timeout "$TIMEOUT" bash -c "cd '$PROJECT_DIR' && DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme dotnet run --project Agent1 -c Release --no-build < /tmp/agent_test_input.txt" > "$log" 2>&1
     local exit_code=$?
     local test_end=$(date +%s)
     local elapsed=$((test_end - test_start))

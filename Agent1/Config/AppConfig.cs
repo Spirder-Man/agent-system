@@ -31,7 +31,7 @@ namespace Agent1.Config
         // 化工合规工具配置
         public ChemicalToolConfig ChemicalTool { get; set; } = new();
 
-        // 等保三级审计配置
+        // 参照等保审计控制点的配置（非已测评）
         public AuditConfig Audit { get; set; } = new();
 
         // [P3] 记忆系统配置
@@ -291,11 +291,11 @@ namespace Agent1.Config
         public string EHSApiBaseUrl { get; set; } = string.Empty;
     }
 
-    // 等保三级审计配置
+    // 参照等保审计控制点的配置（非已测评）
     public class AuditConfig
     {
         public bool EnableOperationLog { get; set; } = true;
-        public int AuditLogRetentionDays { get; set; } = 180; // 等保三级要求6个月
+        public int AuditLogRetentionDays { get; set; } = 180; // 参照 GB/T 22239 审计记录留存（不少于6个月）
         public bool EnableDataEncryption { get; set; } = true;
     }
 

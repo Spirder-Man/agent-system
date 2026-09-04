@@ -388,7 +388,7 @@ namespace Agent1.Commands
                     AlertLevel.Info);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("✅ 测试告警已发送！请检查收件箱 lcy.050801@qq.com");
+                Console.WriteLine("测试告警已发送！请检查 ALERT_RECIPIENT_EMAILS 配置的收件箱");
                 Console.ResetColor();
             }
             catch (Exception ex)

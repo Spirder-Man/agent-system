@@ -392,7 +392,7 @@ namespace Agent1.Models
     /// <summary>
     /// 巡检报告 — 一次巡检的正式输出文档。
     /// 
-    /// 等保三级要求：报告内容不可篡改 — AuditHash 字段为 SHA256 签名。
+    /// 参照 GB/T 22239 审计完整性控制点：报告内容不可篡改 — AuditHash 为 SHA256 签名（非已测评）。
     /// </summary>
     public class InspectionReport
     {

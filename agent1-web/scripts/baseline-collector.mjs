@@ -18,7 +18,7 @@ const root = join(__dirname, '..');
 
 const API_BASE = process.argv[2] || 'http://localhost:5173';
 const RUNS = parseInt(process.argv[3] || '3', 10);
-const ACCOUNT = { username: 'admin', password: '7758521' };
+const ACCOUNT = { username: 'admin', password: 'changeme' };
 const BASELINE_PATH = join(root, 'e2e-real', 'baseline.json');
 const OUTPUT_DIR = join(root, 'e2e-real', 'baseline-reports');
 

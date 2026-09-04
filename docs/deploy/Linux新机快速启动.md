@@ -39,7 +39,7 @@ apt install -y postgresql-16 postgresql-client-16 postgresql-16-pgvector
 pg_ctlcluster 16 main start
 
 # 设置密码 + 建库（用 su 替代 sudo）
-su - postgres -c "psql -c \"ALTER USER postgres PASSWORD '7758521';\""
+su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'changeme';\""
 su - postgres -c "psql -c \"CREATE DATABASE chemical_park_ai_agent;\""
 su - postgres -c "psql -d chemical_park_ai_agent -c \"CREATE EXTENSION IF NOT EXISTS vector;\""
 ```
@@ -95,7 +95,7 @@ cd agent-system
 
 # 初始化数据库
 cp init_database.sql /tmp/
-PGPASSWORD=7758521 psql -h localhost -U postgres -f /tmp/init_database.sql
+PGPASSWORD=changeme psql -h localhost -U postgres -f /tmp/init_database.sql
 ```
 
 ### 第 6 步：修改配置
@@ -140,8 +140,8 @@ cd /root/autodl-tmp/agent-system
 dotnet build Agent1/Agent1.csproj -c Release
 
 DOTNET_ENVIRONMENT=Production \
-JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx \
-DB_PASSWORD=7758521 \
+JWT_KEY=your-jwt-key-at-least-32-chars \
+DB_PASSWORD=changeme \
 dotnet run --project Agent1
 ```
 

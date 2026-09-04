@@ -47,7 +47,7 @@ curl http://localhost:8081/health
 
 # 3. 启动程序
 cd /root/autodl-tmp/agent-system
-DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWORD=7758521 dotnet run --project Agent1 -c Release</div>
+DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme dotnet run --project Agent1 -c Release</div>
 
 <!-- ===== CLI MENU MAP ===== -->
 <h3>▌CLI 菜单 0-20 逐项测试操作</h3>
@@ -95,7 +95,7 @@ DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWO
 
 <tr><td><b>19</b></td><td>知识图谱</td><td><span class="bg bg-r">✓</span></td><td>输入 <b>19</b> 回车→输入:<br/><b>"苯"</b></td><td>✅ KnowledgeGraphModule查询<br/>✅ 返回化学品-法规-事故关联</td></tr>
 
-<tr><td><b>20</b></td><td>测试告警邮件</td><td><span class="bg bg-g">✗</span></td><td>输入 <b>20</b> 回车</td><td>✅ 发送测试邮件到 lcy.050801@qq.com<br/>✅ 终端显示发送结果<br/>⚠️ 需appsettings.json配置SMTP密码</td></tr>
+<tr><td><b>20</b></td><td>测试告警邮件</td><td><span class="bg bg-g">✗</span></td><td>输入 <b>20</b> 回车</td><td>✅ 发送测试邮件到 admin@example.com<br/>✅ 终端显示发送结果<br/>⚠️ 需appsettings.json配置SMTP密码</td></tr>
 
 </table>
 
@@ -120,7 +120,7 @@ DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWO
 <div class="cd"># 在服务器上另开一个screen窗口
 screen -S api
 cd /root/autodl-tmp/agent-system
-DOTNET_ENVIRONMENT=Production JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx DB_PASSWORD=7758521 nohup dotnet run --project Agent1.Api -c Release > /root/autodl-tmp/logs/api.log 2>&1 &
+DOTNET_ENVIRONMENT=Production JWT_KEY=your-jwt-key-at-least-32-chars DB_PASSWORD=changeme nohup dotnet run --project Agent1.Api -c Release > /root/autodl-tmp/logs/api.log 2>&1 &
 # Ctrl+A D 离开screen
 
 # 等5秒后验证
@@ -131,13 +131,13 @@ curl http://localhost:5000/health/live</div>
 <div class="cd"># T7.1: 登录获取Token
 curl -s -X POST http://localhost:5000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}'
+  -d '{"username":"admin","password":"changeme"}'
 # 应返回: {"token":"eyJ...","expiresIn":28800,"role":"admin","username":"admin"}
 
 # 把token存到变量里
 TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"7758521"}' \
+  -d '{"username":"admin","password":"changeme"}' \
   | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
 echo "Token: ${TOKEN:0:20}..."
 

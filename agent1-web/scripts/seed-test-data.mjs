@@ -11,7 +11,7 @@
 // ============================================================
 
 const API_BASE = process.argv[2] || 'http://localhost:5173';
-const ACCOUNT = { username: 'admin', password: '7758521' };
+const ACCOUNT = { username: 'admin', password: 'changeme' };
 
 async function apiGet(url, token) {
   const res = await fetch(`${API_BASE}${url}`, {

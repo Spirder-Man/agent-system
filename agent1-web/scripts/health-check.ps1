@@ -44,7 +44,7 @@ try {
 Write-Host ""
 Write-Host "[2/4] Auth Login Test"
 try {
-    $loginBody = '{"username":"admin","password":"7758521"}'
+    $loginBody = '{"username":"admin","password":"changeme"}'
     $loginResp = Invoke-RestMethod -Uri "$ApiUrl/api/Auth/login" `
         -Method POST -Body $loginBody -ContentType "application/json" -TimeoutSec 10
     if ($loginResp.token) {
@@ -65,7 +65,7 @@ try {
 Write-Host ""
 Write-Host "[3/4] LLM Compliance Check — waiting..."
 try {
-    $loginBody = '{"username":"admin","password":"7758521"}'
+    $loginBody = '{"username":"admin","password":"changeme"}'
     $loginResp = Invoke-RestMethod -Uri "$ApiUrl/api/Auth/login" `
         -Method POST -Body $loginBody -ContentType "application/json" -TimeoutSec 10
 
@@ -95,7 +95,7 @@ try {
 Write-Host ""
 Write-Host "[4/4] Assets Query"
 try {
-    $loginBody = '{"username":"admin","password":"7758521"}'
+    $loginBody = '{"username":"admin","password":"changeme"}'
     $loginResp = Invoke-RestMethod -Uri "$ApiUrl/api/Auth/login" `
         -Method POST -Body $loginBody -ContentType "application/json" -TimeoutSec 10
 

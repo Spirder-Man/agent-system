@@ -227,7 +227,7 @@ dotnet run --project Agent1/Agent1.csproj -c Release
 # Step4: API测试 (需要单独启动API)
 dotnet run --project Agent1.Api/Agent1.Api.csproj -c Release
 # 然后用curl逐端点测试 (见T4.1-T4.16)
-curl -X POST http://localhost:5000/api/auth/login -H 'Content-Type:application/json' -d '{"username":"admin","password":"7758521"}'
+curl -X POST http://localhost:5000/api/auth/login -H 'Content-Type:application/json' -d '{"username":"admin","password":"changeme"}'
 # 拿token后逐个测试Inspection/Tickets/Compliance端点
 
 # Step5: 持久化验证

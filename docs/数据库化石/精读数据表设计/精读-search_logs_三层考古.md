@@ -56,7 +56,7 @@
 **影响**：
 - 检索质量分析缺数据：无法回答"RAG 检索平均耗时多少""双数据源分流比例多少"（source_priority 字段明显是为双通道观测设计的）
 - 与 #10（水印垃圾 50.9%）、#13（分类不一致）呼应——**如果 search_logs 接线，用户实际检索命中垃圾块的比例本可被观测**
-- 等保/审计：检索行为日志缺失
+- 审计（参照等保控制点）：检索行为日志缺失
 
 **修复方案**（待讨论）：在 VectorSearchAsync 等检索入口埋点写 search_logs（query/results_count/execution_time_ms/source_priority）；或若观测价值已被 MetricsCollector 替代，则废弃此表（删表）
 

@@ -442,7 +442,7 @@ ss -tlnp | grep 5432
 
 ```bash
 # 设置 postgres 用户密码
-su - postgres -c "psql -c \"ALTER USER postgres PASSWORD '7758521';\""
+su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'changeme';\""
 
 # 创建项目数据库
 su - postgres -c "psql -c \"CREATE DATABASE chemical_park_ai_agent;\""
@@ -463,7 +463,7 @@ cd /root/agent-deploy/agent-system
 cat init_database.sql | head -20
 
 # 执行初始化
-PGPASSWORD=7758521 psql -h localhost -U postgres -d chemical_park_ai_agent -f init_database.sql
+PGPASSWORD=changeme psql -h localhost -U postgres -d chemical_park_ai_agent -f init_database.sql
 ```
 
 ### 6.5 配置 pg_hba.conf（允许密码登录）
@@ -489,7 +489,7 @@ pg_ctlcluster 16 main reload     # Ubuntu
 ### 6.6 验证数据库连接
 
 ```bash
-PGPASSWORD=7758521 psql -h localhost -U postgres -d chemical_park_ai_agent -c "SELECT current_database(), current_user, version();"
+PGPASSWORD=changeme psql -h localhost -U postgres -d chemical_park_ai_agent -c "SELECT current_database(), current_user, version();"
 ```
 
 ---
@@ -522,7 +522,7 @@ cat Agent1/appsettings.json
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=chemical_park_ai_agent;Username=postgres;Password=7758521"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=chemical_park_ai_agent;Username=postgres;Password=changeme"
   }
 }
 ```
@@ -531,10 +531,10 @@ cat Agent1/appsettings.json
 
 ```bash
 # 设置 JWT 签名密钥（≥32字符）
-export JWT_KEY="qazwsxedcrfvtgbyhnujmikolpqazwsx"
+export JWT_KEY="your-jwt-key-at-least-32-chars"
 
 # 数据库密码
-export DB_PASSWORD="7758521"
+export DB_PASSWORD="changeme"
 
 # 账号配置（JSON 数组）
 export AUTH_ACCOUNTS_JSON='[{"Username":"admin","Password":"Admin@123456","Role":"admin"},{"Username":"auditor","Password":"Audit@123456","Role":"auditor"}]'
@@ -669,8 +669,8 @@ nvidia-smi
 ```bash
 cd /root/agent-deploy/agent-system
 
-export JWT_KEY="qazwsxedcrfvtgbyhnujmikolpqazwsx"
-export DB_PASSWORD="7758521"
+export JWT_KEY="your-jwt-key-at-least-32-chars"
+export DB_PASSWORD="changeme"
 export DOTNET_ENVIRONMENT="Production"
 
 dotnet run --project Agent1 -c Release
@@ -683,8 +683,8 @@ dotnet run --project Agent1 -c Release
 ```bash
 cd /root/agent-deploy/agent-system
 
-export JWT_KEY="qazwsxedcrfvtgbyhnujmikolpqazwsx"
-export DB_PASSWORD="7758521"
+export JWT_KEY="your-jwt-key-at-least-32-chars"
+export DB_PASSWORD="changeme"
 export AUTH_ACCOUNTS_JSON='[{"Username":"admin","Password":"Admin@123456","Role":"admin"}]'
 export ASPNETCORE_ENVIRONMENT="Production"
 
@@ -1075,8 +1075,8 @@ curl -sf http://localhost:8081/health && echo "  Embed: OK" || echo "  Embed: FA
 
 echo "=== [5/5] Starting Agent1.Api (port 5000) ==="
 cd $AGENT_ROOT/agent-system
-export JWT_KEY="${JWT_KEY:-qazwsxedcrfvtgbyhnujmikolpqazwsx}"
-export DB_PASSWORD="${DB_PASSWORD:-7758521}"
+export JWT_KEY="${JWT_KEY:-your-jwt-key-at-least-32-chars}"
+export DB_PASSWORD="${DB_PASSWORD:-changeme}"
 export AUTH_ACCOUNTS_JSON="${AUTH_ACCOUNTS_JSON:-[{\"Username\":\"admin\",\"Password\":\"Admin@123456\",\"Role\":\"admin\"}]}"
 export ASPNETCORE_ENVIRONMENT="Production"
 

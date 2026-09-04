@@ -119,7 +119,7 @@
 12:18 ─ git add .gitignore Agent1/Services/Memory/ → git commit → git push
 12:19 ─ 服务器 git pull → 8 files changed, 1312 insertions（Memory 模块全部拉取成功）
 12:20 ─ dotnet publish → 编译成功（只有警告，0 Error）✅
-12:21 ─ 数据库初始化重新执行：PGPASSWORD=7758521 psql -f /tmp/init_database.sql
+12:21 ─ 数据库初始化重新执行：PGPASSWORD=changeme psql -f /tmp/init_database.sql
 12:22 ─ ✅ 数据库初始化成功！6 张表就绪（含 pgvector HNSW 索引）
 12:25 ─ 本地 Ollama 下载完成（1.54GB，100%）
 12:26 ─ JupyterLab 页面导航问题：在文件存储页而非容器实例页
@@ -205,7 +205,7 @@
 
 ```
 16:30 ─ PostgreSQL 初始化尝试：su - postgres → 密码认证失败
-16:32 ─ 解决方案：PGPASSWORD=7758521 psql → 成功
+16:32 ─ 解决方案：PGPASSWORD=changeme psql → 成功
 16:33 ─ 数据库初始化完成：6 张表（含 pgvector 768 维向量表）
 16:35 ─ .NET 项目编译：dotnet restore + dotnet build → 0 Error, 0 Warning
 16:36 ─ 检查 appsettings.json：LLM 端点指向 localhost:11434（Ollama）
@@ -343,7 +343,7 @@ pg_lsclusters
 **解决方案：使用 `su` 替代**
 
 ```bash
-su - postgres -c "psql -c \"ALTER USER postgres PASSWORD '7758521';\""
+su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'changeme';\""
 # ALTER ROLE
 su - postgres -c "psql -c \"CREATE DATABASE chemical_park_ai_agent;\""
 # CREATE DATABASE
@@ -795,7 +795,7 @@ curl.exe -L -o D:\桌面\nomic-embed-text-v1.5.f16.gguf https://hf-mirror.com/no
 |--------|-----|
 | 数据库名 | `chemical_park_ai_agent` |
 | 用户 | `postgres` |
-| 密码 | `7758521` |
+| 密码 | `changeme` |
 | 端口 | `5432` |
 | 初始化脚本 | `/root/autodl-tmp/agent-system/init_database.sql` |
 
@@ -810,7 +810,7 @@ psql -h localhost -U postgres -f init_database.sql
 #### 解决方案
 
 ```bash
-PGPASSWORD=7758521 psql -h localhost -U postgres -f /root/autodl-tmp/agent-system/init_database.sql
+PGPASSWORD=changeme psql -h localhost -U postgres -f /root/autodl-tmp/agent-system/init_database.sql
 ```
 
 #### 初始化结果
@@ -857,9 +857,9 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=chemical_park_ai_agent
 DB_USERNAME=postgres
-DB_PASSWORD=7758521
-JWT_KEY=qazwsxedcrfvtgbyhnujmikolpqazwsx
-AUTH_ACCOUNTS_JSON=[{"Username":"admin","Password":"7758521","Role":"admin"},{"Username":"auditor","Password":"7758521","Role":"auditor"}]
+DB_PASSWORD=changeme
+JWT_KEY=your-jwt-key-at-least-32-chars
+AUTH_ACCOUNTS_JSON=[{"Username":"admin","Password":"changeme","Role":"admin"},{"Username":"auditor","Password":"changeme","Role":"auditor"}]
 ```
 
 #### appsettings.json LLM 配置（当前状态 - 待修改）
@@ -958,7 +958,7 @@ ls -lh /root/autodl-tmp/models/
 | 14 | 16:02 | GGUF 模型多次 404（4 种不同 URL） | 文件名大小写/格式与 HF 仓库实际命名不一致 | WebSearch → 找到正确仓库名 `Qwen_Qwen3-8B-GGUF` |
 | 15 | 16:04 | HF API 查询无返回 | hf-mirror 不代理 API，直连 HF 又超时 | 放弃 API，改用 WebSearch |
 | 16 | 16:14 | wget 下载空文件（0 字节） | `wget -O` 目标目录 `/root/autodl-tmp/models/` 尚未创建 | `mkdir -p` 先创建目录 |
-| 17 | 16:30 | psql 密码认证失败 | 非交互模式未提供密码 | `PGPASSWORD=7758521 psql ...` 环境变量传递 |
+| 17 | 16:30 | psql 密码认证失败 | 非交互模式未提供密码 | `PGPASSWORD=changeme psql ...` 环境变量传递 |
 | 18 | 16:36 | appsettings.json 指向 Ollama 端点 | 配置默认为 `localhost:11434`（Ollama 端口） | 待改为 llama.cpp server 的 `localhost:8080/v1` |
 
 ### 4.2 问题分类统计

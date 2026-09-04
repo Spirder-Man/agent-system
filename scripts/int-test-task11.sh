@@ -27,9 +27,9 @@ RESULT_DIR="test-results/int-test-${TIMESTAMP}"
 PROJECT_DIR="/root/autodl-tmp/agent-system"
 API_URL="${API_URL:-http://localhost:5000}"
 ADMIN_USER="${ADMIN_USER:-admin}"
-ADMIN_PASS="${ADMIN_PASS:-7758521}"
-JWT_KEY="${JWT_KEY:-qazwsxedcrfvtgbyhnujmikolpqazwsx}"
-DB_PASSWORD="${DB_PASSWORD:-7758521}"
+ADMIN_PASS="${ADMIN_PASS:-changeme}"
+JWT_KEY="${JWT_KEY:-your-jwt-key-at-least-32-chars}"
+DB_PASSWORD="${DB_PASSWORD:-changeme}"
 EVAL_TIMEOUT="${EVAL_TIMEOUT:-1800}"  # 30 min max for 64 cases
 
 PASS_COUNT=0

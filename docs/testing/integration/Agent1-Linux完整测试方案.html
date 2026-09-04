@@ -419,7 +419,7 @@ dotnet run --project Agent1 -c Release
 # ═══ 4. API测试(另开screen) ═══
 nohup dotnet run --project Agent1.Api -c Release > /root/autodl-tmp/logs/api.log 2>&1 &
 # 获取Token:
-TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login -H 'Content-Type:application/json' -d '{"username":"admin","password":"7758521"}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login -H 'Content-Type:application/json' -d '{"username":"admin","password":"changeme"}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
 # 逐端点测试 T7.1-T7.19
 
 # ═══ 5. 持久化验证 ═══

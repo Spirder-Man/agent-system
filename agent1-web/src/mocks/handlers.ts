@@ -1537,7 +1537,7 @@ export const handlers = [
     const g = writeAuthGuard(request);
     if (g) return g;
     await delay(500);
-    return HttpResponse.json({ sent: true, recipient: 'lcy.050801@qq.com' });
+    return HttpResponse.json({ sent: true, recipient: 'admin@example.com' });
   }),
 
   http.get('/memory/stats', async () =>

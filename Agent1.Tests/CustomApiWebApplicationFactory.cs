@@ -39,7 +39,7 @@ public class CustomApiWebApplicationFactory : WebApplicationFactory<Agent1.Api.P
         // （DatabaseIntegrationTests 需要真实 PostgreSQL 连接）
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DB_PASSWORD")))
         {
-            Environment.SetEnvironmentVariable("DB_PASSWORD", "test_pwd_7758521");
+            Environment.SetEnvironmentVariable("DB_PASSWORD", "test_pwd_ci");
             Environment.SetEnvironmentVariable("DB_HOST", "localhost");
             Environment.SetEnvironmentVariable("DB_PORT", "5432");
             Environment.SetEnvironmentVariable("DB_NAME", "chemical_park_ai_agent");

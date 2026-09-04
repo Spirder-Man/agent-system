@@ -1,0 +1,79 @@
+# ==========================================
+# Agent1 评委演示档 — 无 GPU
+# PostgreSQL + API；不起 llama-server
+# LLM_OPTIONAL=true 时走规则引擎（储存禁忌等）
+# 使用:
+#   cp .env.example .env
+#   docker compose -f docker-compose.demo.yml up -d --build
+#   bash scripts/demo-compatibility.sh
+# ==========================================
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: agent1_demo_db
+    restart: unless-stopped
+    ports:
+      - "${DEMO_DB_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-chemical_park_ai_agent}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - agent1_demo_pg:/var/lib/postgresql/data
+      - ./init_database.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./db/migrations/002_chemical_knowledge_graph.sql:/docker-entrypoint-initdb.d/02_graph.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-chemical_park_ai_agent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - agent1_demo_net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agent1_demo_api
+    restart: unless-stopped
+    ports:
+      - "${DEMO_API_PORT:-5000}:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-chemical_park_ai_agent}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - JWT_KEY=${JWT_KEY:-your-jwt-key-at-least-32-chars}
+      - 'AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-[{"Username":"admin","Password":"changeme","Role":"admin"},{"Username":"auditor","Password":"changeme","Role":"auditor"}]}'
+      - LLM_OPTIONAL=true
+      - KNOWLEDGE_BASE_PATH=/app/knowledgebase
+    volumes:
+      - agent1_demo_api_logs:/app/logs
+      - ./knowledgebase:/app/knowledgebase:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
+    networks:
+      - agent1_demo_net
+
+volumes:
+  agent1_demo_pg:
+    name: agent1_demo_pg
+  agent1_demo_api_logs:
+    name: agent1_demo_api_logs
+
+networks:
+  agent1_demo_net:
+    name: agent1_demo_net
+    driver: bridge
