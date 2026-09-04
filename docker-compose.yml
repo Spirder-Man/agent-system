@@ -1,13 +1,19 @@
 # ==========================================
-# Agent1 - 化工合规 AI 平台生产级容器编排
-# 一键启动: PostgreSQL + llama.cpp(LLM+Embedding) + API + Prometheus + Grafana
+# Agent1 - 化工合规 AI 平台编排
+# PostgreSQL + llama.cpp(LLM+Embedding+Vision) + API + Web
+# GPU：8B + VL 同卡建议 24GB 显存（3090）；Embedding 仍 CPU（-ngl 0）
 # ==========================================
 # 使用方式:
-#   1. cp .env.example .env        （首次或根据需要修改密码）
-#   2. bash scripts/docker-up.sh   （一键启动）
-#   或 docker-compose up -d         （直接启动）
-#   3. docker-compose logs -f api   （查看 API 日志）
-#   4. docker-compose down          （停止全部服务）
+#   1. cp .env.example .env
+#   2. Windows: powershell -File scripts/docker-up.ps1 gpu|cpu
+#      Linux:   bash scripts/docker-up.sh gpu|cpu
+#   或 docker compose up -d             （GPU）
+#      docker compose -f docker-compose.yml -f docker-compose.cpu.yml up -d
+#   3. docker compose logs -f api
+#   4. docker compose down
+#
+# 可选观测栈:
+#   docker compose -f docker-compose.yml -f docker-compose.obs.yml up -d
 # ==========================================
 
 services:
@@ -37,7 +43,7 @@ services:
 
   # ═══════════════════════════════════════
   # llama.cpp LLM 推理服务 (OpenAI 兼容 :8080/v1)
-  # 替代 Ollama，与项目实际 Linux 部署架构一致
+  # 默认 GPU 镜像；LLM -ngl 99。Embedding 走 CPU，避免和 8B/VL 抢显存
   # ═══════════════════════════════════════
   llama-server:
     build:
@@ -49,7 +55,7 @@ services:
     ports:
       - "${LLAMA_PORT:-8080}:8080"
     volumes:
-      - ./models:/models:ro
+      - ${MODELS_PATH:-./models}:/models:ro
     command:
       - "-m"
       - "/models/Qwen_Qwen3-8B-Q4_K_M.gguf"
@@ -68,6 +74,7 @@ services:
       - "-fa"
       - "-sps"
       - "0.0"
+      - "--jinja"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
       interval: 10s
@@ -76,7 +83,6 @@ services:
       start_period: 60s
     networks:
       - agent1_net
-    # GPU 加速 (需要 nvidia-container-toolkit):
     deploy:
       resources:
         reservations:
@@ -87,6 +93,7 @@ services:
 
   # ═══════════════════════════════════════
   # llama.cpp Embedding 服务 (:8081/v1)
+  # 默认 -ngl 0，避免与 LLM / Vision 抢显存
   # ═══════════════════════════════════════
   llama-embed:
     build:
@@ -98,7 +105,7 @@ services:
     ports:
       - "${LLAMA_EMBED_PORT:-8081}:8081"
     volumes:
-      - ./models:/models:ro
+      - ${MODELS_PATH:-./models}:/models:ro
     command:
       - "-m"
       - "/models/nomic-embed-text-v1.5.f16.gguf"
@@ -108,7 +115,7 @@ services:
       - "8081"
       - "--embeddings"
       - "-ngl"
-      - "99"
+      - "0"
       - "-c"
       - "2048"
       - "--batch-size"
@@ -119,6 +126,48 @@ services:
       timeout: 5s
       retries: 15
       start_period: 30s
+    networks:
+      - agent1_net
+
+  # ═══════════════════════════════════════
+  # llama.cpp 视觉 / OCR（:8083/v1，Qwen2.5-VL + mmproj）
+  # 与 LLM 同卡；Bug-040：-c 32768 -np 4 --cache-ram 0
+  # ═══════════════════════════════════════
+  llama-vision:
+    build:
+      context: .
+      dockerfile: Dockerfile.llama
+    image: agent1-llama-cuda:latest
+    container_name: agent1_llama_vision
+    restart: unless-stopped
+    ports:
+      - "${LLAMA_VISION_PORT:-8083}:8083"
+    volumes:
+      - ${MODELS_PATH:-./models}:/models:ro
+    command:
+      - "-m"
+      - "/models/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf"
+      - "--mmproj"
+      - "/models/mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8083"
+      - "-ngl"
+      - "99"
+      - "-c"
+      - "32768"
+      - "-np"
+      - "4"
+      - "--cache-ram"
+      - "0"
+      - "--jinja"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8083/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 90s
     networks:
       - agent1_net
     deploy:
@@ -141,41 +190,35 @@ services:
     ports:
       - "${API_PORT:-5000}:8080"
     environment:
-      # ── 运行时 ──
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ASPNETCORE_URLS=http://+:8080
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
-      # ── 数据库 ──
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:8088,http://localhost:3000,http://localhost:5173}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=${DB_NAME:-chemical_park_ai_agent}
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:?生产环境必须设置 DB_PASSWORD}
-      # ── JWT ──
       - JWT_KEY=${JWT_KEY:?生产环境必须设置 JWT_KEY}
-      # ── 账号 ──
       - AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-[]}
-      # ── LLM 端点 (P0-2: 环境变量覆盖 appsettings.json 默认值) ──
       - LLM_ENDPOINT=http://llama-server:8080/v1
-      # ── Embedding 端点 ──
       - VectorSearch__EmbeddingEndpoint=http://llama-embed:8081/v1
-      # ── 知识库路径 (P0-1: 跨平台路径) ──
+      - MULTIMODAL_ENDPOINT=http://llama-vision:8083/v1
+      - ENABLE_VISION_OCR=${ENABLE_VISION_OCR:-true}
       - KNOWLEDGE_BASE_PATH=/app/knowledgebase
-      # ── 告警邮件 (P1: SMTP) ──
       - ALERT_EMAIL_PASSWORD=${ALERT_EMAIL_PASSWORD:-}
       - ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS:-}
-      # ── 可观测性 ──
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
     volumes:
       - api_logs:/app/logs
-      - ./knowledgebase:/app/knowledgebase:ro
+      # 宿主机路径来自 .env 的 KNOWLEDGE_BASE_PATH（默认 ./knowledgebase）；容器内进程仍用下面的 /app/knowledgebase
+      - ${KNOWLEDGE_BASE_PATH:-./knowledgebase}:/app/knowledgebase
     depends_on:
       postgres:
         condition: service_healthy
       llama-server:
-        condition: service_healthy
+        condition: service_started
       llama-embed:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/health/live || exit 1"]
       interval: 30s
@@ -186,115 +229,36 @@ services:
       - agent1_net
 
   # ═══════════════════════════════════════
-  # Prometheus — 指标采集 + 告警规则
+  # Agent1 Web 前端 (Nginx SPA + 同域反向代理)
   # ═══════════════════════════════════════
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    container_name: agent1_prometheus
+  web:
+    build:
+      context: ./agent1-web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /
+    image: agent1-web:latest
+    container_name: agent1_web
     restart: unless-stopped
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-      - '--web.enable-lifecycle'
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/recording-rules.yml:/etc/prometheus/recording-rules.yml:ro
-      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
-      - prometheus_data:/prometheus
+      - "${WEB_PORT:-80}:80"
     depends_on:
       api:
-        condition: service_healthy
-      alertmanager:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9090/-/healthy || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/nginx-health || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     networks:
       - agent1_net
 
-  # ═══════════════════════════════════════
-  # Alertmanager — 告警分派与邮件通知
-  # ═══════════════════════════════════════
-  alertmanager:
-    image: prom/alertmanager:v0.27.0
-    container_name: agent1_alertmanager
-    restart: unless-stopped
-    ports:
-      - "${ALERTMANAGER_PORT:-9093}:9093"
-    environment:
-      - ALERT_EMAIL_USER=${ALERT_EMAIL_USER}
-      - ALERT_EMAIL_PASSWORD=${ALERT_EMAIL_PASSWORD}
-      - ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS}
-      - ALERT_SMTP_HOST=${ALERT_SMTP_HOST}
-    entrypoint:
-      - /bin/sh
-      - /etc/alertmanager/entrypoint.sh
-    volumes:
-      - ./prometheus/alertmanager.tmpl:/etc/alertmanager/alertmanager.tmpl:ro
-      - ./prometheus/alertmanager-entrypoint.sh:/etc/alertmanager/entrypoint.sh:ro
-      - alertmanager_data:/alertmanager
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9093/-/healthy || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - agent1_net
-
-  # ═══════════════════════════════════════
-  # Grafana — 可视化仪表盘
-  # ═══════════════════════════════════════
-  grafana:
-    image: grafana/grafana:10.4.5
-    container_name: agent1_grafana
-    restart: unless-stopped
-    ports:
-      - "${GRAFANA_PORT:-3000}:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-agent1-admin}
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/dashboard.json:/etc/grafana/provisioning/dashboards/agent1-slo.json:ro
-      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/prometheus.yml:ro
-      - ./grafana/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/default.yml:ro
-    depends_on:
-      prometheus:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - agent1_net
-
-# ═══════════════════════════════════════
-# 持久化卷
-# ═══════════════════════════════════════
 volumes:
   postgres_data:
     name: agent1_postgres_data
   api_logs:
     name: agent1_api_logs
-  prometheus_data:
-    name: agent1_prometheus_data
-  alertmanager_data:
-    name: agent1_alertmanager_data
-  grafana_data:
-    name: agent1_grafana_data
 
-# ═══════════════════════════════════════
-# 内部网络 (容器间通信)
-# ═══════════════════════════════════════
 networks:
   agent1_net:
     name: agent1_net

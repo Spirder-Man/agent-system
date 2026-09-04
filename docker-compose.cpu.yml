@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════════
+# Agent1 — CPU 推理覆盖
+# 使用方式:
+#   docker compose -f docker-compose.yml -f docker-compose.cpu.yml up -d --build
+#   powershell -File scripts/docker-up.ps1 cpu
+#   bash scripts/docker-up.sh cpu
+# ═══════════════════════════════════════════════
+
+services:
+  llama-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.llama-cpu
+    image: agent1-llama-cpu:latest
+    deploy: !reset null
+    command:
+      - "-m"
+      - "/models/Qwen_Qwen3-8B-Q4_K_M.gguf"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "-ngl"
+      - "0"
+      - "-c"
+      - "8192"
+      - "--cache-type-k"
+      - "q8_0"
+      - "--cache-type-v"
+      - "q8_0"
+      - "-fa"
+      - "-sps"
+      - "0.0"
+      - "--jinja"
+    healthcheck:
+      start_period: 300s
+
+  llama-embed:
+    build:
+      context: .
+      dockerfile: Dockerfile.llama-cpu
+    image: agent1-llama-cpu:latest
+    deploy: !reset null
+    command:
+      - "-m"
+      - "/models/nomic-embed-text-v1.5.f16.gguf"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8081"
+      - "--embeddings"
+      - "-ngl"
+      - "0"
+      - "-c"
+      - "2048"
+      - "--batch-size"
+      - "1024"
+    healthcheck:
+      start_period: 120s
+
+  llama-vision:
+    deploy: !reset null
+    profiles:
+      - vision
+
+  api:
+    environment:
+      ENABLE_VISION_OCR: "false"

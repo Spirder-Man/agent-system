@@ -25,9 +25,9 @@ WORKDIR /build
 
 # 克隆 llama.cpp（repo 已迁移至 ggml-org，GitHub 自动 301 重定向）
 # 注：ghproxy 对中国大陆用户加速，若不需可删第一行
-RUN git clone --depth 1 --branch b4908 \
+RUN git clone --depth 1 --branch b5092 \
     https://github.com/ggml-org/llama.cpp.git . || \
-    git clone --depth 1 --branch b4908 \
+    git clone --depth 1 --branch b5092 \
     https://github.com/ggerganov/llama.cpp.git .
 
 # CUDA 编译（限制并行数 -j2 避免 Docker Desktop OOM）

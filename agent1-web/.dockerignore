@@ -1,0 +1,18 @@
+# 构建上下文：只保留 Vite 生产构建需要的源码与 lockfile
+node_modules
+dist
+coverage
+e2e
+e2e-real
+playwright-report
+test-results
+docs
+.git
+.gitignore
+*.md
+**/*.test.ts
+**/*.spec.ts
+public/mockServiceWorker.js
+.env
+.env.*
+!.env.production

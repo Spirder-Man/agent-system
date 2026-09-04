@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════
+# Agent1 — 可选观测栈（Prometheus + Alertmanager + Grafana）
+# 使用方式（叠在最小后端之上）:
+#   docker compose -f docker-compose.yml -f docker-compose.obs.yml up -d
+# GPU + 观测:
+#   docker compose -f docker-compose.yml -f docker-compose.obs.yml up -d
+# CPU + 观测:
+#   docker compose -f docker-compose.yml -f docker-compose.cpu.yml -f docker-compose.obs.yml up -d
+# ═══════════════════════════════════════════════
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: agent1_prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/recording-rules.yml:/etc/prometheus/recording-rules.yml:ro
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+      alertmanager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - agent1_net
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: agent1_alertmanager
+    restart: unless-stopped
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    environment:
+      - ALERT_EMAIL_USER=${ALERT_EMAIL_USER}
+      - ALERT_EMAIL_PASSWORD=${ALERT_EMAIL_PASSWORD}
+      - ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS}
+      - ALERT_SMTP_HOST=${ALERT_SMTP_HOST}
+    entrypoint:
+      - /bin/sh
+      - /etc/alertmanager/entrypoint.sh
+    volumes:
+      - ./prometheus/alertmanager.tmpl:/etc/alertmanager/alertmanager.tmpl:ro
+      - ./prometheus/alertmanager-entrypoint.sh:/etc/alertmanager/entrypoint.sh:ro
+      - alertmanager_data:/alertmanager
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9093/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - agent1_net
+
+  grafana:
+    image: grafana/grafana:10.4.5
+    container_name: agent1_grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-agent1-admin}
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboard.json:/etc/grafana/provisioning/dashboards/agent1-slo.json:ro
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/prometheus.yml:ro
+      - ./grafana/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/default.yml:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - agent1_net
+
+volumes:
+  prometheus_data:
+    name: agent1_prometheus_data
+  alertmanager_data:
+    name: agent1_alertmanager_data
+  grafana_data:
+    name: agent1_grafana_data

@@ -97,6 +97,9 @@ logs/linux/eval_report*.json
 # 知识库文件（运行时生成）
 knowledgebase/
 
+# GGUF 模型（volume 挂载，禁止提交）
+models/
+
 # === 2026-07-21 新增：E2E 三层契约架构相关忽略项 ===
 
 # Playwright / 测试自动生成产物（禁止提交）

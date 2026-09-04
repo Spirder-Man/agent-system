@@ -74,7 +74,6 @@ l6_test_output.txt
 
 # ── 非构建相关松散文件 ──
 docker-compose.override.yml
-Dockerfile.llama-cpu
 Modelfile.qwen3-eval
 Program.cs
 ssh_prog.cs
