@@ -121,6 +121,14 @@ public class RAGTests
         b.Should().Be("硝酸");
     }
 
+    [Fact]
+    public void ExtractTwoSubstances_SameWarehouseWording_ReturnsTwo()
+    {
+        var (a, b) = RAG.ExtractTwoSubstancesStatic("苯和丙酮能同库储存吗");
+        a.Should().Be("苯");
+        b.Should().Be("丙酮");
+    }
+
     // ═══════════════════════════════════════
     // ExtractFacilityTypeStatic: 设施类型推断
     // ═══════════════════════════════════════

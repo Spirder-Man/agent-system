@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Agent1.Config;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -281,6 +282,46 @@ namespace Agent1.Tests
             storageTool!.KeywordTriggers.Should().Contain("同库");
             storageTool.KeywordTriggers.Should().Contain("共存");
             storageTool.KeywordTriggers.Should().Contain("配伍");
+
+            var hazardTool = tools.Find(t => t.Name == "CheckHazardCategory");
+            hazardTool.Should().NotBeNull();
+            hazardTool!.KeywordTriggers.Should().Contain("苯");
+            hazardTool.KeywordTriggers.Should().Contain("benzene");
+        }
+
+        [Fact]
+        public void AppsettingsJson_HazardTool_IncludesSubstanceAliases()
+        {
+            var appsettings = FindAgent1Appsettings();
+            File.Exists(appsettings).Should().BeTrue($"应找到 {appsettings}");
+
+            var config = new ConfigurationBuilder()
+                .AddJsonFile(appsettings, optional: false)
+                .Build();
+            var bound = new ChemicalToolConfig();
+            config.GetSection("ChemicalTool").Bind(bound);
+
+            var hazard = bound.Tools.Find(t => t.Name == "CheckHazardCategory");
+            hazard.Should().NotBeNull();
+            hazard!.KeywordTriggers.Should().Contain("苯");
+            hazard.KeywordTriggers.Should().Contain("benzene");
+
+            var storage = bound.Tools.Find(t => t.Name == "CheckStorageCompatibility");
+            storage.Should().NotBeNull();
+            storage!.KeywordTriggers.Should().Contain("storage");
+        }
+
+        private static string FindAgent1Appsettings()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "Agent1", "appsettings.json");
+                if (File.Exists(candidate))
+                    return candidate;
+                dir = dir.Parent;
+            }
+            return Path.Combine(AppContext.BaseDirectory, "appsettings.json");
         }
 
         [Fact]

@@ -71,6 +71,9 @@ namespace Agent1.Services.Orchestration
             {
                 if (query.Contains(sub.Name, StringComparison.OrdinalIgnoreCase))
                     return true;
+                if (!string.IsNullOrEmpty(sub.NameEn) &&
+                    query.Contains(sub.NameEn, StringComparison.OrdinalIgnoreCase))
+                    return true;
                 foreach (var alias in sub.Aliases)
                 {
                     if (query.Contains(alias, StringComparison.OrdinalIgnoreCase))
@@ -215,39 +218,70 @@ namespace Agent1.Services.Orchestration
 
         public ComplianceFallbackResult? TryHandle(string query)
         {
-            if (!Keywords.Any(k => query.Contains(k)))
+            var keywordHit = Keywords.Any(k => query.Contains(k));
+            var allSubstances = _graph.GetAll();
+            var bare = IsBareSubstanceQuery(query, allSubstances);
+            if (!keywordHit && bare == null)
                 return null;
 
-            var allSubstances = _graph.GetAll();
             foreach (var sub in allSubstances)
             {
-                if (query.Contains(sub.Name, StringComparison.OrdinalIgnoreCase))
+                var nameHit = query.Contains(sub.Name, StringComparison.OrdinalIgnoreCase)
+                    || (!string.IsNullOrEmpty(sub.NameEn) && query.Contains(sub.NameEn, StringComparison.OrdinalIgnoreCase))
+                    || sub.Aliases.Any(a => query.Contains(a, StringComparison.OrdinalIgnoreCase));
+                if (!nameHit)
+                    continue;
+                if (!keywordHit && (bare == null || !string.Equals(bare, sub.Name, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                var hazardInfo = sub.HazardCategories.FirstOrDefault()?.Category ?? "未知";
+                var gbStandard = sub.HazardCategories.FirstOrDefault()?.GbStandard ?? "";
+                var answer = $"【危险类别】{sub.Name}: {hazardInfo}";
+                if (!string.IsNullOrEmpty(gbStandard))
+                    answer += $"（{gbStandard}）";
+                if (sub.FlashPointC.HasValue)
+                    answer += $"\n闪点: {sub.FlashPointC}°C";
+                if (sub.BoilingPointC.HasValue)
+                    answer += $"\n沸点: {sub.BoilingPointC}°C";
+
+                var refs = new List<string>();
+                if (!string.IsNullOrEmpty(gbStandard))
+                    refs.Add(gbStandard);
+                foreach (var hc in sub.HazardCategories)
                 {
-                    var hazardInfo = sub.HazardCategories.FirstOrDefault()?.Category ?? "未知";
-                    var gbStandard = sub.HazardCategories.FirstOrDefault()?.GbStandard ?? "";
-                    var answer = $"【危险类别】{sub.Name}: {hazardInfo}";
-                    if (!string.IsNullOrEmpty(gbStandard))
-                        answer += $"（{gbStandard}）";
-                    if (sub.FlashPointC.HasValue)
-                        answer += $"\n闪点: {sub.FlashPointC}°C";
-                    if (sub.BoilingPointC.HasValue)
-                        answer += $"\n沸点: {sub.BoilingPointC}°C";
+                    if (!string.IsNullOrEmpty(hc.GbStandard) && !refs.Contains(hc.GbStandard))
+                        refs.Add(hc.GbStandard);
+                }
 
-                    var refs = new List<string>();
-                    if (!string.IsNullOrEmpty(gbStandard))
-                        refs.Add(gbStandard);
-                    foreach (var hc in sub.HazardCategories)
-                    {
-                        if (!string.IsNullOrEmpty(hc.GbStandard) && !refs.Contains(hc.GbStandard))
-                            refs.Add(hc.GbStandard);
-                    }
+                return new ComplianceFallbackResult
+                {
+                    Answer = answer,
+                    RegulationRefs = refs,
+                    Quality = "DATABASE_HIT"
+                };
+            }
 
-                    return new ComplianceFallbackResult
-                    {
-                        Answer = answer,
-                        RegulationRefs = refs,
-                        Quality = "DATABASE_HIT"
-                    };
+            return null;
+        }
+
+        /// <summary>整句就是物质名或英文俗名（如 benzene），避免抢走安全距离等查询。</summary>
+        private static string? IsBareSubstanceQuery(string query, IEnumerable<ChemicalSubstance> allSubstances)
+        {
+            var trimmed = query.Trim().TrimEnd('?', '？', '.', '。', '!', '！');
+            if (string.IsNullOrWhiteSpace(trimmed))
+                return null;
+
+            foreach (var sub in allSubstances)
+            {
+                if (string.Equals(trimmed, sub.Name, StringComparison.OrdinalIgnoreCase))
+                    return sub.Name;
+                if (!string.IsNullOrEmpty(sub.NameEn) &&
+                    string.Equals(trimmed, sub.NameEn, StringComparison.OrdinalIgnoreCase))
+                    return sub.Name;
+                foreach (var alias in sub.Aliases)
+                {
+                    if (string.Equals(trimmed, alias, StringComparison.OrdinalIgnoreCase))
+                        return sub.Name;
                 }
             }
 

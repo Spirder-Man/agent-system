@@ -318,8 +318,8 @@ namespace Agent1.Config
     {
         public List<ToolDefinition> Tools { get; set; } = new()
         {
-            new() { Name = "CheckHazardCategory",   Description = "查询危化品危险类别及适用国标",   KeywordTriggers = new() { "类别", "分类", "属于", "国标", "GB" } },
-            new() { Name = "CheckStorageCompatibility", Description = "检查两种危险化学品是否可以在同一仓库中储存，用于判断同库储存合规性。当用户询问两种化学品能否放在一起、共存、同库存放时，必须调用此工具", KeywordTriggers = new() { "同库", "共存", "混合", "禁忌", "配伍", "储存冲突", "同一仓库", "放在一起", "相邻存放", "共库", "一起存放", "同库存放", "能否同存" } },
+            new() { Name = "CheckHazardCategory",   Description = "查询危化品危险类别及适用国标",   KeywordTriggers = new() { "类别", "分类", "属于", "国标", "GB", "苯", "丙酮", "甲醇", "硝酸", "benzene", "acetone", "methanol" } },
+            new() { Name = "CheckStorageCompatibility", Description = "检查两种危险化学品是否可以在同一仓库中储存，用于判断同库储存合规性。当用户询问两种化学品能否放在一起、共存、同库存放时，必须调用此工具", KeywordTriggers = new() { "同库", "共存", "混合", "禁忌", "配伍", "储存冲突", "同一仓库", "放在一起", "相邻存放", "共库", "一起存放", "同库存放", "能否同存", "storage", "store" } },
             new() { Name = "GetSafetyDistance",      Description = "查询设施间安全间距要求",        KeywordTriggers = new() { "安全距离", "间距", "消防通道", "储罐间距", "防火间距" } },
             new() { Name = "GetCurrentTime",         Description = "获取当前时间",                   KeywordTriggers = new() { "时间", "几点", "日期" } },
             new() { Name = "Calculate",              Description = "数学计算",                       KeywordTriggers = new() { "计算", "等于" } },

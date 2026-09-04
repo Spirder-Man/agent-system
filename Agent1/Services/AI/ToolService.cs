@@ -11,7 +11,8 @@ namespace Agent1.Services
     /// Phase 2a 降级: 工具调度中心
     /// 主力路径已迁移至 SK Auto Function Calling (LlmService.InvokeStreamAsync)。
     /// ToolService 现作为显式降级入口保留:
-    ///   - AnalyzeAndPlanToolsAsync: SK FC 不可用时的手动工具规划降级
+    ///   - AnalyzeAndPlanToolsAsync: SK FC 不可用时的手动工具规划降级（先 LLM 再关键词）
+    ///   - PlanToolsByKeywords: 纯关键词规划，不调用 LLM（SM-03 CPU 冒烟兜底）
     ///   - ExecuteToolsAsync/CallToolAsync: 手动执行路径 (标记为废弃, 降级兜底)
     /// </summary>
     public class ToolService : IToolService
@@ -102,6 +103,27 @@ namespace Agent1.Services
             {
                 plan.NeedsTools = false;
                 Console.WriteLine("\n🤔 分析中... 不需要调用工具");
+            }
+
+            return plan;
+        }
+
+        public ToolPlan PlanToolsByKeywords(string userInput)
+        {
+            var plan = new ToolPlan();
+            if (string.IsNullOrWhiteSpace(userInput))
+                return plan;
+
+            var lowerInput = userInput.ToLowerInvariant();
+            foreach (var tool in _toolDefinitions)
+            {
+                if (tool.KeywordTriggers.Any(kw =>
+                    !string.IsNullOrEmpty(kw) && lowerInput.Contains(kw.ToLowerInvariant())))
+                {
+                    plan.NeedsTools = true;
+                    plan.ToolNames.Add(tool.Name);
+                    Console.WriteLine($"\n🔑 关键词触发工具: {tool.Name} ({tool.Description})");
+                }
             }
 
             return plan;

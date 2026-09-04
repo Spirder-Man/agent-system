@@ -12,6 +12,7 @@ public class IntentRouterTests
     [InlineData("苯属于什么危险类别", IntentType.ChemicalCompliance)]
     [InlineData("甲类仓库与明火点的安全距离是多少", IntentType.ChemicalCompliance)]
     [InlineData("苯和丙酮能同库储存吗", IntentType.ChemicalCompliance)]
+    [InlineData("benzene", IntentType.ChemicalCompliance)]
     [InlineData("GB 18218的重大危险源标准是什么", IntentType.ChemicalCompliance)]
     [InlineData("这个化学品有毒性和腐蚀性", IntentType.ChemicalCompliance)]
     [InlineData("储罐间距有什么要求", IntentType.ChemicalCompliance)]

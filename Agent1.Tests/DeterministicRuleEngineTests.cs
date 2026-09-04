@@ -291,6 +291,19 @@ public class DeterministicRuleEngineV2Tests
         result.Quality.Should().Be("DATABASE_HIT");
     }
 
+    [Theory]
+    [InlineData("苯")]
+    [InlineData("benzene")]
+    [InlineData("Benzene")]
+    public void TryHandleComplianceQuery_BareSubstance_ShouldReturnHazard(string query)
+    {
+        var result = _engine.TryHandleComplianceQuery(query);
+
+        result.Should().NotBeNull();
+        result!.Answer.Should().Contain("苯");
+        result.Quality.Should().Be("DATABASE_HIT");
+    }
+
     [Fact]
     public void TryHandleComplianceQuery_SafetyDistance_ShouldReturnFallback()
     {

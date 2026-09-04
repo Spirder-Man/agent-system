@@ -372,7 +372,9 @@ namespace Agent1.Services
         /// <summary>清理物质名称中的问句残留词</summary>
         private static string CleanSubstanceStatic(string text)
         {
-            return text.Replace("能一起存", "").Replace("可以一起", "").Replace("能不能", "")
+            return text.Replace("能同库储存", "").Replace("可以同库储存", "").Replace("能否同库", "")
+                       .Replace("同库储存", "").Replace("同库存放", "").Replace("一起存放", "")
+                       .Replace("能一起存", "").Replace("可以一起", "").Replace("能不能", "")
                        .Replace("可以", "").Replace("吗", "").Replace("？", "").Replace("?", "")
                        .Replace("怎么", "").Replace("如何", "").Trim();
         }

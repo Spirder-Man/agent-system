@@ -28,6 +28,12 @@ public class ResponseCacheService
 
         if (_cache.TryGetValue(key, out var entry))
         {
+            if (IsWarmupPlaceholder(entry.Response))
+            {
+                _cache.TryRemove(key, out _);
+                return null;
+            }
+
             var effectiveTtl = GetEffectiveTtl(entry.Quality);
             if (DateTime.UtcNow - entry.CreatedAt < effectiveTtl)
             {
@@ -161,6 +167,16 @@ public class ResponseCacheService
             OldestEntry = entries.Any() ? entries.Min(static e => e.CreatedAt) : DateTime.MinValue,
             NewestEntry = entries.Any() ? entries.Max(static e => e.CreatedAt) : DateTime.MinValue
         };
+    }
+
+    /// <summary>
+    /// 启动预热写入的是空 toolsUsed 占位，不能当真实合规结果返回（SM-03）。
+    /// </summary>
+    private static bool IsWarmupPlaceholder(CachedComplianceResponse response)
+    {
+        if (response.Response != null && response.Response.StartsWith("[预热占位]", StringComparison.Ordinal))
+            return true;
+        return response.Warnings.Exists(w => w.Contains("预热缓存", StringComparison.Ordinal));
     }
 
     private static string NormalizeAndHash(string query)

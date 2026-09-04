@@ -1055,9 +1055,7 @@ public class ResponseCacheServiceTests
             var cache = new ResponseCacheService();
             cache.WarmupFromEvalSet(tempFile);
             cache.Count.Should().Be(2);
-            var result = cache.Get("测试查询1");
-            result.Should().NotBeNull();
-            result!.FromCache.Should().BeTrue();
+            cache.Get("测试查询1").Should().BeNull("预热占位不能当真实合规结果返回");
         }
         finally
         {
@@ -1089,9 +1087,7 @@ public class ResponseCacheServiceTests
             var cache = new ResponseCacheService();
             cache.WarmupFromEvalSet(tempFile);
             cache.Count.Should().Be(3);
-            var result = cache.Get("包装格式查询1");
-            result.Should().NotBeNull();
-            result!.FromCache.Should().BeTrue();
+            cache.Get("包装格式查询1").Should().BeNull("预热占位不能当真实合规结果返回");
         }
         finally
         {

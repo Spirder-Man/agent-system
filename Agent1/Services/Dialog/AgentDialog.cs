@@ -272,7 +272,94 @@ namespace Agent1.Services
         /// </summary>
         private Task<string> PreprocessAsync(string input)
         {
-            return Task.FromResult(input.Trim());
+            return Task.FromResult(NormalizeChemicalAliases(input.Trim()));
+        }
+
+        /// <summary>英文俗名 → 中文名，便于关键词工具与规则引擎命中（SM-03 benzene）。</summary>
+        private static string NormalizeChemicalAliases(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            var s = input.Trim();
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\bbenzene\b", "苯", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\bacetone\b", "丙酮", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\bmethanol\b", "甲醇", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\bethanol\b", "乙醇", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\bnitric acid\b", "硝酸", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            return s;
+        }
+
+        /// <summary>SK FC 未触发时，用关键词规划并执行工具，回填 LastFunctionCalls。不走 LLM 规划器。</summary>
+        private async Task FillKeywordToolsIfMissingAsync(string userInput, LlmService llmService)
+        {
+            if (llmService.LastFunctionCalls.Count > 0)
+                return;
+
+            userInput = NormalizeChemicalAliases(userInput);
+            var plan = _toolService.PlanToolsByKeywords(userInput);
+            if (!plan.NeedsTools || plan.ToolNames.Count == 0)
+                return;
+
+            // 同库查询以储存工具为准，避免物质名再触发 CheckHazardCategory 走 RAG/HyDE
+            if (plan.ToolNames.Contains("CheckStorageCompatibility"))
+                plan.ToolNames.RemoveAll(n => n == "CheckHazardCategory");
+
+            var results = await _toolService.ExecuteToolsAsync(plan, userInput);
+            foreach (var kv in results)
+            {
+                llmService.LastFunctionCalls.Add(new FunctionCallRecord
+                {
+                    FunctionName = kv.Key,
+                    Arguments = userInput,
+                    Result = kv.Value,
+                    Success = true
+                });
+            }
+
+            if (results.Count > 0)
+                Console.WriteLine($"   [关键词兜底] 补齐 {results.Count} 个工具: {string.Join(",", results.Keys)}");
+        }
+
+        private void SyncLastToolsFromLlm(LlmService llmService)
+        {
+            _lastToolResults = new Dictionary<string, string>();
+            foreach (var fc in llmService.LastFunctionCalls)
+                _lastToolResults[fc.FunctionName] = fc.Result ?? "(无返回)";
+            _lastToolPlan = new ToolPlan
+            {
+                NeedsTools = llmService.LastFunctionCalls.Count > 0,
+                ToolNames = llmService.LastFunctionCalls.Select(fc => fc.FunctionName).ToList()
+            };
+        }
+
+        /// <summary>
+        /// API 评测快路径：关键词能命中工具时先执行并跳过 SK FC。
+        /// CPU 上 llama FC 常为空且超过冒烟 TimeoutSec 180。
+        /// </summary>
+        private async Task<string?> TryKeywordFastPathAsync(string userInput, LlmService llmService, bool isInfoQuery)
+        {
+            await FillKeywordToolsIfMissingAsync(userInput, llmService);
+            if (llmService.LastFunctionCalls.Count == 0)
+                return null;
+
+            Console.WriteLine($"   [关键词优先] 已执行 {llmService.LastFunctionCalls.Count} 个工具，跳过 LLM Function Calling");
+            SyncLastToolsFromLlm(llmService);
+
+            var seed = TryFallbackToRuleEngine(userInput);
+            if (string.IsNullOrWhiteSpace(seed))
+                seed = string.Join("\n", llmService.LastFunctionCalls.Select(fc => fc.Result ?? ""));
+
+            var evalToolCalls = llmService.LastFunctionCalls
+                .Select(fc => new FunctionCallRecord
+                {
+                    FunctionName = fc.FunctionName,
+                    Arguments = fc.Arguments,
+                    Result = fc.Result,
+                    Success = fc.Success,
+                    Quality = fc.Quality
+                }).ToList();
+            return ApplyDecoupledPipeline(seed, evalToolCalls, isInfoQuery);
         }
 
         private IntentType RouteIntent(string input)
@@ -374,6 +461,7 @@ namespace Agent1.Services
         /// </summary>
         private async Task<(string answer, List<FunctionCallRecord> toolCalls, List<string> warnings)> ExecuteChemicalComplianceAsync(string input, PipelineContext context)
         {
+            input = NormalizeChemicalAliases(input);
             var t = AppConfig.Instance.PromptTemplates;// 获取提示模板
             var history = t.HistoryTemplate.Replace("{History}", context.History ?? "");// 替换历史记录
             var question = t.CurrentQuestionTemplate.Replace("{UserInput}", input);// 替换用户输入
@@ -451,15 +539,32 @@ namespace Agent1.Services
             // 如果没有工具调用，尝试规则引擎确定性降级
             else
             {
-                // ── 规则引擎兜底：LLM 零工具调用时尝试确定性降级 ──
-                var fallbackAnswer = TryFallbackToRuleEngine(input);
-                if (!string.IsNullOrEmpty(fallbackAnswer))
+                if (_llmService is LlmService keywordLlm)
+                    await FillKeywordToolsIfMissingAsync(input, keywordLlm);
+
+                if (_llmService.LastFunctionCalls.Count > 0)
                 {
-                    _memoryService.ExtractAndStoreKeyFacts(input, fallbackAnswer);
-                    return (fallbackAnswer, new List<FunctionCallRecord>(), new List<string> { "LLM未调工具，规则引擎接管" });
+                    toolCalls = new List<FunctionCallRecord>(_llmService.LastFunctionCalls);
+                    _lastToolResults = new Dictionary<string, string>();
+                    foreach (var fc in _llmService.LastFunctionCalls)
+                        _lastToolResults[fc.FunctionName] = fc.Result ?? "(无返回)";
+                    _lastToolPlan = new ToolPlan
+                    {
+                        NeedsTools = true,
+                        ToolNames = _llmService.LastFunctionCalls.Select(fc => fc.FunctionName).ToList()
+                    };
                 }
-                _lastToolResults = new Dictionary<string, string>();
-                _lastToolPlan = new ToolPlan { NeedsTools = false };
+                else
+                {
+                    var fallbackAnswer = TryFallbackToRuleEngine(input);
+                    if (!string.IsNullOrEmpty(fallbackAnswer))
+                    {
+                        _memoryService.ExtractAndStoreKeyFacts(input, fallbackAnswer);
+                        return (fallbackAnswer, new List<FunctionCallRecord>(), new List<string> { "LLM未调工具，规则引擎接管" });
+                    }
+                    _lastToolResults = new Dictionary<string, string>();
+                    _lastToolPlan = new ToolPlan { NeedsTools = false };
+                }
             }
             // ★ 双通道解耦架构：统一入口（事实提取 + 消毒 + 事实渲染 + 合并）
             answer = ApplyDecoupledPipeline(answer, toolCalls, isInfoQuery: false);
@@ -561,6 +666,7 @@ namespace Agent1.Services
             var evalSessionId = $"eval_{DateTime.Now:yyyyMMddHHmmss}";
             _memoryService.SetSession(evalSessionId);
 
+            userInput = NormalizeChemicalAliases(userInput);
             var t = AppConfig.Instance.PromptTemplates;
             var prompt = t.EvalFastPrompt
                 .Replace("{SystemRole}", t.SystemRole)
@@ -578,6 +684,7 @@ namespace Agent1.Services
             var evalSessionId = $"eval_query_{DateTime.Now:yyyyMMddHHmmss}";
             _memoryService.SetSession(evalSessionId);
 
+            userInput = NormalizeChemicalAliases(userInput);
             var t = AppConfig.Instance.PromptTemplates;
             var prompt = t.EvalFastQueryPrompt
                 .Replace("{SystemRole}", t.SystemRole)
@@ -589,8 +696,18 @@ namespace Agent1.Services
         /// <summary>评测快速通道内部实现（流式优先，GPU 3090环境；非流式仅作CPU低算力降级）</summary>
         private async Task<string> ExecuteEvalInternalAsync(string prompt, string stageName, bool isInfoQuery, string? userInput = null)
         {
-            Console.Write("   [流式] 调用中... ");
             var llmService = _llmService as LlmService;
+            if (llmService != null)
+                llmService.LastFunctionCalls.Clear();
+
+            if (llmService != null && !string.IsNullOrWhiteSpace(userInput))
+            {
+                var fast = await TryKeywordFastPathAsync(userInput, llmService, isInfoQuery);
+                if (fast != null)
+                    return fast;
+            }
+
+            Console.Write("   [流式] 调用中... ");
             string answer;
 
             try
@@ -656,7 +773,12 @@ namespace Agent1.Services
 
             Console.WriteLine("完成");
 
-            // ── 规则引擎兜底：LLM 零工具调用时尝试确定性降级 ──
+            // ── CPU / 无 FC：关键词工具兜底，再才规则引擎（规则引擎不记账 toolsUsed）──
+            if (llmService != null && llmService.LastFunctionCalls.Count == 0 && !string.IsNullOrWhiteSpace(userInput))
+            {
+                await FillKeywordToolsIfMissingAsync(userInput, llmService);
+            }
+
             if (llmService != null && llmService.LastFunctionCalls.Count == 0 && !string.IsNullOrWhiteSpace(userInput))
             {
                 var fallbackAnswer = TryFallbackToRuleEngine(userInput);
@@ -698,6 +820,7 @@ namespace Agent1.Services
             // Phase 1.1: 评测通道使用独立会话（含 GUID 确保完全无状态）
             var evalSessionId = $"eval_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid().ToString("N")[..6]}";
             _memoryService.SetSession(evalSessionId);
+            userInput = NormalizeChemicalAliases(userInput);
 
             var t = AppConfig.Instance.PromptTemplates;
             var template = isInfoQuery ? t.EvalFastQueryPrompt : t.EvalFastPrompt;
@@ -733,14 +856,29 @@ namespace Agent1.Services
                     // ── 规则引擎兜底：LLM 零工具调用时尝试确定性降级 ──
                     else if (!string.IsNullOrWhiteSpace(userInput))
                     {
-                        var fallbackAnswer = TryFallbackToRuleEngine(userInput);
-                        if (!string.IsNullOrEmpty(fallbackAnswer))
+                        await FillKeywordToolsIfMissingAsync(userInput, llmService);
+                        if (llmService.LastFunctionCalls.Count > 0)
                         {
-                            Console.WriteLine($"   [规则引擎兜底] 确定性降级成功，跳过 DecoupledPipeline");
-                            return fallbackAnswer;
+                            _lastToolResults = new Dictionary<string, string>();
+                            foreach (var fc in llmService.LastFunctionCalls)
+                                _lastToolResults[fc.FunctionName] = fc.Result ?? "(无返回)";
+                            _lastToolPlan = new ToolPlan
+                            {
+                                NeedsTools = true,
+                                ToolNames = llmService.LastFunctionCalls.Select(fc => fc.FunctionName).ToList()
+                            };
                         }
-                        _lastToolResults = new Dictionary<string, string>();
-                        _lastToolPlan = new ToolPlan { NeedsTools = false };
+                        else
+                        {
+                            var fallbackAnswer = TryFallbackToRuleEngine(userInput);
+                            if (!string.IsNullOrEmpty(fallbackAnswer))
+                            {
+                                Console.WriteLine($"   [规则引擎兜底] 确定性降级成功，跳过 DecoupledPipeline");
+                                return fallbackAnswer;
+                            }
+                            _lastToolResults = new Dictionary<string, string>();
+                            _lastToolPlan = new ToolPlan { NeedsTools = false };
+                        }
                     }
                     else
                     {
