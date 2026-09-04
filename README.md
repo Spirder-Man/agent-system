@@ -4,8 +4,9 @@
 
 **法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。** LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。
 
-- 仓库：[https://gitee.com/liuchao_yue/agent-system](https://gitee.com/liuchao_yue/agent-system)
-- 默认分支：`master`
+面向化工园区 EHS / 企业安全员与安全管理部的合规审查辅助：两种危化品能否同库、危险类别与安全距离、巡检与工单、操作留痕。不是通用聊天机器人，也不是已交付的园区生产系统。
+
+- 仓库：[https://gitee.com/liuchao_yue/agent-system](https://gitee.com/liuchao_yue/agent-system) · 默认分支 `master`
 - 许可证：[LICENSE](LICENSE)（MIT） · 第三方：[NOTICE](NOTICE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 - 等级保护口径：[docs/project/等级保护口径.md](docs/project/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
 
@@ -15,42 +16,51 @@ cd agent-system
 cp .env.example .env
 ```
 
-## 评委路径（无 GPU，推荐）
+## 启动
 
-不启动 llama.cpp。PostgreSQL + API 用种子库走规则引擎。
+演示账号仅本地使用，勿用于生产：`admin` / `changeme`
 
-演示账号（仅本地 demo，勿用于生产）：`admin` / `changeme`
+### 完整 GPU（推荐）
 
-```bash
-docker compose -f docker-compose.demo.yml up -d --build
-bash scripts/demo-compatibility.sh
-```
-
-固定验收：查询「甲醇」与「硝酸」能否同库 → 应返回 **禁止同库**，并给出 **GB 15603** 出处（种子精确配对；氯气等同属氧化性气体场景同类）。
-
-保底（无 Docker 时）：
-
-```bash
-cd agent1-web && npm install && npm run dev:mock   # 看 UI，不需要后端
-dotnet test Agent1.Tests --filter "Category!=Integration"   # 证明可编译可测
-```
-
-## 完整 GPU 路径
-
-需要 NVIDIA GPU、`models/*.gguf` 与 [Docker 容器化一键部署](docs/deploy/Docker容器化一键部署.md)。
+需要 NVIDIA GPU 与 `models/*.gguf`。`docker compose up -d` 启动 llama.cpp、API 与 Nginx 前端（默认 API `5000`、Web `80`）。步骤见 [Docker 容器化一键部署](docs/deploy/Docker容器化一键部署.md)。
 
 ```bash
 docker compose up -d
 curl http://localhost:5000/health/live
 ```
 
-无 GPU 但要起完整栈（含 llama.cpp CPU）时见 [`docker-compose.cpu.yml`](docker-compose.cpu.yml) 与 [GPU Docker 全量校验手册](docs/testing/GPU全量校验手册.md)。评委验收仍走上方 `docker-compose.demo.yml`，不必跑 CPU/GPU 栈。
+浏览器打开 `http://localhost`（或 `.env` 中的 `WEB_PORT`）。登录后可在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
 
-## 数据与版权
+### 无 GPU 演示
 
-**本仓库不包含国家标准全文。** 国标原文须由使用方自备合法副本，放入运行时目录 `knowledgebase/`（已 `.gitignore`）。开源仓只含 schema（[init_database.sql](init_database.sql)）与危化品结构化种子（[db/migrations/002_chemical_knowledge_graph.sql](db/migrations/002_chemical_knowledge_graph.sql)）。
+没有 GPU 时用 [docker-compose.demo.yml](docker-compose.demo.yml)：只启动 PostgreSQL 16 + API，不启动 llama.cpp。环境变量 `LLM_OPTIONAL=true`，储存禁忌走确定性规则引擎。
 
-## 架构（摘要）
+```bash
+docker compose -f docker-compose.demo.yml up -d --build
+bash scripts/demo-compatibility.sh
+cd agent1-web && npm install && npm run dev
+```
+
+- API：`http://localhost:5000`（健康检查 `GET /health/live`）
+- 前端：Vite 默认 `http://localhost:5173`
+- 自检脚本会登录后请求 `POST /api/Compliance/storage/compatibility`，同样应看到禁配与 GB 15603
+
+无 Docker 时：
+
+```bash
+cd agent1-web && npm install && npm run dev:mock   # 只看 UI，不需要后端
+dotnet test Agent1.Tests --filter "Category!=Integration"
+```
+
+本机有 .NET SDK、已有 PostgreSQL 时：
+
+```bash
+# 无 GPU 时在 .env 设 LLM_OPTIONAL=true
+dotnet run --project Agent1.Api
+cd agent1-web && npm run dev
+```
+
+## 架构与功能
 
 ```
 agent1-web (Vue 3)  →  Agent1.Api (ASP.NET Core 8)  →  Agent1 核心库
@@ -58,20 +68,20 @@ agent1-web (Vue 3)  →  Agent1.Api (ASP.NET Core 8)  →  Agent1 核心库
 PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GPU 演示）
 ```
 
-- 双通道：法规号白名单硬校验，禁止模型发明 GB 编号
-- 降级：Function Calling 违约或 LLM 熔断 → 确定性规则引擎
-- 审计：SHA256 哈希链；JWT 三角色（admin / auditor / viewer）。参照 GB/T 22239 第三级部分控制点，**不是**已测评的等保对象，见 [等级保护口径](docs/project/等级保护口径.md)
+- **双通道**：法规号、储存禁忌、安全距离由 C# 工具链路给出；大模型只做专业解读与建议。`RegulationRefs` 为法规编号白名单，白名单之外的 GB 号会被删除。
+- **降级**：Function Calling 违约、LLM 熔断或 `LLM_OPTIONAL=true` 时，切换 `DeterministicRuleEngine`，结构化结论不依赖生成文本。
+- **检索**：中文化工短查询用 NGram + 内存 BM25，向量检索用 pgvector。
+- **身份与审计**：JWT 角色 `admin` / `auditor` / `viewer`；操作写入 `audit_logs`，应用层 SHA256 哈希链。
 
-更细的模块清单与 Bug 编年史见 [docs/project/CHANGELOG.md](docs/project/CHANGELOG.md) 与 [docs/](docs/)。
+已有界面：登录 `/login`、储存兼容性 `/storage/compatibility`、合规检查 `/compliance`、巡检计划与报告、整改工单、危化品查询、审计日志 `/audit`（当前路由以 admin 为主）。应急与知识图谱页面和接口已存在，深度能力仍在演进，不作生产承诺。
 
-## 本地开发（有 .NET SDK）
+## 边界
 
-```bash
-dotnet run --project Agent1.Api    # 默认需 PostgreSQL；无 GPU 时在 .env 设 LLM_OPTIONAL=true
-cd agent1-web && npm run dev
-```
-
-生产口令只写本机 `.env`，不要提交。必填：`JWT_KEY`（≥32 字符）、`DB_PASSWORD`、`AUTH_ACCOUNTS_JSON`。
+- 仅作合规审查辅助，不替代持证安全管理人员的法定职责。
+- **本仓库不包含国家标准全文。** 国标原文须由使用方自备合法副本，放入运行时目录 `knowledgebase/`（已 `.gitignore`）。开源仓只含 schema（[init_database.sql](init_database.sql)）与危化品结构化种子（[db/migrations/002_chemical_knowledge_graph.sql](db/migrations/002_chemical_knowledge_graph.sql)）。
+- 本仓库不是已定级、已备案或已测评的网络安全等级保护对象，见 [等级保护口径](docs/project/等级保护口径.md)。
+- 未对接真实 ERP / WMS / EHS 生产数据。
+- 生产口令只写本机 `.env`，不要提交。必填：`JWT_KEY`（不少于 32 字符）、`DB_PASSWORD`、`AUTH_ACCOUNTS_JSON`。
 
 ## 文档
 
@@ -79,5 +89,7 @@ cd agent1-web && npm run dev
 docs/architecture/   架构与系统血谱
 docs/deploy/         GPU / Linux 部署
 docs/testing/        测试手册
-docs/project/        Bug 知识库与 CHANGELOG
+docs/project/        等级保护口径、CHANGELOG、作品介绍
 ```
+
+无 GPU 但需要带 llama.cpp 的完整栈时，见 [docker-compose.cpu.yml](docker-compose.cpu.yml)。

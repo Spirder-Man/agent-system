@@ -1,5 +1,5 @@
 # ==========================================
-# Agent1 评委演示档 — 无 GPU
+# Agent1 无 GPU 演示编排
 # PostgreSQL + API；不起 llama-server
 # LLM_OPTIONAL=true 时走规则引擎（储存禁忌等）
 # 使用:
