@@ -11,6 +11,11 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
+// Docker 全栈冒烟: PLAYWRIGHT_BASE_URL=http://localhost:8088 VITE_PROXY_TARGET=http://localhost:5000
+// 未设置时仍走 Vite :5173 → SSH 隧道 :15001（旧远程 GPU 链路）
+const dockerBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:15001';
+
 export default defineConfig({
   testDir: './e2e-real',
   globalSetup: './e2e-real/global-setup.ts',
@@ -27,12 +32,10 @@ export default defineConfig({
   ],
 
   use: {
-    // Vite dev server 地址（代理到 SSH 隧道 :15001 → 远程 API :5000）
-    baseURL: 'http://localhost:5173',
+    baseURL: dockerBaseURL || 'http://localhost:5173',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
-    // 不设置 extraHTTPHeaders，请求直通 Vite 代理 → SSH 隧道 → 真实后端
   },
 
   projects: [
@@ -42,15 +45,17 @@ export default defineConfig({
     },
   ],
 
-  // 启动 Vite 开发服务器（真实后端模式，MSW 关闭）
-  webServer: {
-    command: 'npx vite --host 0.0.0.0 --port 5173',
-    port: 5173,
-    reuseExistingServer: true, // 允许复用已启动的 Vite（隧道已就绪）
-    timeout: 30_000,
-    env: {
-      VITE_ENABLE_MOCK: 'false', // 关闭 MSW Mock
-      VITE_PROXY_TARGET: 'http://localhost:15001', // 指向 SSH 隧道
-    },
-  },
+  // Docker 生产包已由 Nginx 托管时不要再起 Vite（DEV 登录会写假 token）
+  webServer: dockerBaseURL
+    ? undefined
+    : {
+        command: 'npx vite --host 0.0.0.0 --port 5173',
+        port: 5173,
+        reuseExistingServer: true,
+        timeout: 30_000,
+        env: {
+          VITE_ENABLE_MOCK: 'false',
+          VITE_PROXY_TARGET: proxyTarget,
+        },
+      },
 });

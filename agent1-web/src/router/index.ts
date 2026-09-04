@@ -63,7 +63,7 @@ const KnowledgeGraphPage = () => import('@/pages/KnowledgeGraphPage.vue');
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/login',
   },
 
   // ── 公共路由 (无需认证) ──
@@ -243,7 +243,7 @@ const routes: RouteRecordRaw[] = [
   // ── 404 兜底 ──
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/dashboard',
+    redirect: '/',
   },
 ];
 
@@ -254,6 +254,9 @@ const routes: RouteRecordRaw[] = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior() {
+    return { top: 0, left: 0, behavior: 'instant' };
+  },
 });
 
 // ═══════════════════════════════════════

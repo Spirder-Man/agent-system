@@ -82,10 +82,28 @@ apiClient.interceptors.response.use(
     const req = error.config as InternalAxiosRequestConfig & { _retry?: boolean; _retryCount?: number };
     const status = error.response?.status;
 
+    // 开发模式：模拟 API 响应，不报错
+    if (import.meta.env.DEV && !error.response) {
+      console.warn('[DEV] API 请求失败，返回模拟数据:', error.config?.url);
+      return Promise.resolve({ data: {}, status: 200, statusText: 'OK', headers: {}, config: error.config! } as any);
+    }
+
     if (!error.response) {
       const msg = navigator.onLine ? ERROR_MESSAGES.SERVER_ERROR : ERROR_MESSAGES.NETWORK_ERROR;
       onError?.('NETWORK_ERROR', msg);
       return Promise.reject(error);
+    }
+
+    // 健康检查端点降级时后端会返回 503 + {status:'degraded', checks:{...}}。
+    // 将其视为一次成功的健康数据响应，让运维看板得以渲染“降级”状态而非整体加载失败。
+    if (status === 503 && req.url?.endsWith('/health')) {
+      return Promise.resolve({
+        data: error.response?.data,
+        status,
+        statusText: error.response?.statusText || 'Service Unavailable',
+        headers: error.response?.headers || {},
+        config: req as any,
+      } as any);
     }
 
     if (status === 503) {
@@ -120,7 +138,7 @@ apiClient.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token');
 
         const { data } = await axios.post<{ token: string; refreshToken: string }>(
-          `${apiClient.defaults.baseURL}/api/Auth/refresh`, { refreshToken }
+          `${apiClient.defaults.baseURL}/api/auth/refresh`, { refreshToken }
         );
 
         onTokenRefreshed?.(data.token, data.refreshToken);

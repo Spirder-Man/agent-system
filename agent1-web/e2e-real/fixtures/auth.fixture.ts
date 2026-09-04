@@ -36,9 +36,15 @@ export async function loginAs(page: Page, role: Role = 'admin') {
   // 等待跳转（真实后端 JWT 验证需要更多时间）
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
 
-  // viewer 角色在仪表盘可能看到受限视图
+  // 当前生产仪表盘主标题是「化工智能生产运营中心」，侧栏仍有「仪表盘」
   if (role === 'admin' || role === 'auditor') {
-    await expect(page.locator('h1:has-text("仪表盘")')).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page
+        .locator('text=化工智能生产运营中心')
+        .or(page.locator('h1:has-text("仪表盘")'))
+        .or(page.locator('text=合规仪表盘'))
+        .first(),
+    ).toBeVisible({ timeout: 10_000 });
   }
 }
 

@@ -119,7 +119,7 @@ describe('LoginPage', () => {
       await form.trigger('submit');
       await flushPromises();
 
-      expect(mockPost).toHaveBeenCalledWith('/api/Auth/login', {
+      expect(mockPost).toHaveBeenCalledWith('/api/auth/login', {
         username: 'admin',
         password: 'password123',
       });
@@ -204,7 +204,7 @@ describe('LoginPage', () => {
       await form.trigger('submit');
       await flushPromises();
 
-      expect(mockPost).toHaveBeenCalledWith('/api/Auth/login', {
+      expect(mockPost).toHaveBeenCalledWith('/api/auth/login', {
         username: 'admin',
         password: 'pass',
       });

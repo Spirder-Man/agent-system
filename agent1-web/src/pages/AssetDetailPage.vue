@@ -51,7 +51,7 @@ async function fetchAsset() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await apiClient.get<ChemicalAsset>(`/api/Inspection/assets/${assetId}`);
+    const { data } = await apiClient.get<ChemicalAsset>(`/api/inspection/assets/${assetId}`);
     asset.value = data;
   } catch {
     error.value = '加载资产信息失败';
@@ -66,7 +66,7 @@ async function queryProperties() {
   propertyError.value = '';
   propertyResult.value = null;
   try {
-    const { data } = await apiClient.post<HazardQueryResponse>('/api/Compliance/hazard/query', {
+    const { data } = await apiClient.post<HazardQueryResponse>('/api/compliance/hazard/query', {
       substanceName: asset.value.name,
     });
     propertyResult.value = data;

@@ -25,7 +25,7 @@ const complianceColor = computed(() => {
 async function fetchRound() {
   loading.value = true; error.value = '';
   try {
-    const { data } = await apiClient.get<InspectionRoundDetail>(`/api/Inspection/rounds/${roundId}`);
+    const { data } = await apiClient.get<InspectionRoundDetail>(`/api/inspection/rounds/${roundId}`);
     round.value = data;
   } catch { error.value = '加载巡检记录失败'; }
   finally { loading.value = false; }

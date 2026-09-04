@@ -10,17 +10,17 @@ import type {
 export const ticketsApi = {
   /** 获取工单列表 */
   list: () =>
-    get<TicketListResponse>('/api/Tickets'),
+    get<TicketListResponse>('/api/tickets'),
 
   /** 获取单个工单详情 */
   getDetail: (id: number) =>
-    get<TicketItem>(`/api/Tickets/${id}`),
+    get<TicketItem>(`/api/tickets/${id}`),
 
   /** 更新工单状态 */
   updateStatus: (id: number, data: TicketStatusUpdateRequest) =>
-    put<TicketItem>(`/api/Tickets/${id}/status`, data),
+    put<TicketItem>(`/api/tickets/${id}/status`, data),
 
   /** 执行工单跟进 */
   followup: (data: TicketFollowupRequest) =>
-    post<TicketFollowupResult>('/api/Tickets/followup', data),
+    post<TicketFollowupResult>('/api/tickets/followup', data),
 };

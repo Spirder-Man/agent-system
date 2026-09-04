@@ -58,7 +58,7 @@ describe('HazardQueryPage', () => {
     expect(mockPost).not.toHaveBeenCalled();
   });
 
-  it('查询应调用 POST /api/Compliance/hazard/query', async () => {
+  it('查询应调用 POST /api/compliance/hazard/query', async () => {
     mockPost.mockResolvedValue({
       data: {
         substanceName: '苯',
@@ -77,7 +77,7 @@ describe('HazardQueryPage', () => {
     await queryBtn.trigger('click');
     await flushPromises();
 
-    expect(mockPost).toHaveBeenCalledWith('/api/Compliance/hazard/query', {
+    expect(mockPost).toHaveBeenCalledWith('/api/compliance/hazard/query', {
       substanceName: '苯',
     });
   });

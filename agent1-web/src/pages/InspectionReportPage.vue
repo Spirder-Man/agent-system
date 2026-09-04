@@ -20,7 +20,7 @@ const md = new MarkdownIt({ html: false, breaks: true });
 async function fetchReport() {
   loading.value = true; error.value = '';
   try {
-    const { data } = await apiClient.get<InspectionReport>(`/api/Inspection/reports/${roundId}`);
+    const { data } = await apiClient.get<InspectionReport>(`/api/inspection/reports/${roundId}`);
     report.value = data;
   } catch { error.value = '报告加载失败，可能该轮次尚未生成报告'; }
   finally { loading.value = false; }
@@ -29,7 +29,7 @@ async function fetchReport() {
 async function exportJson() {
   exporting.value = true;
   try {
-    const { data } = await apiClient.get(`/api/Inspection/reports/${roundId}/export`, { params: { format: 'json' } });
+    const { data } = await apiClient.get(`/api/inspection/reports/${roundId}/export`, { params: { format: 'json' } });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

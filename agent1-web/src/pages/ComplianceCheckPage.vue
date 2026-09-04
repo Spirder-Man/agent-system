@@ -28,7 +28,7 @@ async function submit() {
   start('AI 正在分析合规风险…');
   try {
     const startTime = performance.now();
-    const { data } = await apiClient.post<ComplianceResponse>('/api/Compliance/check', { query: query.value.trim() });
+    const { data } = await apiClient.post<ComplianceResponse>('/api/compliance/check', { query: query.value.trim() });
     const elapsed = performance.now() - startTime;
     // 超快速响应 = 缓存命中 (< 500ms)
     fromCache.value = elapsed < 500 && data.toolsUsed.length === 0;

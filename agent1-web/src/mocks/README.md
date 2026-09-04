@@ -93,25 +93,25 @@ npm run dev   # VITE_ENABLE_MOCK 默认 false
 
 | 端点 | 延迟 | 说明 |
 |------|------|------|
-| POST /api/Auth/login | 300ms | 模拟网络+验证 |
-| POST /api/Auth/refresh | 200ms | |
-| POST /api/Auth/logout | 100ms | |
-| GET /api/Compliance/summary | 200ms | 仪表盘核心数据 |
-| **POST /api/Compliance/check** | **3-45s** | ⚡ LLM 推理 — 前端进度条测试关键 |
-| **POST /api/Compliance/hazard/query** | **3-45s** | ⚡ LLM 推理 (v2.5 新增) |
-| **POST /api/Compliance/storage/compatibility** | **3-45s** | ⚡ LLM 推理 (v2.5 新增) |
-| GET /api/Inspection/plans | 200ms | |
-| POST /api/Inspection/plans | 300ms | 返回 {planId, name, items:count} 对齐后端 |
-| GET /api/Inspection/plans/:id | 200ms | |
-| **POST /api/Inspection/plans/:id/execute** | **3-45s** | ⚡ LLM 推理 — 仅返回摘要 (v2.5 对齐后端) |
-| GET /api/Inspection/rounds/:id | 200ms | results.warnings=数量 (v2.5 对齐后端) |
-| GET /api/Inspection/reports/:id | 200ms | |
-| GET /api/Inspection/reports/:id/export | 100ms | 返回 {meta,plan,summary,findings,tickets,audit} (v2.5) |
-| GET /api/Inspection/assets | 200ms | |
-| **POST /api/Inspection/scan** | **3-45s** | ⚡ LLM 推理 + 503注入 (v2.5 新增) |
-| POST /api/Inspection/quick-check | 1.5s | |
-| GET /api/Tickets | 200ms | |
-| PUT /api/Tickets/:id/status | 300ms | 返回 {ticketId, newStatus, logCount} (v2.5) |
+| POST /api/auth/login | 300ms | 模拟网络+验证 |
+| POST /api/auth/refresh | 200ms | |
+| POST /api/auth/logout | 100ms | |
+| GET /api/compliance/summary | 200ms | 仪表盘核心数据 |
+| **POST /api/compliance/check** | **3-45s** | ⚡ LLM 推理 — 前端进度条测试关键 |
+| **POST /api/compliance/hazard/query** | **3-45s** | ⚡ LLM 推理 (v2.5 新增) |
+| **POST /api/compliance/storage/compatibility** | **3-45s** | ⚡ LLM 推理 (v2.5 新增) |
+| GET /api/inspection/plans | 200ms | |
+| POST /api/inspection/plans | 300ms | 返回 {planId, name, items:count} 对齐后端 |
+| GET /api/inspection/plans/:id | 200ms | |
+| **POST /api/inspection/plans/:id/execute** | **3-45s** | ⚡ LLM 推理 — 仅返回摘要 (v2.5 对齐后端) |
+| GET /api/inspection/rounds/:id | 200ms | results.warnings=数量 (v2.5 对齐后端) |
+| GET /api/inspection/reports/:id | 200ms | |
+| GET /api/inspection/reports/:id/export | 100ms | 返回 {meta,plan,summary,findings,tickets,audit} (v2.5) |
+| GET /api/inspection/assets | 200ms | |
+| **POST /api/inspection/scan** | **3-45s** | ⚡ LLM 推理 + 503注入 (v2.5 新增) |
+| POST /api/inspection/quick-check | 1.5s | |
+| GET /api/tickets | 200ms | |
+| PUT /api/tickets/:id/status | 300ms | 返回 {ticketId, newStatus, logCount} (v2.5) |
 | GET /health | 50ms | |
 | GET /metrics | 立即 | Prometheus text format |
 | GET /cache/stats | 立即 | |
@@ -139,7 +139,7 @@ import apiClient from '@/lib/axios'
 export function useComplianceCheck() {
   return useMutation({
     mutationFn: (req: ComplianceRequest) =>
-      apiClient.post('/api/Compliance/check', req).then(r => r.data),
+      apiClient.post('/api/compliance/check', req).then(r => r.data),
   })
 }
 ```
@@ -190,15 +190,15 @@ const check = () => mutate({ query: inputValue.value })
 (API 接口不变)           + MSW Mock              评审通过
     │                        │                       │
     │                   开发登录页                     │
-    │                   POST /api/Auth/login          │
+    │                   POST /api/auth/login          │
     │                   → MSW 返回 Mock Token          │
     │                        │                       │
 修复工具调用链路          基于 Mock 开发仪表盘           │
-CallToolAsync 传参       GET /api/Compliance/summary    │
+CallToolAsync 传参       GET /api/compliance/summary    │
     │                   → MSW 返回假 KPI               │
     │                        │                       │
     │                   开发合规审核页                    │
-    │                   POST /api/Compliance/check       │
+    │                   POST /api/compliance/check       │
     │                   → MSW 2-5s 延迟 + 合规结论       │
     │                        │                       │
     │                   开发巡检管理页                    │

@@ -12,23 +12,23 @@ vi.mock('../client', () => ({
 }));
 
 describe('knowledgeBaseApi', () => {
-  it('getSearchMode 应调用 GET /api/KnowledgeBase/search-mode', () => {
+  it('getSearchMode 应调用 GET /api/knowledgebase/search-mode', () => {
     knowledgeBaseApi.getSearchMode();
-    expect(mockGet).toHaveBeenCalledWith('/api/KnowledgeBase/search-mode');
+    expect(mockGet).toHaveBeenCalledWith('/api/knowledgebase/search-mode');
   });
 
-  it('setSearchMode 应调用 PUT /api/KnowledgeBase/search-mode', () => {
+  it('setSearchMode 应调用 PUT /api/knowledgebase/search-mode', () => {
     knowledgeBaseApi.setSearchMode({ mode: 'Hybrid' });
-    expect(mockPut).toHaveBeenCalledWith('/api/KnowledgeBase/search-mode', { mode: 'Hybrid' });
+    expect(mockPut).toHaveBeenCalledWith('/api/knowledgebase/search-mode', { mode: 'Hybrid' });
   });
 
-  it('ragTest 应调用 POST /api/KnowledgeBase/rag-test', () => {
+  it('ragTest 应调用 POST /api/knowledgebase/rag-test', () => {
     knowledgeBaseApi.ragTest({ query: '苯', topK: 5 });
-    expect(mockPost).toHaveBeenCalledWith('/api/KnowledgeBase/rag-test', { query: '苯', topK: 5 });
+    expect(mockPost).toHaveBeenCalledWith('/api/knowledgebase/rag-test', { query: '苯', topK: 5 });
   });
 
-  it('incrementalLoad 应调用 POST /api/KnowledgeBase/incremental-load', () => {
+  it('incrementalLoad 应调用 POST /api/knowledgebase/incremental-load', () => {
     knowledgeBaseApi.incrementalLoad();
-    expect(mockPost).toHaveBeenCalledWith('/api/KnowledgeBase/incremental-load');
+    expect(mockPost).toHaveBeenCalledWith('/api/knowledgebase/incremental-load');
   });
 });

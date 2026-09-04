@@ -11,13 +11,13 @@ vi.mock('../client', () => ({
 }));
 
 describe('adminApi', () => {
-  it('getDbInfo 应调用 GET /api/Admin/db/info', () => {
+  it('getDbInfo 应调用 GET /api/admin/db/info', () => {
     adminApi.getDbInfo();
-    expect(mockGet).toHaveBeenCalledWith('/api/Admin/db/info');
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/db/info');
   });
 
-  it('validateDb 应调用 GET /api/Admin/db/validate', () => {
+  it('validateDb 应调用 GET /api/admin/db/validate', () => {
     adminApi.validateDb();
-    expect(mockGet).toHaveBeenCalledWith('/api/Admin/db/validate');
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/db/validate');
   });
 });

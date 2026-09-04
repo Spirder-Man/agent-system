@@ -39,7 +39,7 @@ const typeLabel = computed(() => {
 async function fetchPlan() {
   loading.value = true; error.value = '';
   try {
-    const { data } = await apiClient.get<InspectionPlan>(`/api/Inspection/plans/${planId}`);
+    const { data } = await apiClient.get<InspectionPlan>(`/api/inspection/plans/${planId}`);
     plan.value = data;
   } catch { error.value = '加载计划失败'; }
   finally { loading.value = false; }
@@ -49,7 +49,7 @@ async function executePlan() {
   if (!plan.value) return;
   executing.value = true;
   try {
-    const { data } = await apiClient.post(`/api/Inspection/plans/${plan.value.planId}/execute`);
+    const { data } = await apiClient.post(`/api/inspection/plans/${plan.value.planId}/execute`);
     ElMessage.success(`巡检完成，合规率 ${Math.round((data as { complianceRate: number }).complianceRate * 100)}%`);
     await fetchPlan();
   } catch (e: unknown) {
@@ -69,7 +69,7 @@ async function deletePlan() {
   } catch { return; }
   deleting.value = true;
   try {
-    await apiClient.delete(`/api/Inspection/plans/${plan.value.planId}`);
+    await apiClient.delete(`/api/inspection/plans/${plan.value.planId}`);
     ElMessage.success('计划已删除');
     router.push('/inspection/plans');
   } catch (e: unknown) {
@@ -93,7 +93,7 @@ async function saveEdit() {
   if (!plan.value) return;
   executing.value = true;
   try {
-    await apiClient.put(`/api/Inspection/plans/${plan.value.planId}`, {
+    await apiClient.put(`/api/inspection/plans/${plan.value.planId}`, {
       name: editForm.value.name,
       area: editForm.value.area,
       inspector: editForm.value.inspector,

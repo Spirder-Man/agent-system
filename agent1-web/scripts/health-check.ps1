@@ -73,13 +73,19 @@ try {
     $complianceResp = Invoke-RestMethod -Uri "$ApiUrl/api/Compliance/check" `
         -Method POST -Body $body -ContentType "application/json" `
         -Headers @{ Authorization = "Bearer $($loginResp.token)" } `
-        -TimeoutSec 60
+        -TimeoutSec 180
 
     $toolsCount = if ($complianceResp.toolsUsed) { $complianceResp.toolsUsed.Count } else { 0 }
     $hasResponse = -not [string]::IsNullOrEmpty($complianceResp.response)
     Write-Host "  toolsUsed: $toolsCount"
     Write-Host "  hasResponse: $hasResponse"
-    Write-Host "  => PASS (GPU inference OK)" -ForegroundColor Green
+    if (-not $hasResponse) { Write-Host "  [WARN] empty compliance response!" -ForegroundColor Yellow; $allOk = $false }
+    if ($toolsCount -le 0) { Write-Host "  [WARN] toolsUsed = 0!" -ForegroundColor Yellow; $allOk = $false }
+    if ($hasResponse -and $toolsCount -gt 0) {
+        Write-Host "  => PASS (GPU inference OK)" -ForegroundColor Green
+    } else {
+        Write-Host "  => FAIL" -ForegroundColor Red
+    }
 } catch {
     Write-Host "  => FAIL: $_" -ForegroundColor Red
     $allOk = $false

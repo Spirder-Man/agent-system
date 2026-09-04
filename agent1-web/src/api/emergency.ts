@@ -14,5 +14,5 @@ export interface EmergencyResponseRequest extends EmergencyRequest {
 export const emergencyApi = {
   /** 生成应急响应方案（泄漏/火灾/爆炸/中毒） */
   generateResponse: (data: EmergencyResponseRequest) =>
-    post<EmergencyResult>('/api/Emergency/response', data),
+    post<EmergencyResult>('/api/emergency/response', data),
 };

@@ -104,12 +104,12 @@ describe('ComplianceHistoryPage', () => {
       expect(wrapper.text()).toContain('加载失败');
     });
 
-    it('应调用 GET /api/Inspection/rounds', async () => {
+    it('应调用 GET /api/inspection/rounds', async () => {
       mockGet.mockResolvedValue({ data: [] });
       mountPage();
       await flushPromises();
 
-      expect(mockGet).toHaveBeenCalledWith('/api/Inspection/rounds');
+      expect(mockGet).toHaveBeenCalledWith('/api/inspection/rounds');
     });
   });
 

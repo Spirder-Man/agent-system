@@ -22,7 +22,7 @@ async function check() {
   start('正在分析储存兼容性…');
   try {
     const startTime = performance.now();
-    const { data } = await apiClient.post<StorageCompatibilityResponse>('/api/Compliance/storage/compatibility', {
+    const { data } = await apiClient.post<StorageCompatibilityResponse>('/api/compliance/storage/compatibility', {
       substanceA: substanceA.value.trim(),
       substanceB: substanceB.value.trim(),
     });

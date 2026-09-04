@@ -29,7 +29,7 @@ const pageSize = ref(20);
 async function fetchTickets() {
   loading.value = true; error.value = '';
   try {
-    const resp = await apiClient.get<TicketListResponse>('/api/Tickets');
+    const resp = await apiClient.get<TicketListResponse>('/api/tickets');
     data.value = resp.data;
   } catch { error.value = '加载失败'; }
   finally { loading.value = false; }
@@ -48,7 +48,7 @@ async function handleAction(ticket: TicketItem, actionItem: (typeof TICKET_ACTIO
 
   updatingId.value = ticket.id;
   try {
-    await apiClient.put(`/api/Tickets/${ticket.id}/status`, {
+    await apiClient.put(`/api/tickets/${ticket.id}/status`, {
       action: actionItem.action,
       assignee: ticket.assignee || void 0,
     });

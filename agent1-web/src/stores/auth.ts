@@ -40,7 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(credentials: LoginRequest): Promise<boolean> {
     try {
-      const { data } = await apiClient.post<LoginResponse>('/api/Auth/login', credentials);
+      const { data } = await apiClient.post<LoginResponse>('/api/auth/login', credentials);
       setAuth(data);
       return true;
     } catch (err: unknown) {
@@ -51,7 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout(): Promise<void> {
-    try { await apiClient.post('/api/Auth/logout'); } catch { /* ignore */ }
+    try { await apiClient.post('/api/auth/logout'); } catch { /* ignore */ }
     clearAuth();
   }
 

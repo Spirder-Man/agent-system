@@ -8,7 +8,7 @@ import { setupServer } from 'msw/node';
 import { ticketsApi } from '../tickets';
 
 const server = setupServer(
-  http.get('/api/Tickets', () => {
+  http.get('/api/tickets', () => {
     return HttpResponse.json({
       total: 3,
       open: 2,
@@ -41,7 +41,7 @@ const server = setupServer(
     });
   }),
 
-  http.put('/api/Tickets/:id/status', async ({ params, request }) => {
+  http.put('/api/tickets/:id/status', async ({ params, request }) => {
     const id = Number(params.id);
     const body = (await request.json()) as { action: string; assignee?: string };
     return HttpResponse.json({
@@ -58,7 +58,7 @@ const server = setupServer(
     });
   }),
 
-  http.post('/api/Tickets/followup', async ({ request }) => {
+  http.post('/api/tickets/followup', async ({ request }) => {
     const body = (await request.json()) as { complianceResult: string };
     return HttpResponse.json({
       tickets: [
@@ -84,7 +84,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('ticketsApi — 端点路径', () => {
-  it('list() 请求 GET /api/Tickets', async () => {
+  it('list() 请求 GET /api/tickets', async () => {
     const result = await ticketsApi.list();
     expect(result.total).toBe(3);
     expect(result.open).toBe(2);
@@ -92,13 +92,13 @@ describe('ticketsApi — 端点路径', () => {
     expect(result.tickets[0].status).toBe('New');
   });
 
-  it('updateStatus() 请求 PUT /api/Tickets/:id/status', async () => {
+  it('updateStatus() 请求 PUT /api/tickets/:id/status', async () => {
     const result = await ticketsApi.updateStatus(1, { action: 'complete' });
     expect(result.id).toBe(1);
     expect(result.status).toBe('Completed');
   });
 
-  it('followup() 请求 POST /api/Tickets/followup', async () => {
+  it('followup() 请求 POST /api/tickets/followup', async () => {
     const result = await ticketsApi.followup({ complianceResult: '已按要求整改' });
     expect(result.tickets).toHaveLength(1);
     expect(result.tickets[0].status).toBe('Closed');

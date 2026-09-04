@@ -58,7 +58,7 @@ describe('KnowledgeGraphPage', () => {
     }
   });
 
-  it('查询应调用 POST /api/KnowledgeGraph/query', async () => {
+  it('查询应调用 POST /api/knowledgegraph/query', async () => {
     mockPost.mockResolvedValue({
       data: { query: '苯的关联法规和事故案例', output: '查询结果...' },
     });
@@ -73,7 +73,7 @@ describe('KnowledgeGraphPage', () => {
       await queryBtn.trigger('click');
       await flushPromises();
 
-      expect(mockPost).toHaveBeenCalledWith('/api/KnowledgeGraph/query', {
+      expect(mockPost).toHaveBeenCalledWith('/api/knowledgegraph/query', {
         query: '苯的关联法规和事故案例',
       });
     }

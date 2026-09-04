@@ -2,3 +2,8 @@ node_modules/
 dist/
 .env
 *.log
+
+# TypeScript / Vite 增量构建产物（禁止提交）
+*.tsbuildinfo
+vite.config.d.ts
+

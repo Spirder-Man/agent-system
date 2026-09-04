@@ -16,7 +16,7 @@ const pageSize = ref(20);
 async function fetchRounds() {
   loading.value = true; error.value = '';
   try {
-    const { data } = await apiClient.get<InspectionRoundListItem[]>('/api/Inspection/rounds');
+    const { data } = await apiClient.get<InspectionRoundListItem[]>('/api/inspection/rounds');
     rounds.value = data;
   } catch { error.value = '加载失败'; }
   finally { loading.value = false; }

@@ -12,7 +12,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary.vue';
 const route = useRoute();
 
 /** 不需要侧边栏的路由名称 */
-const NO_SIDEBAR_ROUTES = new Set(['Login', 'Forbidden']);
+const NO_SIDEBAR_ROUTES = new Set(['Login', 'Forbidden', 'Landing']);
 
 const showSidebar = computed(() => {
   return !NO_SIDEBAR_ROUTES.has(route.name as string);
@@ -24,7 +24,9 @@ const showSidebar = computed(() => {
 
   <!-- 无侧边栏: 登录页 / 403 等 -->
   <ErrorBoundary v-if="!showSidebar">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+    </router-view>
   </ErrorBoundary>
 
   <!-- 有侧边栏: 业务页面布局 -->
@@ -32,7 +34,9 @@ const showSidebar = computed(() => {
     <div class="flex h-screen bg-gray-50">
       <AppSidebar />
       <main class="flex-1 overflow-y-auto p-6">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <component :is="Component" />
+        </router-view>
       </main>
     </div>
   </ErrorBoundary>

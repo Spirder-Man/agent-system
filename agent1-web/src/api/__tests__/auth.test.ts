@@ -8,7 +8,7 @@ import { setupServer } from 'msw/node';
 import { authApi } from '../auth';
 
 const server = setupServer(
-  http.post('/api/Auth/login', async ({ request }) => {
+  http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as { username: string; password: string };
     return HttpResponse.json({
       token: 'mock-jwt-admin-9999999999999',
@@ -19,7 +19,7 @@ const server = setupServer(
     });
   }),
 
-  http.post('/api/Auth/refresh', async ({ request }) => {
+  http.post('/api/auth/refresh', async ({ request }) => {
     const body = (await request.json()) as { refreshToken: string };
     return HttpResponse.json({
       token: 'mock-jwt-admin-9999999999999',
@@ -30,7 +30,7 @@ const server = setupServer(
     });
   }),
 
-  http.post('/api/Auth/logout', () => {
+  http.post('/api/auth/logout', () => {
     return HttpResponse.json({ success: true });
   }),
 );
@@ -40,7 +40,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('authApi — 端点路径', () => {
-  it('login() 请求 POST /api/Auth/login', async () => {
+  it('login() 请求 POST /api/auth/login', async () => {
     const result = await authApi.login({ username: 'admin', password: 'test' });
     expect(result.token).toBeTruthy();
     expect(result.role).toBe('admin');
@@ -48,13 +48,13 @@ describe('authApi — 端点路径', () => {
     expect(result.refreshToken).toBeTruthy();
   });
 
-  it('refresh() 请求 POST /api/Auth/refresh', async () => {
+  it('refresh() 请求 POST /api/auth/refresh', async () => {
     const result = await authApi.refresh({ refreshToken: 'old-token' });
     expect(result.token).toBeTruthy();
     expect(result.refreshToken).toBe('old-token');
   });
 
-  it('logout() 请求 POST /api/Auth/logout', async () => {
+  it('logout() 请求 POST /api/auth/logout', async () => {
     await expect(authApi.logout()).resolves.toBeDefined();
   });
 });

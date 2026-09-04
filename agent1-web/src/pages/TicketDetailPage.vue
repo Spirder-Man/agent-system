@@ -27,7 +27,7 @@ async function fetchTicket() {
   loading.value = true; error.value = '';
   try {
     const id = Number(route.params.id);
-    const resp = await apiClient.get<TicketListResponse>('/api/Tickets');
+    const resp = await apiClient.get<TicketListResponse>('/api/tickets');
     const found = resp.data.tickets.find(t => t.id === id);
     if (!found) { error.value = '工单不存在'; return; }
     ticket.value = found;
@@ -47,7 +47,7 @@ async function handleAction(actionItem: (typeof TICKET_ACTIONS_BY_STATUS)[keyof 
 
   updating.value = true;
   try {
-    await apiClient.put(`/api/Tickets/${ticket.value.id}/status`, {
+    await apiClient.put(`/api/tickets/${ticket.value.id}/status`, {
       action: actionItem.action,
       assignee: ticket.value.assignee || void 0,
     });

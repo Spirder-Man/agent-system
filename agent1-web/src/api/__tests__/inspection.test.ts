@@ -8,7 +8,7 @@ import { setupServer } from 'msw/node';
 import { inspectionApi } from '../inspection';
 
 const server = setupServer(
-  http.get('/api/Inspection/plans', () => {
+  http.get('/api/inspection/plans', () => {
     return HttpResponse.json([
       {
         planId: 'plan-1',
@@ -22,7 +22,7 @@ const server = setupServer(
     ]);
   }),
 
-  http.post('/api/Inspection/plans', async ({ request }) => {
+  http.post('/api/inspection/plans', async ({ request }) => {
     const body = (await request.json()) as { name: string; items: unknown[] };
     return HttpResponse.json({
       planId: 'plan-new',
@@ -38,7 +38,7 @@ const server = setupServer(
     });
   }),
 
-  http.get('/api/Inspection/plans/:planId', ({ params }) => {
+  http.get('/api/inspection/plans/:planId', ({ params }) => {
     const { planId } = params;
     return HttpResponse.json({
       planId,
@@ -54,7 +54,7 @@ const server = setupServer(
     });
   }),
 
-  http.get('/api/Inspection/rounds', ({ request }) => {
+  http.get('/api/inspection/rounds', ({ request }) => {
     const url = new URL(request.url);
     const planId = url.searchParams.get('planId');
     return HttpResponse.json([
@@ -75,7 +75,7 @@ const server = setupServer(
     ]);
   }),
 
-  http.get('/api/Inspection/assets', () => {
+  http.get('/api/inspection/assets', () => {
     return HttpResponse.json([
       {
         assetId: 'asset-1',
@@ -92,7 +92,7 @@ const server = setupServer(
     ]);
   }),
 
-  http.post('/api/Inspection/scan', () => {
+  http.post('/api/inspection/scan', () => {
     return HttpResponse.json({
       scannedAt: new Date().toISOString(),
       totalAssets: 3,
@@ -109,14 +109,14 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('inspectionApi — 端点路径', () => {
-  it('listPlans() 请求 GET /api/Inspection/plans', async () => {
+  it('listPlans() 请求 GET /api/inspection/plans', async () => {
     const plans = await inspectionApi.listPlans();
     expect(plans).toHaveLength(1);
     expect(plans[0].planId).toBe('plan-1');
     expect(plans[0].items).toBe(5);
   });
 
-  it('createPlan() 请求 POST /api/Inspection/plans', async () => {
+  it('createPlan() 请求 POST /api/inspection/plans', async () => {
     const plan = await inspectionApi.createPlan({
       name: '新计划',
       items: [{ query: '检查安全距离' }],
@@ -125,25 +125,25 @@ describe('inspectionApi — 端点路径', () => {
     expect(plan.status).toBe('Draft');
   });
 
-  it('getPlan() 请求 GET /api/Inspection/plans/:id', async () => {
+  it('getPlan() 请求 GET /api/inspection/plans/:id', async () => {
     const plan = await inspectionApi.getPlan('plan-1');
     expect(plan.planId).toBe('plan-1');
     expect(plan.area).toBe('乙类仓库');
   });
 
-  it('listRounds() 请求 GET /api/Inspection/rounds', async () => {
+  it('listRounds() 请求 GET /api/inspection/rounds', async () => {
     const rounds = await inspectionApi.listRounds('plan-1');
     expect(rounds).toHaveLength(1);
     expect(rounds[0].complianceRate).toBe(0.8);
   });
 
-  it('listAssets() 请求 GET /api/Inspection/assets', async () => {
+  it('listAssets() 请求 GET /api/inspection/assets', async () => {
     const assets = await inspectionApi.listAssets();
     expect(assets).toHaveLength(1);
     expect(assets[0].name).toBe('苯储罐');
   });
 
-  it('scan() 请求 POST /api/Inspection/scan', async () => {
+  it('scan() 请求 POST /api/inspection/scan', async () => {
     const result = await inspectionApi.scan();
     expect(result.totalAssets).toBe(3);
     expect(result.checkedAssets).toBe(3);

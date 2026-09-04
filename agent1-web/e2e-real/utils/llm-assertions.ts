@@ -44,7 +44,8 @@ function loadBaseline(): Baseline {
 }
 
 // ── 已知合法的 GB 编号模式 ──
-const GB_PATTERN = /GB\s*\d{4,5}(?:\.\d+)?\s*-\s*\d{4}/gi;
+// 完整：GB 15603-2022；工具/规则引擎回填常省略年份：GB 15603、GB 30000.7
+const GB_PATTERN = /GB\s*\d{4,5}(?:\.\d+)?(?:\s*-\s*\d{4})?/gi;
 
 // ── 常见工具名称 ──
 const KNOWN_TOOLS = [

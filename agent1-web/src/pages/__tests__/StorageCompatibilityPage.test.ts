@@ -73,7 +73,7 @@ describe('StorageCompatibilityPage', () => {
     expect(mockPost).not.toHaveBeenCalled();
   });
 
-  it('检查应调用 POST /api/Compliance/storage/compatibility', async () => {
+  it('检查应调用 POST /api/compliance/storage/compatibility', async () => {
     mockPost.mockResolvedValue({
       data: {
         substanceA: '苯',
@@ -95,7 +95,7 @@ describe('StorageCompatibilityPage', () => {
     await checkBtn.trigger('click');
     await flushPromises();
 
-    expect(mockPost).toHaveBeenCalledWith('/api/Compliance/storage/compatibility', {
+    expect(mockPost).toHaveBeenCalledWith('/api/compliance/storage/compatibility', {
       substanceA: '苯',
       substanceB: '丙酮',
     });

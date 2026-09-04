@@ -42,7 +42,7 @@ async function sendMessage() {
   loading.value = true;
   start('AI 正在思考…');
   try {
-    const { data } = await apiClient.post<ComplianceResponse>('/api/Compliance/check', { query: text });
+    const { data } = await apiClient.post<ComplianceResponse>('/api/compliance/check', { query: text });
     const assistantMsg: ChatMessage = {
       id: genId(),
       role: 'assistant',

@@ -49,8 +49,8 @@ const server = setupServer(
     } satisfies ComplianceResponse);
   }),
 
-  // POST /api/compliance/hazard-query
-  http.post('/api/compliance/hazard-query', async ({ request }) => {
+  // POST /api/compliance/hazard/query
+  http.post('/api/compliance/hazard/query', async ({ request }) => {
     const body = (await request.json()) as { substanceName: string };
     return HttpResponse.json({
       substanceName: body.substanceName,
@@ -59,8 +59,8 @@ const server = setupServer(
     });
   }),
 
-  // POST /api/compliance/storage-compatibility
-  http.post('/api/compliance/storage-compatibility', async ({ request }) => {
+  // POST /api/compliance/storage/compatibility
+  http.post('/api/compliance/storage/compatibility', async ({ request }) => {
     const body = (await request.json()) as { substanceA: string; substanceB: string };
     return HttpResponse.json({
       substanceA: body.substanceA,
@@ -96,13 +96,13 @@ describe('complianceApi — 端点路径', () => {
     expect(result.hallucinatedRegulations).toEqual([]);
   });
 
-  it('hazardQuery() 请求 POST /api/compliance/hazard-query', async () => {
+  it('hazardQuery() 请求 POST /api/compliance/hazard/query', async () => {
     const result = await complianceApi.hazardQuery({ substanceName: '甲醇' });
     expect(result.substanceName).toBe('甲醇');
     expect(result.toolsUsed).toContain('CheckHazardCategory');
   });
 
-  it('storageCompatibility() 请求 POST /api/compliance/storage-compatibility', async () => {
+  it('storageCompatibility() 请求 POST /api/compliance/storage/compatibility', async () => {
     const result = await complianceApi.storageCompatibility({
       substanceA: '苯',
       substanceB: '丙酮',

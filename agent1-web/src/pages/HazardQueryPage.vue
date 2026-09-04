@@ -21,7 +21,7 @@ async function query() {
   start('正在查询危险化学信息…');
   try {
     const startTime = performance.now();
-    const { data } = await apiClient.post<HazardQueryResponse>('/api/Compliance/hazard/query', {
+    const { data } = await apiClient.post<HazardQueryResponse>('/api/compliance/hazard/query', {
       substanceName: substance.value.trim(),
     });
     fromCache.value = (performance.now() - startTime) < 500 && data.toolsUsed.length === 0;

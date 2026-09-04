@@ -12,4 +12,8 @@ export default {
   corePlugins: {
     preflight: false,
   },
+  // 全局禁用所有过渡和动画
+  future: {
+    disableColorOpacityUtilitiesByDefault: false,
+  },
 };

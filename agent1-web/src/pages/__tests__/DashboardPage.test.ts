@@ -170,11 +170,11 @@ const scanStatusDone = {
 
 function setupMocks() {
   mockGet.mockImplementation((url: string) => {
-    if (url === '/api/Dashboard/overview') return Promise.resolve({ data: overviewData });
-    if (url === '/api/Dashboard/findings') return Promise.resolve({ data: findingsData });
-    if (url === '/api/Dashboard/history') return Promise.resolve({ data: historyData });
-    if (url === '/api/Dashboard/report/hazard') return Promise.resolve({ data: hazardData });
-    if (url === '/api/Dashboard/scan/status') return Promise.resolve({ data: scanStatusDone });
+    if (url === '/api/dashboard/overview') return Promise.resolve({ data: overviewData });
+    if (url === '/api/dashboard/findings') return Promise.resolve({ data: findingsData });
+    if (url === '/api/dashboard/history') return Promise.resolve({ data: historyData });
+    if (url === '/api/dashboard/report/hazard') return Promise.resolve({ data: hazardData });
+    if (url === '/api/dashboard/scan/status') return Promise.resolve({ data: scanStatusDone });
     return Promise.reject(new Error('Unknown URL'));
   });
 }
@@ -227,9 +227,9 @@ describe('DashboardPage', () => {
   describe('统计卡片颜色逻辑', () => {
     it('合规率 ≥80% 应为绿色', async () => {
       mockGet.mockImplementation((url: string) => {
-        if (url === '/api/Dashboard/overview')
+        if (url === '/api/dashboard/overview')
           return Promise.resolve({ data: { ...overviewData, complianceRate: 0.9 } });
-        if (url.startsWith('/api/Dashboard/'))
+        if (url.startsWith('/api/dashboard/'))
           return Promise.resolve({
             data: url.includes('findings') ? findingsData : url.includes('history') ? historyData : hazardData,
           });
@@ -242,9 +242,9 @@ describe('DashboardPage', () => {
 
     it('合规率 60-79% 应为琥珀色', async () => {
       mockGet.mockImplementation((url: string) => {
-        if (url === '/api/Dashboard/overview')
+        if (url === '/api/dashboard/overview')
           return Promise.resolve({ data: { ...overviewData, complianceRate: 0.65 } });
-        if (url.startsWith('/api/Dashboard/'))
+        if (url.startsWith('/api/dashboard/'))
           return Promise.resolve({
             data: url.includes('findings') ? findingsData : url.includes('history') ? historyData : hazardData,
           });
@@ -257,9 +257,9 @@ describe('DashboardPage', () => {
 
     it('合规率 <60% 应为红色', async () => {
       mockGet.mockImplementation((url: string) => {
-        if (url === '/api/Dashboard/overview')
+        if (url === '/api/dashboard/overview')
           return Promise.resolve({ data: { ...overviewData, complianceRate: 0.4 } });
-        if (url.startsWith('/api/Dashboard/'))
+        if (url.startsWith('/api/dashboard/'))
           return Promise.resolve({
             data: url.includes('findings') ? findingsData : url.includes('history') ? historyData : hazardData,
           });
@@ -272,7 +272,7 @@ describe('DashboardPage', () => {
   });
 
   describe('一键快检', () => {
-    it('输入查询后应调用 POST /api/Inspection/quick-check', async () => {
+    it('输入查询后应调用 POST /api/inspection/quick-check', async () => {
       mockPost.mockResolvedValue({ data: quickCheckResult });
       const wrapper = mountPage();
       await flushPromises();
@@ -288,7 +288,7 @@ describe('DashboardPage', () => {
         if (detectBtn) {
           await detectBtn.trigger('click');
           await flushPromises();
-          expect(mockPost).toHaveBeenCalledWith('/api/Inspection/quick-check', { query: '硝酸储存' });
+          expect(mockPost).toHaveBeenCalledWith('/api/inspection/quick-check', { query: '硝酸储存' });
         }
       }
     });
@@ -318,7 +318,7 @@ describe('DashboardPage', () => {
   });
 
   describe('自动扫描 (Dashboard/scan)', () => {
-    it('点击应调用 POST /api/Dashboard/scan 并轮询 status', async () => {
+    it('点击应调用 POST /api/dashboard/scan 并轮询 status', async () => {
       // [#4] 扫描改后台任务：202 受理后转 /scan/status 轮询
       mockPost.mockResolvedValue({ data: scanAccepted });
       const wrapper = mountPage();
@@ -328,8 +328,8 @@ describe('DashboardPage', () => {
       if (scanBtn) {
         await scanBtn.trigger('click');
         await flushPromises();
-        expect(mockPost).toHaveBeenCalledWith('/api/Dashboard/scan', null);
-        expect(mockGet).toHaveBeenCalledWith('/api/Dashboard/scan/status');
+        expect(mockPost).toHaveBeenCalledWith('/api/dashboard/scan', null);
+        expect(mockGet).toHaveBeenCalledWith('/api/dashboard/scan/status');
       }
     });
 

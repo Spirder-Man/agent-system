@@ -59,7 +59,7 @@ describe('ComplianceCheckPage', () => {
     expect(mockPost).not.toHaveBeenCalled();
   });
 
-  it('提交应调用 POST /api/Compliance/check', async () => {
+  it('提交应调用 POST /api/compliance/check', async () => {
     mockPost.mockResolvedValue({
       data: {
         query: '苯的危险类别',
@@ -84,7 +84,7 @@ describe('ComplianceCheckPage', () => {
     await submitBtn.trigger('click');
     await flushPromises();
 
-    expect(mockPost).toHaveBeenCalledWith('/api/Compliance/check', {
+    expect(mockPost).toHaveBeenCalledWith('/api/compliance/check', {
       query: '苯的危险类别',
     });
   });

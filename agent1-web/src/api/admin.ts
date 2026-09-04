@@ -8,8 +8,8 @@ import type { DbInfoResponse, DbValidateResponse } from '../types/api';
 
 export const adminApi = {
   /** 获取数据库基本信息 */
-  getDbInfo: () => get<DbInfoResponse>('/api/Admin/db/info'),
+  getDbInfo: () => get<DbInfoResponse>('/api/admin/db/info'),
 
   /** 数据库连接验证 + 完整诊断信息 */
-  validateDb: () => get<DbValidateResponse>('/api/Admin/db/validate'),
+  validateDb: () => get<DbValidateResponse>('/api/admin/db/validate'),
 };

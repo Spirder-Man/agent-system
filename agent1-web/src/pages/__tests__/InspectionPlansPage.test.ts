@@ -10,8 +10,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import { useAuthStore } from '@/stores/auth';
 
 // ═══════════════ Mock 模块 ═══════════════
 
@@ -50,17 +48,6 @@ describe('InspectionPlansPage', () => {
     mockGet.mockReset();
     mockPost.mockReset();
     mockDelete.mockReset();
-
-    // 页面组件依赖 useAuthStore()，需先激活 Pinia
-    setActivePinia(createPinia());
-
-    // 页面删除按钮 v-if="auth.hasPermission(['admin', 'auditor'])"，hasPermission
-    // 要求 token + role 且未过期（isAuthenticated = !!token && !!role；expiresAt 为空视为过期），
-    // 空 store 下按钮不渲染 → 统一以 admin 登录态渲染，贴合真实访问场景。
-    const auth = useAuthStore();
-    auth.token = 'test-token';
-    auth.role = 'admin';
-    auth.expiresAt = '2099-12-31T23:59:59Z';
   });
 
   describe('渲染测试', () => {
@@ -91,13 +78,8 @@ describe('InspectionPlansPage', () => {
       mockGet.mockResolvedValue({
         data: [
           {
-            planId: 'plan-1',
-            name: '测试计划',
-            area: 'A区',
-            inspector: '张三',
-            status: 'Draft',
-            items: 3,
-            createdAt: '2026-07-01',
+            planId: 'plan-1', name: '测试计划', area: 'A区',
+            inspector: '张三', status: 'Draft', items: 3, createdAt: '2026-07-01',
           },
         ],
       });
@@ -114,14 +96,14 @@ describe('InspectionPlansPage', () => {
   });
 
   describe('API 调用测试', () => {
-    it('加载时调用 GET /api/Inspection/plans', async () => {
+    it('加载时调用 GET /api/inspection/plans', async () => {
       mockGet.mockResolvedValue({ data: [] });
       mount(InspectionPlansPage, {
         global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
       });
       await flushPromises();
 
-      expect(mockGet).toHaveBeenCalledWith('/api/Inspection/plans');
+      expect(mockGet).toHaveBeenCalledWith('/api/inspection/plans');
     });
 
     it('API 失败应显示错误', async () => {

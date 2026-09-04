@@ -127,13 +127,13 @@ describe('TicketListPage — 角色权限控制', () => {
   });
 
   describe('API 调用', () => {
-    it('加载时调用 GET /api/Tickets', async () => {
+    it('加载时调用 GET /api/tickets', async () => {
       mount(TicketListPage, {
         global: { stubs: { 'el-table': true, 'el-button': true } },
       });
       await flushPromises();
 
-      expect(mockGet).toHaveBeenCalledWith('/api/Tickets');
+      expect(mockGet).toHaveBeenCalledWith('/api/tickets');
     });
   });
 });

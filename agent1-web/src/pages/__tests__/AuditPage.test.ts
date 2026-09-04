@@ -280,7 +280,7 @@ describe('AuditPage', () => {
       await flushPromises();
 
       const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/Audit/logs')
+        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
       );
       expect(logsCall).toBeDefined();
     });
@@ -305,7 +305,7 @@ describe('AuditPage', () => {
       await flushPromises();
 
       const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/Audit/logs')
+        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
       );
       expect(logsCall).toBeDefined();
       expect((logsCall as unknown[])[1]).toHaveProperty('params');
@@ -352,7 +352,7 @@ describe('AuditPage', () => {
         await flushPromises();
 
         const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-          typeof c[0] === 'string' && (c[0] as string).includes('/api/Audit/logs')
+          typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
         );
         expect(logsCall).toBeDefined();
       }
@@ -375,7 +375,7 @@ describe('AuditPage', () => {
       await vmMethods(wrapper).verifyIntegrity();
       await flushPromises();
 
-      expect(mockGet).toHaveBeenCalledWith('/api/Audit/integrity', undefined);
+      expect(mockGet).toHaveBeenCalledWith('/api/audit/integrity', undefined);
       expect(ElMessage.success).toHaveBeenCalled();
     });
 
@@ -441,7 +441,7 @@ describe('AuditPage', () => {
       } catch { /* jsdom Blob 相关限制，忽略 */ }
 
       const exportCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/Audit/export')
+        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/export')
       );
       expect(exportCall).toBeDefined();
     });

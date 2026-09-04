@@ -13,18 +13,18 @@ vi.mock('../client', () => ({
 }));
 
 describe('evalApi', () => {
-  it('run 应调用 POST /api/Eval/run', () => {
+  it('run 应调用 POST /api/eval/run', () => {
     evalApi.run();
-    expect(mockPost).toHaveBeenCalledWith('/api/Eval/run');
+    expect(mockPost).toHaveBeenCalledWith('/api/eval/run');
   });
 
-  it('getStatus 应调用 GET /api/Eval/status/{taskId}', () => {
+  it('getStatus 应调用 GET /api/eval/status/{taskId}', () => {
     evalApi.getStatus('abc123');
-    expect(mockGet).toHaveBeenCalledWith('/api/Eval/status/abc123');
+    expect(mockGet).toHaveBeenCalledWith('/api/eval/status/abc123');
   });
 
-  it('cancel 应调用 DELETE /api/Eval/status/{taskId}', () => {
+  it('cancel 应调用 DELETE /api/eval/status/{taskId}', () => {
     evalApi.cancel('abc123');
-    expect(mockDel).toHaveBeenCalledWith('/api/Eval/status/abc123');
+    expect(mockDel).toHaveBeenCalledWith('/api/eval/status/abc123');
   });
 });

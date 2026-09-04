@@ -230,7 +230,7 @@ describe('Auth Store', () => {
       expect(result).toBe(true);
       expect(auth.token).toBe('login-token');
       expect(auth.role).toBe('admin');
-      expect(mockPost).toHaveBeenCalledWith('/api/Auth/login', {
+      expect(mockPost).toHaveBeenCalledWith('/api/auth/login', {
         username: 'admin', password: 'pass',
       });
     });
@@ -258,7 +258,7 @@ describe('Auth Store', () => {
       await auth.logout();
 
       expect(auth.token).toBeNull();
-      expect(mockPost).toHaveBeenCalledWith('/api/Auth/logout');
+      expect(mockPost).toHaveBeenCalledWith('/api/auth/logout');
     });
   });
 });

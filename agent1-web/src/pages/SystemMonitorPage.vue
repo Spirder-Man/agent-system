@@ -34,13 +34,20 @@ const ollamaBadge = computed(() => {
 
 async function fetchAll() {
   try {
-    const [hRes, aRes] = await Promise.all([
+    const [hRes, aRes] = await Promise.allSettled([
       apiClient.get<HealthStatus>('/health'),
-      apiClient.get<AuditStatsResponse>('/api/Audit/stats'),
+      apiClient.get<AuditStatsResponse>('/api/audit/stats'),
     ]);
-    health.value = hRes.data;
-    auditStats.value = aRes.data;
-    error.value = '';
+    // 健康数据与审计统计彼此独立，任一侧失败只影响对应区块，不再拖垮整页。
+    if (hRes.status === 'fulfilled') health.value = hRes.value.data;
+    if (aRes.status === 'fulfilled') auditStats.value = aRes.value.data;
+
+    // 仅当健康数据也拿不到时（真正的连接故障），才判定为整体加载失败。
+    if (hRes.status === 'rejected' && aRes.status === 'rejected') {
+      error.value = '监控数据加载失败';
+    } else {
+      error.value = '';
+    }
   } catch {
     error.value = '监控数据加载失败';
   } finally { loading.value = false; }

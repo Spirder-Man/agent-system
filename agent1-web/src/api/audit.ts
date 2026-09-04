@@ -21,18 +21,18 @@ export interface AuditLogsParams {
 export const auditApi = {
   /** 查询审计日志列表（支持时间范围 + 用户筛选 + 分页） */
   getLogs: (params?: AuditLogsParams) =>
-    get<AuditLogListResponse>('/api/Audit/logs', { params }),
+    get<AuditLogListResponse>('/api/audit/logs', { params }),
 
   /** 验证 SHA256 哈希链完整性 */
   verifyIntegrity: () =>
-    get<AuditIntegrityResponse>('/api/Audit/integrity'),
+    get<AuditIntegrityResponse>('/api/audit/integrity'),
 
   /** 导出审计报告 */
   exportReport: (from: string, to: string) =>
-    get<{ report: string; generatedAt: string }>('/api/Audit/export', {
+    get<{ report: string; generatedAt: string }>('/api/audit/export', {
       params: { from, to },
     }),
 
   /** 审计统计摘要 */
-  getStats: () => get<AuditStatsResponse>('/api/Audit/stats'),
+  getStats: () => get<AuditStatsResponse>('/api/audit/stats'),
 };

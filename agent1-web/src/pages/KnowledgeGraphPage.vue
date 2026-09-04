@@ -17,7 +17,7 @@ async function search() {
   loading.value = true;
   start('正在查询知识图谱…');
   try {
-    const { data } = await apiClient.post<KnowledgeGraphResult>('/api/KnowledgeGraph/query', {
+    const { data } = await apiClient.post<KnowledgeGraphResult>('/api/knowledgegraph/query', {
       query: query.value.trim(),
     });
     result.value = data;

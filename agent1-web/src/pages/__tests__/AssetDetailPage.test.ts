@@ -284,7 +284,7 @@ describe('AssetDetailPage', () => {
       expect(wrapper.text()).toContain('查询化学品属性');
     });
 
-    it('点击查询应调用 POST /api/Compliance/hazard/query', async () => {
+    it('点击查询应调用 POST /api/compliance/hazard/query', async () => {
       mockGet.mockResolvedValue({ data: compliantAsset });
       mockPost.mockResolvedValue({ data: hazardResult });
       const wrapper = mountPage('a1', 'auditor');
@@ -296,7 +296,7 @@ describe('AssetDetailPage', () => {
       await queryBtn!.trigger('click');
       await flushPromises();
 
-      expect(mockPost).toHaveBeenCalledWith('/api/Compliance/hazard/query', {
+      expect(mockPost).toHaveBeenCalledWith('/api/compliance/hazard/query', {
         substanceName: '苯',
       });
     });
@@ -409,7 +409,7 @@ describe('AssetDetailPage', () => {
       mockGet.mockResolvedValue({ data: compliantAsset });
       const wrapper = mountPage('a99');
       await flushPromises();
-      expect(mockGet).toHaveBeenCalledWith('/api/Inspection/assets/a99');
+      expect(mockGet).toHaveBeenCalledWith('/api/inspection/assets/a99');
     });
 
     it('quantityTons=0 应正常显示', async () => {

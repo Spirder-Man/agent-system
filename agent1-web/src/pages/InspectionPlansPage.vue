@@ -32,7 +32,7 @@ async function fetchPlans() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await apiClient.get<InspectionPlanListItem[]>('/api/Inspection/plans');
+    const { data } = await apiClient.get<InspectionPlanListItem[]>('/api/inspection/plans');
     plans.value = data;
   } catch {
     error.value = '加载失败';
@@ -54,7 +54,7 @@ async function createPlan() {
   }
   submitting.value = true;
   try {
-    await apiClient.post('/api/Inspection/plans', {
+    await apiClient.post('/api/inspection/plans', {
       name: p.name.trim(),
       area: p.area.trim(),
       type: p.type,
@@ -82,7 +82,7 @@ async function createPlan() {
 async function executePlan(plan: InspectionPlanListItem) {
   executingId.value = plan.planId;
   try {
-    const { data } = await apiClient.post(`/api/Inspection/plans/${plan.planId}/execute`);
+    const { data } = await apiClient.post(`/api/inspection/plans/${plan.planId}/execute`);
     ElMessage.success(`巡检完成，合规率 ${Math.round((data as { complianceRate: number }).complianceRate * 100)}%`);
     await fetchPlans();
   } catch (e: unknown) {
@@ -105,7 +105,7 @@ async function deletePlan(plan: InspectionPlanListItem) {
   }
   deletingId.value = plan.planId;
   try {
-    await apiClient.delete(`/api/Inspection/plans/${plan.planId}`);
+    await apiClient.delete(`/api/inspection/plans/${plan.planId}`);
     ElMessage.success('计划已删除');
     await fetchPlans();
   } catch (e: unknown) {

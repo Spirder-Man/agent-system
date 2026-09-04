@@ -71,7 +71,7 @@ describe('SettingsPage — KB 更新 API 路径 (P0-2 修复)', () => {
   });
 
   it('KB 更新应调用正确的 API 路径', async () => {
-    // 验证 KB 更新 API 路径为 /api/KnowledgeBase/incremental-load
+    // 验证 KB 更新 API 路径为 /api/knowledgebase/incremental-load
     // （而非错误的旧路径）
     mockPost.mockResolvedValue({ data: { success: true } });
 
@@ -86,7 +86,7 @@ describe('SettingsPage — KB 更新 API 路径 (P0-2 修复)', () => {
     if (kbBtn.length > 0) {
       await kbBtn[0].trigger('click');
       await flushPromises();
-      expect(mockPost).toHaveBeenCalledWith('/api/KnowledgeBase/incremental-load', undefined, undefined);
+      expect(mockPost).toHaveBeenCalledWith('/api/knowledgebase/incremental-load', undefined, undefined);
     } else {
       // 按钮可能因 stub 不渲染，至少验证 mock 可用
       expect(kbBtn.length).toBeGreaterThanOrEqual(0);
@@ -132,7 +132,7 @@ describe('EvalPage — cases 数组展示 (P0-3 修复)', () => {
     if (startBtn.length > 0) {
       await startBtn[0].trigger('click');
       await flushPromises();
-      expect(mockPost).toHaveBeenCalledWith('/api/Eval/run', undefined, undefined);
+      expect(mockPost).toHaveBeenCalledWith('/api/eval/run', undefined, undefined);
     }
   });
 

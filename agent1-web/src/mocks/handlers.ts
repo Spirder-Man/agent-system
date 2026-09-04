@@ -225,8 +225,8 @@ function maybeSimulateError(request?: Request): ApiError | null {
 // ═══════════════════════════════════════
 
 export const handlers = [
-  // ── POST /api/Auth/login (公开) ──
-  http.post('/api/Auth/login', async ({ request }) => {
+  // ── POST /api/auth/login (公开) ──
+  http.post('/api/auth/login', async ({ request }) => {
     await delay(300);
     const e = checkSimulatedError(request);
     if (e) return e;
@@ -245,8 +245,8 @@ export const handlers = [
     });
   }),
 
-  // ── POST /api/Auth/refresh (公开) ──
-  http.post('/api/Auth/refresh', async ({ request }) => {
+  // ── POST /api/auth/refresh (公开) ──
+  http.post('/api/auth/refresh', async ({ request }) => {
     await delay(200);
     const body = (await request.json()) as RefreshRequest;
     if (!body.refreshToken?.trim()) {
@@ -261,8 +261,8 @@ export const handlers = [
     });
   }),
 
-  // ── POST /api/Auth/logout (公开) ──
-  http.post('/api/Auth/logout', async () => {
+  // ── POST /api/auth/logout (公开) ──
+  http.post('/api/auth/logout', async () => {
     await delay(100);
     return HttpResponse.json({ message: '已登出' });
   }),
@@ -271,7 +271,7 @@ export const handlers = [
   // Compliance (Auth)
   // ═══════════════════════════════════════
 
-  http.get('/api/Compliance/summary', async ({ request }) => {
+  http.get('/api/compliance/summary', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -280,7 +280,7 @@ export const handlers = [
     return HttpResponse.json<ComplianceSummary>(mockComplianceSummary);
   }),
 
-  http.post('/api/Compliance/check', async ({ request }) => {
+  http.post('/api/compliance/check', async ({ request }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -292,7 +292,7 @@ export const handlers = [
     return HttpResponse.json<ComplianceResponse>(getComplianceResponse(body.query));
   }),
 
-  http.post('/api/Compliance/hazard/query', async ({ request }) => {
+  http.post('/api/compliance/hazard/query', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -302,7 +302,7 @@ export const handlers = [
     return HttpResponse.json<HazardQueryResponse>(getHazardResponse(body.substanceName));
   }),
 
-  http.post('/api/Compliance/storage/compatibility', async ({ request }) => {
+  http.post('/api/compliance/storage/compatibility', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -318,7 +318,7 @@ export const handlers = [
   // Dashboard 合规总览 (Auth) — 对齐后端 DashboardController 6 端点
   // ═══════════════════════════════════════
 
-  http.get('/api/Dashboard/overview', async ({ request }) => {
+  http.get('/api/dashboard/overview', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -340,7 +340,7 @@ export const handlers = [
     });
   }),
 
-  http.post('/api/Dashboard/scan', async ({ request }) => {
+  http.post('/api/dashboard/scan', async ({ request }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -352,7 +352,7 @@ export const handlers = [
     return HttpResponse.json({ scanId: 'mock-scan-001', totalAssets: 6 }, { status: 202 });
   }),
 
-  http.get('/api/Dashboard/scan/status', async ({ request }) => {
+  http.get('/api/dashboard/scan/status', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     // Mock 直接返回已完成快照（前端首轮轮询即命中 running=false → 刷新总览）
@@ -368,7 +368,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Dashboard/findings', async ({ request }) => {
+  http.get('/api/dashboard/findings', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -491,7 +491,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Dashboard/history', async ({ request }) => {
+  http.get('/api/dashboard/history', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -585,7 +585,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Dashboard/report/hazard', async ({ request }) => {
+  http.get('/api/dashboard/report/hazard', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -711,7 +711,7 @@ export const handlers = [
   // Emergency Response (Auth)
   // ═══════════════════════════════════════
 
-  http.post('/api/Emergency/response', async ({ request }) => {
+  http.post('/api/emergency/response', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -732,7 +732,7 @@ export const handlers = [
   // Knowledge Graph (Auth)
   // ═══════════════════════════════════════
 
-  http.post('/api/KnowledgeGraph/query', async ({ request }) => {
+  http.post('/api/knowledgegraph/query', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -781,7 +781,7 @@ export const handlers = [
   // ═══════════════════════════════════════
   // Inspection (Auth) ═══════════════════
 
-  http.get('/api/Inspection/plans', async ({ request }) => {
+  http.get('/api/inspection/plans', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -800,7 +800,7 @@ export const handlers = [
     return HttpResponse.json<InspectionPlanListItem[]>(listItems);
   }),
 
-  http.post('/api/Inspection/plans', async ({ request }) => {
+  http.post('/api/inspection/plans', async ({ request }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -827,7 +827,7 @@ export const handlers = [
     return HttpResponse.json({ planId: newPlan.planId, name: newPlan.name, items: newPlan.items.length });
   }),
 
-  http.get('/api/Inspection/plans/:id', async ({ request, params }) => {
+  http.get('/api/inspection/plans/:id', async ({ request, params }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -838,7 +838,7 @@ export const handlers = [
     return HttpResponse.json<InspectionPlan>(plan);
   }),
 
-  http.put('/api/Inspection/plans/:id', async ({ request, params }) => {
+  http.put('/api/inspection/plans/:id', async ({ request, params }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -854,7 +854,7 @@ export const handlers = [
     return HttpResponse.json({ planId: plan.planId, message: '计划已更新' });
   }),
 
-  http.delete('/api/Inspection/plans/:id', async ({ request, params }) => {
+  http.delete('/api/inspection/plans/:id', async ({ request, params }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -866,7 +866,7 @@ export const handlers = [
     return HttpResponse.json({ message: '计划已删除' });
   }),
 
-  http.post('/api/Inspection/plans/:id/execute', async ({ request, params }) => {
+  http.post('/api/inspection/plans/:id/execute', async ({ request, params }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -890,8 +890,8 @@ export const handlers = [
     });
   }),
 
-  // GET /api/Inspection/rounds — 巡检轮次列表（对齐后端 InspectionController.ListRounds）
-  http.get('/api/Inspection/rounds', async ({ request }) => {
+  // GET /api/inspection/rounds — 巡检轮次列表（对齐后端 InspectionController.ListRounds）
+  http.get('/api/inspection/rounds', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -918,7 +918,7 @@ export const handlers = [
     return HttpResponse.json<InspectionRoundListItem[]>(listItems);
   }),
 
-  http.get('/api/Inspection/rounds/:id', async ({ request, params }) => {
+  http.get('/api/inspection/rounds/:id', async ({ request, params }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -950,7 +950,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Inspection/reports/:id', async ({ request, params }) => {
+  http.get('/api/inspection/reports/:id', async ({ request, params }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -959,7 +959,7 @@ export const handlers = [
     return HttpResponse.json<InspectionReport>(getMockReport(params.id as string, 'round-001'));
   }),
 
-  http.get('/api/Inspection/reports/:id/export', async ({ request, params }) => {
+  http.get('/api/inspection/reports/:id/export', async ({ request, params }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -991,7 +991,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Inspection/assets', async ({ request }) => {
+  http.get('/api/inspection/assets', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1000,7 +1000,7 @@ export const handlers = [
     return HttpResponse.json<ChemicalAsset[]>(mockAssets);
   }),
 
-  http.get('/api/Inspection/assets/:assetId', async ({ request, params }) => {
+  http.get('/api/inspection/assets/:assetId', async ({ request, params }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1011,7 +1011,7 @@ export const handlers = [
     return HttpResponse.json<ChemicalAsset>(asset);
   }),
 
-  http.post('/api/Inspection/scan', async ({ request }) => {
+  http.post('/api/inspection/scan', async ({ request }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1022,7 +1022,7 @@ export const handlers = [
     return HttpResponse.json<ScanResult>(mockScanResult);
   }),
 
-  http.post('/api/Inspection/quick-check', async ({ request }) => {
+  http.post('/api/inspection/quick-check', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1056,7 +1056,7 @@ export const handlers = [
   // Tickets (Auth)
   // ═══════════════════════════════════════
 
-  http.get('/api/Tickets', async ({ request }) => {
+  http.get('/api/tickets', async ({ request }) => {
     const g = readAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1065,7 +1065,7 @@ export const handlers = [
     return HttpResponse.json<TicketListResponse>(mockTicketList);
   }),
 
-  http.put('/api/Tickets/:id/status', async ({ request, params }) => {
+  http.put('/api/tickets/:id/status', async ({ request, params }) => {
     const g = writeAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1179,7 +1179,7 @@ export const handlers = [
   // Audit 审计日志 (Admin only) — 对齐后端 AuditController
   // ═══════════════════════════════════════
 
-  http.get('/api/Audit/logs', async ({ request }) => {
+  http.get('/api/audit/logs', async ({ request }) => {
     const g = adminAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1249,7 +1249,7 @@ export const handlers = [
     return HttpResponse.json<AuditLogListResponse>({ total, page, pageSize, logs: paged });
   }),
 
-  http.get('/api/Audit/integrity', async ({ request }) => {
+  http.get('/api/audit/integrity', async ({ request }) => {
     const g = adminAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1263,7 +1263,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Audit/export', async ({ request }) => {
+  http.get('/api/audit/export', async ({ request }) => {
     const g = adminAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);
@@ -1276,7 +1276,7 @@ export const handlers = [
     });
   }),
 
-  http.get('/api/Audit/stats', async ({ request }) => {
+  http.get('/api/audit/stats', async ({ request }) => {
     const g = adminAuthGuard(request);
     if (g) return g;
     const e = checkSimulatedError(request);

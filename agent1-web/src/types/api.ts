@@ -99,7 +99,7 @@ export interface InspectionItemRequest {
   capability?: string;
 }
 
-/** 巡检计划列表项 — 对齐 GET /api/Inspection/plans 返回格式（items 为数字计数） */
+/** 巡检计划列表项 — 对齐 GET /api/inspection/plans 返回格式（items 为数字计数） */
 export interface InspectionPlanListItem {
   planId: string;
   name: string;
@@ -110,7 +110,7 @@ export interface InspectionPlanListItem {
   createdAt: string;
 }
 
-/** 巡检计划详情 — 对齐 GET /api/Inspection/plans/:id 返回格式（items 为完整对象数组） */
+/** 巡检计划详情 — 对齐 GET /api/inspection/plans/:id 返回格式（items 为完整对象数组） */
 export interface InspectionPlan {
   planId: string;
   name: string;
@@ -146,7 +146,7 @@ export interface InspectionRound {
   results: InspectionItemResult[];
 }
 
-/** 巡检轮次详情 — 对齐 GET /api/Inspection/rounds/:id，warnings 为计数而非数组 */
+/** 巡检轮次详情 — 对齐 GET /api/inspection/rounds/:id，warnings 为计数而非数组 */
 export interface InspectionRoundDetail {
   roundId: string;
   planId: string;
@@ -184,7 +184,7 @@ export interface InspectionItemResult {
   elapsedMs: number;
 }
 
-/** 巡检轮次列表项 — 对齐 GET /api/Inspection/rounds */
+/** 巡检轮次列表项 — 对齐 GET /api/inspection/rounds */
 export interface InspectionRoundListItem {
   roundId: string;
   planId: string;
@@ -516,7 +516,7 @@ export interface TicketFollowupResult {
 
 // ── Dashboard 合规总览 (DashboardController 6 端点) ──
 
-/** GET /api/Dashboard/overview */
+/** GET /api/dashboard/overview */
 export interface DashboardOverview {
   totalAssets: number;
   checkedAssets: number;
@@ -532,7 +532,7 @@ export interface DashboardOverview {
   findingsByStatus: Record<string, number>;
 }
 
-/** GET /api/Dashboard/assets */
+/** GET /api/dashboard/assets */
 export interface DashboardAssetItem {
   assetId: string;
   name: string;
@@ -550,7 +550,7 @@ export interface DashboardAssetItem {
   applicableRegulations: string[];
 }
 
-/** GET /api/Dashboard/findings */
+/** GET /api/dashboard/findings */
 export interface DashboardFinding {
   findingId: string;
   description: string;
@@ -586,13 +586,13 @@ export interface DashboardFindingsResponse {
   };
 }
 
-/** POST /api/Dashboard/scan — 202 受理响应（[#4] 扫描已转后台执行） */
+/** POST /api/dashboard/scan — 202 受理响应（[#4] 扫描已转后台执行） */
 export interface DashboardScanAccepted {
   scanId: string;
   totalAssets: number;
 }
 
-/** GET /api/Dashboard/scan/status — 后台扫描进度快照（[#4] 前端 2s 轮询） */
+/** GET /api/dashboard/scan/status — 后台扫描进度快照（[#4] 前端 2s 轮询） */
 export interface DashboardScanStatus {
   running: boolean;
   scanId: string | null;
@@ -604,7 +604,7 @@ export interface DashboardScanStatus {
   error: string | null;
 }
 
-/** GET /api/Dashboard/history */
+/** GET /api/dashboard/history */
 export interface DashboardHistoryRound {
   roundId: string;
   startedAt: string;
@@ -639,7 +639,7 @@ export interface DashboardHistoryResponse {
   statusBreakdown: Record<string, number>;
 }
 
-/** GET /api/Dashboard/report/hazard */
+/** GET /api/dashboard/report/hazard */
 export interface DashboardHazardItem {
   findingId: string;
   description: string;

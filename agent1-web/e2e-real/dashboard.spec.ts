@@ -19,7 +19,7 @@ test.describe('P3-Real: 仪表盘 — 合规总览 + 指标验证 (真实数据)
 
   // ── 仪表盘加载 ──
   test('仪表盘应展示合规总览卡片和真实数据指标', async ({ page }) => {
-    const title = page.locator('text=合规仪表盘');
+    const title = page.locator('text=化工智能生产运营中心').or(page.locator('text=合规仪表盘'));
     await expect(title.first()).toBeVisible({ timeout: 15_000 });
 
     // 验证页面主体内容已加载（真实数据来自 DB）

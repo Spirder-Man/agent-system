@@ -17,7 +17,7 @@ const router = useRouter();
 
 async function fetchAssets() {
   loading.value = true; error.value = '';
-  try { const { data } = await apiClient.get<ChemicalAsset[]>('/api/Inspection/assets'); assets.value = data; }
+  try { const { data } = await apiClient.get<ChemicalAsset[]>('/api/inspection/assets'); assets.value = data; }
   catch { error.value = '加载失败'; }
   finally { loading.value = false; }
 }

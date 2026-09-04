@@ -9,14 +9,19 @@ export default defineConfig({
     environment: 'jsdom',
     // 全局 setup（如 msw server 等）
     setupFiles: ['./src/test-setup.ts'],
-    // 排除 node_modules / e2e / e2e-real 目录（后两者为 Playwright spec，非 vitest 测试）
-    exclude: ['node_modules', 'e2e', 'e2e-real'],
+    // 排除 node_modules 和 e2e 目录
+    exclude: ['node_modules', 'e2e'],
     // 覆盖率配置
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html'],
       reportsDirectory: './coverage',
-      exclude: ['node_modules/', 'src/env.d.ts', 'vitest.config.ts', 'src/test-setup.ts'],
+      exclude: [
+        'node_modules/',
+        'src/env.d.ts',
+        'vitest.config.ts',
+        'src/test-setup.ts',
+      ],
     },
   },
   resolve: {

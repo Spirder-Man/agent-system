@@ -77,7 +77,7 @@ describe('AIChatPage', () => {
       }
     });
 
-    it('发送应调用 POST /api/Compliance/check', async () => {
+    it('发送应调用 POST /api/compliance/check', async () => {
       mockPost.mockResolvedValue({
         data: {
           query: '苯和丙酮能放在同一个仓库吗',
@@ -97,7 +97,7 @@ describe('AIChatPage', () => {
         await flushPromises();
       }
 
-      expect(mockPost).toHaveBeenCalledWith('/api/Compliance/check', {
+      expect(mockPost).toHaveBeenCalledWith('/api/compliance/check', {
         query: '苯和丙酮能放在同一个仓库吗',
       });
     });
@@ -170,7 +170,7 @@ describe('AIChatPage', () => {
         await firstSuggestion.trigger('click');
         await flushPromises();
 
-        expect(mockPost).toHaveBeenCalledWith('/api/Compliance/check', {
+        expect(mockPost).toHaveBeenCalledWith('/api/compliance/check', {
           query: '苯和丙酮能放在同一个仓库吗',
         });
       }
