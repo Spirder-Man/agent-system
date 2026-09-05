@@ -176,3 +176,6 @@ docs/软著申请材料/*.pdf
 # 编码损坏的字段明细副本（保留 docs/数据库化石/全库15表字段明细_20260811.csv）
 docs/*20260811.csv
 !docs/数据库化石/全库15表字段明细_20260811.csv
+
+# 本地 llama.cpp 源码副本（镜像构建仍 git clone b5092；离线包在 容器化部署/gpu/llama.cpp）
+third_party/llama.cpp/

@@ -19,8 +19,9 @@ cache-monitor/
 gravity-maze/
 wechat-group-report/
 
-# ── 脚本（不参与容器构建）──
-scripts/
+# ── 脚本（不参与容器构建；llama 入口脚本必须进镜像）──
+scripts/*
+!scripts/llama-entrypoint.sh
 
 # ── 文档 ──
 docs/
