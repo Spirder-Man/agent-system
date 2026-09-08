@@ -23,6 +23,7 @@ const filterTo = ref('');
 // 哈希链完整性
 const integrity = ref<AuditIntegrityResponse | null>(null);
 const checkingIntegrity = ref(false);
+const repairingChain = ref(false);
 
 // 统计
 const stats = ref<AuditStatsResponse | null>(null);
@@ -63,6 +64,19 @@ async function verifyIntegrity() {
     ElMessage.error('哈希链验证失败');
   } finally {
     checkingIntegrity.value = false;
+  }
+}
+
+async function repairChain() {
+  repairingChain.value = true;
+  try {
+    const data = await auditApi.repairChain();
+    ElMessage.success(data.detail);
+    await verifyIntegrity();
+  } catch {
+    ElMessage.error('哈希链修复失败');
+  } finally {
+    repairingChain.value = false;
   }
 }
 
@@ -119,6 +133,16 @@ onMounted(() => {
           @click="verifyIntegrity"
         >
           {{ integrity?.intact ? '哈希链完整' : checkingIntegrity ? '验证中…' : '验证哈希链' }}
+        </el-button>
+        <el-button
+          v-if="integrity && !integrity.intact"
+          :loading="repairingChain"
+          size="small"
+          type="primary"
+          data-testid="audit-repair-btn"
+          @click="repairChain"
+        >
+          {{ repairingChain ? '修复中…' : '修复哈希链' }}
         </el-button>
         <el-button size="small" @click="exportReport">导出报告</el-button>
         <el-button size="small" :icon="RefreshRight" @click="fetchAuditLogs">刷新</el-button>

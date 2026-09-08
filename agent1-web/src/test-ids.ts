@@ -42,6 +42,8 @@ export const DASHBOARD = {
 export const AUDIT = {
   /** 哈希链完整性校验按钮 */
   integrityBtn: 'audit-integrity-btn',
+  /** 一键重算并回写 chain_hash */
+  repairBtn: 'audit-repair-btn',
   /** 完整性验证结果提示 */
   integrityResult: 'audit-integrity-result',
   /** 审计日志表格 */
@@ -95,6 +97,7 @@ export const ALL_TEST_IDS = new Set<string>([
   DASHBOARD.scanResult,
   // AuditPage
   AUDIT.integrityBtn,
+  AUDIT.repairBtn,
   AUDIT.integrityResult,
   AUDIT.logTable,
   // EmergencyPage

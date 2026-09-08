@@ -18,11 +18,32 @@ vi.mock('element-plus', () => ({
   ElMessage: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
   ElMessageBox: { confirm: vi.fn(() => Promise.resolve()) },
   ElTag: { name: 'ElTag', template: '<span><slot /></span>', props: { type: String, size: String } },
-  ElButton: { name: 'ElButton', template: '<button :disabled="loading || disabled"><slot /></button>', props: { loading: Boolean, disabled: Boolean, icon: Object, type: String, size: String, text: Boolean } },
-  ElInput: { name: 'ElInput', template: '<input :placeholder="placeholder" />', props: { modelValue: String, placeholder: String, size: String, clearable: Boolean, prefixIcon: Object } },
-  ElDatePicker: { name: 'ElDatePicker', template: '<input />', props: { modelValue: String, type: String, placeholder: String, size: String, valueFormat: String } },
-  ElPagination: { name: 'ElPagination', template: '<div class="el-pagination"></div>', props: { currentPage: Number, pageSize: Number, total: Number, layout: String, small: Boolean }, emits: ['current-change'] },
-  ElAlert: { name: 'ElAlert', template: '<div><slot name="title" />{{ title }}</div>', props: { title: String, type: String, closable: Boolean, showIcon: Boolean } },
+  ElButton: {
+    name: 'ElButton',
+    template: '<button :disabled="loading || disabled"><slot /></button>',
+    props: { loading: Boolean, disabled: Boolean, icon: Object, type: String, size: String, text: Boolean },
+  },
+  ElInput: {
+    name: 'ElInput',
+    template: '<input :placeholder="placeholder" />',
+    props: { modelValue: String, placeholder: String, size: String, clearable: Boolean, prefixIcon: Object },
+  },
+  ElDatePicker: {
+    name: 'ElDatePicker',
+    template: '<input />',
+    props: { modelValue: String, type: String, placeholder: String, size: String, valueFormat: String },
+  },
+  ElPagination: {
+    name: 'ElPagination',
+    template: '<div class="el-pagination"></div>',
+    props: { currentPage: Number, pageSize: Number, total: Number, layout: String, small: Boolean },
+    emits: ['current-change'],
+  },
+  ElAlert: {
+    name: 'ElAlert',
+    template: '<div><slot name="title" />{{ title }}</div>',
+    props: { title: String, type: String, closable: Boolean, showIcon: Boolean },
+  },
   ElIcon: { name: 'ElIcon', template: '<span><slot /></span>', props: { size: Number } },
 }));
 
@@ -37,8 +58,12 @@ vi.mock('@element-plus/icons-vue', () => ({
 
 // Mock axios
 const mockGet = vi.fn();
+const mockPost = vi.fn();
 vi.mock('@/lib/axios', () => ({
-  default: { get: (...args: unknown[]) => mockGet(...args) },
+  default: {
+    get: (...args: unknown[]) => mockGet(...args),
+    post: (...args: unknown[]) => mockPost(...args),
+  },
 }));
 
 // Mock SkeletonTable / EmptyState
@@ -46,7 +71,12 @@ vi.mock('@/components/common/SkeletonTable.vue', () => ({
   default: { name: 'SkeletonTable', template: '<div class="skeleton-table"></div>', props: { rows: Number } },
 }));
 vi.mock('@/components/common/EmptyState.vue', () => ({
-  default: { name: 'EmptyState', template: '<div class="empty-state">{{ title }}<button @click="$emit(\'action\')">重试</button></div>', props: { icon: String, title: String, description: String }, emits: ['action'] },
+  default: {
+    name: 'EmptyState',
+    template: '<div class="empty-state">{{ title }}<button @click="$emit(\'action\')">重试</button></div>',
+    props: { icon: String, title: String, description: String },
+    emits: ['action'],
+  },
 }));
 
 import AuditPage from '../AuditPage.vue';
@@ -57,6 +87,7 @@ function vmMethods(wrapper: ReturnType<typeof mountPage>) {
   return wrapper.vm as unknown as {
     fetchAuditLogs: () => Promise<void>;
     verifyIntegrity: () => Promise<void>;
+    repairChain: () => Promise<void>;
     exportReport: () => Promise<void>;
   };
 }
@@ -83,7 +114,7 @@ const logEntry2 = {
 
 const statsData = {
   totalCount: 1523,
-  byOperation: { '合规审核': 500, '危化品查询': 200, '巡检执行': 50, '查看报告': 773 },
+  byOperation: { 合规审核: 500, 危化品查询: 200, 巡检执行: 50, 查看报告: 773 },
   byUser: { admin: 680, auditor: 520, viewer: 323 },
   lastLogAt: '2026-07-10 14:30:00',
 };
@@ -107,12 +138,11 @@ function mountPage() {
 }
 
 function mountWithLogs(count = 1) {
-  const logs = count === 1
-    ? [logEntry]
-    : [logEntry, logEntry2, { ...logEntry, id: 3, user: 'viewer', operation: '查看报告', isSensitive: false }];
-  mockGet
-    .mockResolvedValueOnce({ data: { logs, total: logs.length } })
-    .mockResolvedValueOnce({ data: statsData });
+  const logs =
+    count === 1
+      ? [logEntry]
+      : [logEntry, logEntry2, { ...logEntry, id: 3, user: 'viewer', operation: '查看报告', isSensitive: false }];
+  mockGet.mockResolvedValueOnce({ data: { logs, total: logs.length } }).mockResolvedValueOnce({ data: statsData });
   return mountPage();
 }
 
@@ -120,6 +150,7 @@ describe('AuditPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockReset();
+    mockPost.mockReset();
   });
 
   // ═══════════════════════════════════════
@@ -161,9 +192,7 @@ describe('AuditPage', () => {
     });
 
     it('空列表应显示空状态', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -196,9 +225,7 @@ describe('AuditPage', () => {
   // ═══════════════════════════════════════
   describe('审计统计', () => {
     it('应展示总记录数、操作分布、活跃用户和最后记录时间', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -212,9 +239,7 @@ describe('AuditPage', () => {
     });
 
     it('应展示活跃用户数量', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -224,9 +249,7 @@ describe('AuditPage', () => {
     });
 
     it('应展示最后记录时间', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -235,9 +258,7 @@ describe('AuditPage', () => {
     });
 
     it('应展示用户活跃分布标签', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -266,9 +287,7 @@ describe('AuditPage', () => {
   // ═══════════════════════════════════════
   describe('日志筛选', () => {
     it('点击查询应重新请求日志', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -279,8 +298,8 @@ describe('AuditPage', () => {
       await vmMethods(wrapper).fetchAuditLogs();
       await flushPromises();
 
-      const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
+      const logsCall = mockGet.mock.calls.find(
+        (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs'),
       );
       expect(logsCall).toBeDefined();
     });
@@ -292,7 +311,7 @@ describe('AuditPage', () => {
       expect(wrapper.text()).toContain('查询');
       // 关闭按钮被 mocked 为 button，确认筛选相关组件已渲染
       const buttons = wrapper.findAll('button');
-      const queryBtn = buttons.find(b => b.text().includes('查询'));
+      const queryBtn = buttons.find((b) => b.text().includes('查询'));
       expect(queryBtn).toBeDefined();
     });
 
@@ -304,8 +323,8 @@ describe('AuditPage', () => {
       mountPage();
       await flushPromises();
 
-      const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
+      const logsCall = mockGet.mock.calls.find(
+        (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs'),
       );
       expect(logsCall).toBeDefined();
       expect((logsCall as unknown[])[1]).toHaveProperty('params');
@@ -351,8 +370,8 @@ describe('AuditPage', () => {
         await pagination.vm.$emit('current-change', 2);
         await flushPromises();
 
-        const logsCall = mockGet.mock.calls.find((c: unknown[]) =>
-          typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs')
+        const logsCall = mockGet.mock.calls.find(
+          (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/logs'),
         );
         expect(logsCall).toBeDefined();
       }
@@ -364,9 +383,7 @@ describe('AuditPage', () => {
   // ═══════════════════════════════════════
   describe('哈希链验证', () => {
     it('哈希链完整应调用 integrity 端点并显示成功', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -380,9 +397,7 @@ describe('AuditPage', () => {
     });
 
     it('哈希链断裂应显示警告弹窗', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -392,12 +407,32 @@ describe('AuditPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('哈希链断裂');
+      expect(wrapper.text()).toContain('修复哈希链');
+    });
+
+    it('修复哈希链应调用 repair-chain 后再验证', async () => {
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
+
+      const wrapper = mountPage();
+      await flushPromises();
+
+      mockGet.mockResolvedValue({ data: { intact: false, detail: '记录 #4 哈希不匹配' } });
+      await vmMethods(wrapper).verifyIntegrity();
+      await flushPromises();
+
+      mockPost.mockResolvedValue({
+        data: { repaired: 2, detail: '哈希链修复完成：共 10 条记录，修复 2 条不匹配的哈希值' },
+      });
+      mockGet.mockResolvedValue({ data: { intact: true, detail: '哈希链完整，共 10 条记录' } });
+      await vmMethods(wrapper).repairChain();
+      await flushPromises();
+
+      expect(mockPost.mock.calls[0][0]).toBe('/api/audit/repair-chain');
+      expect(ElMessage.success).toHaveBeenCalled();
     });
 
     it('验证失败应弹出错误提示', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -415,9 +450,7 @@ describe('AuditPage', () => {
   // ═══════════════════════════════════════
   describe('导出报告', () => {
     it('导出按钮存在', async () => {
-      mockGet
-        .mockResolvedValueOnce({ data: { logs: [], total: 0 } })
-        .mockResolvedValueOnce({ data: statsData });
+      mockGet.mockResolvedValueOnce({ data: { logs: [], total: 0 } }).mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();
       await flushPromises();
@@ -438,10 +471,12 @@ describe('AuditPage', () => {
       try {
         await vmMethods(wrapper).exportReport();
         await flushPromises();
-      } catch { /* jsdom Blob 相关限制，忽略 */ }
+      } catch {
+        /* jsdom Blob 相关限制，忽略 */
+      }
 
-      const exportCall = mockGet.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/export')
+      const exportCall = mockGet.mock.calls.find(
+        (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('/api/audit/export'),
       );
       expect(exportCall).toBeDefined();
     });
@@ -502,7 +537,16 @@ describe('AuditPage', () => {
 
     it('多条日志应全部渲染', async () => {
       mockGet
-        .mockResolvedValueOnce({ data: { logs: [logEntry, logEntry2, { ...logEntry, id: 3, user: 'viewer', operation: '查看报告', isSensitive: false, chainHash: null }], total: 3 } })
+        .mockResolvedValueOnce({
+          data: {
+            logs: [
+              logEntry,
+              logEntry2,
+              { ...logEntry, id: 3, user: 'viewer', operation: '查看报告', isSensitive: false, chainHash: null },
+            ],
+            total: 3,
+          },
+        })
         .mockResolvedValueOnce({ data: statsData });
 
       const wrapper = mountPage();

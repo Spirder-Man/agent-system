@@ -1260,6 +1260,23 @@ namespace Agent1.Services
         // 审计日志持久化（生产安全加固 — 替代内存 List）
         // ═══════════════════════════════════════════
 
+        /// <summary>
+        /// timestamptz 读回统一成 UTC。Windows/Docker Desktop 上 Convert.ToDateTime
+        /// 常得到 Local/Unspecified，再参与哈希会和 Linux（飞致云）对不上。
+        /// </summary>
+        private static DateTime ReadAuditTimestampUtc(object value)
+        {
+            if (value is DBNull) return DateTime.MinValue;
+            if (value is DateTimeOffset dto) return dto.UtcDateTime;
+            var dt = Convert.ToDateTime(value);
+            return dt.Kind switch
+            {
+                DateTimeKind.Utc => dt,
+                DateTimeKind.Local => dt.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+            };
+        }
+
         public async Task AddAuditLogAsync(string userId, string operation, string details, string? ipAddress = null, string? chainHash = null, DateTime? createTime = null)
         {
             try
@@ -1378,7 +1395,7 @@ namespace Agent1.Services
                         UserId = reader["user_id"]?.ToString() ?? "",
                         Operation = reader["action"]?.ToString() ?? "",
                         Details = reader["detail"]?.ToString() ?? "",
-                        CreateTime = reader["created_at"] is DBNull ? DateTime.MinValue : Convert.ToDateTime(reader["created_at"]),
+                        CreateTime = ReadAuditTimestampUtc(reader["created_at"]),
                         ChainHash = reader["chain_hash"]?.ToString()
                     });
                 }
@@ -1411,7 +1428,7 @@ namespace Agent1.Services
                         UserId = reader["user_id"]?.ToString() ?? "",
                         Operation = reader["action"]?.ToString() ?? "",
                         Details = reader["detail"]?.ToString() ?? "",
-                        CreateTime = reader["created_at"] is DBNull ? DateTime.MinValue : Convert.ToDateTime(reader["created_at"]),
+                        CreateTime = ReadAuditTimestampUtc(reader["created_at"]),
                         ChainHash = reader["chain_hash"]?.ToString()
                     });
                 }

@@ -4,6 +4,12 @@
 
 ## 近期更新
 
+### 2026-09-08 — 审计哈希链（本机 / Windows）
+
+- 本机点「验证哈希链」出现 ID=4 断裂，**不是 GPU 与 CPU 推理把链算断**。飞致云 4090 是另一套库；本机 Docker 库从 9 月 4 日起混写，容器还出现过 exit 255。
+- Bug-031 写过「启动自愈」，但 `Agent1.Api` 启动时并未调用 `RepairChainAsync`。现已接上；审计页在断裂时出现「修复哈希链」。
+- 读回 `timestamptz` 统一为 UTC，避免 Windows 上 `DateTime.Kind` 与 Linux 不一致导致误报。
+
 ### 2026-09-08 — 无 GPU 评委脚本（Windows）
 
 - `scripts/demo-compatibility.sh` 请求体改为 JSON `\u` 转义，避免 Git Bash 把中文 `curl -d` 弄成 HTTP 400。

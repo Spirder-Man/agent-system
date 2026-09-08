@@ -371,6 +371,17 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogInformation("数据库连接成功");
         await databaseService.InitializeDatabaseAsync();
+        try
+        {
+            var (repaired, detail) = await sp.GetRequiredService<IAuditService>().RepairChainAsync();
+            logger.LogInformation("哈希链启动自愈: {Detail}", detail);
+            if (repaired > 0)
+                logger.LogWarning("哈希链启动自愈回写了 {Count} 条。多见于本机混写库或 Windows 读回 timestamptz 的 Kind 与 Linux 不一致，不是 GPU/CPU 推理把链算断。", repaired);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "哈希链启动自愈失败，不影响启动");
+        }
         // [认知漂移监测] 锚点表就绪性检查（缺失仅警告，不阻塞启动）
         await sp.GetRequiredService<DriftAnchorRegistry>().EnsureInitializedAsync();
     }
