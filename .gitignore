@@ -109,9 +109,17 @@ logs/linux/eval_report*.json
 # 其他构建/统计产物
 .CodeCounter/
 
-# 知识库文件（运行时语料，禁止提交）；目录说明入库
+# 知识库：国标全文禁止提交。虚构样例与目录说明允许入库。
 knowledgebase/*
 !knowledgebase/README.md
+!knowledgebase/园区规则/
+!knowledgebase/园区规则/**
+!knowledgebase/历史案例/
+!knowledgebase/历史案例/**
+!knowledgebase/国标/
+!knowledgebase/国标/README.md
+!knowledgebase/化工专业条例/
+!knowledgebase/化工专业条例/README.md
 
 # === 2026-07-21 新增：E2E 三层契约架构相关忽略项 ===
 

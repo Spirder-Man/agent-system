@@ -7,6 +7,8 @@
 ### 2026-09-08 — 公开作品名
 
 - 大赛公开作品名改为 **苍卫**。工程目录与仓库名仍为 Agent1 / `agent-system`。
+- 知识库分层写清：SQL 种子进 Git；虚构园区样例进 `knowledgebase/`；国标全文与向量不进 Git。见 [knowledgebase/README.md](../../knowledgebase/README.md)。
+- 作品介绍 PDF 按苍卫重出；封面仓库/视频地址做成可点链接。
 
 ### 2026-09-07/08 — 飞致云 RTX 4090（离线包运行态）
 

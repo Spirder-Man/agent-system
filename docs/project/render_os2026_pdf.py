@@ -250,7 +250,7 @@ def inline_md(text: str) -> str:
     text = re.sub(r"`([^`]+)`", code_repl, text)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(
-        r"(https://gitee\.com/liuchao_yue/agent-system)",
+        r"(https://gitee\.com/liuchao_yue/agent-system(?:/[A-Za-z0-9_./\-]+)*)",
         r'<a href="\1">\1</a>',
         text,
     )
@@ -527,9 +527,9 @@ def build_cover_and_body(md: str) -> str:
     <tr><th>工程名</th><td>Agent1 / agent-system（仓库目录名不变）</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
-    <tr><th>代码仓库</th><td>https://gitee.com/liuchao_yue/agent-system</td></tr>
+    <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">https://gitee.com/liuchao_yue/agent-system</a></td></tr>
     <tr><th>默认分支</th><td>master</td></tr>
-    <tr><th>演示视频</th><td>https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</td></tr>
+    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
     <tr><th>团队成员</th><td>个人项目，招募中</td></tr>
   </table>
@@ -667,7 +667,11 @@ def main() -> None:
     HTML_PATH.write_text(html_doc, encoding="utf-8")
     print("Wrote", HTML_PATH)
     print_pdf(HTML_PATH, PDF_PATH)
-    stamp_header_footer(PDF_PATH)
+    try:
+        stamp_header_footer(PDF_PATH)
+        print("Stamped header/footer")
+    except Exception as exc:
+        print("PDF stamp skipped (body still written):", exc)
     print("Wrote", PDF_PATH, "size", PDF_PATH.stat().st_size)
 
 

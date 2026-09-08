@@ -139,9 +139,9 @@ hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 14pt 0; }
     <tr><th>工程名</th><td>Agent1 / agent-system（仓库目录名不变）</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
-    <tr><th>代码仓库</th><td>https://gitee.com/liuchao_yue/agent-system</td></tr>
+    <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">https://gitee.com/liuchao_yue/agent-system</a></td></tr>
     <tr><th>默认分支</th><td>master</td></tr>
-    <tr><th>演示视频</th><td>https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</td></tr>
+    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
     <tr><th>团队成员</th><td>个人项目，招募中</td></tr>
   </table>
@@ -341,7 +341,7 @@ dotnet test Agent1.Tests --filter &quot;Category!=Integration&quot;</code></pre>
 <p><code>RegulationRefs</code> 是法规编号的唯一白名单来源。模型不能发明 GB 编号。配置开关 <code>UseDecoupledArchitecture</code> 默认开启。当 <code>LLM_OPTIONAL=true</code> 且不启动 llama.cpp 时，系统使用 <code>DeterministicRuleEngine</code>。Function Calling 违约、模型接口中断、GPU 缺失，都可以落到同一条确定性链路，避免界面上只剩一段无法核验的生成文本。</p>
 <h3>3.3 检索与知识</h3>
 <p>中文化工短查询使用自研 NGram（完整词 + 2-gram + 单字）加内存 BM25；向量检索使用 pgvector；混合权重约 BM25 0.4、向量 0.6。采用 NGram 而非通用中文分词器，是为避免把「过氧化氢」一类术语切碎。完整词保留专业名称，2-gram 与单字补短查询召回。正文不附评测分数，检索设计以源码与架构文档为准。</p>
-<p>本仓库不包含国家标准全文。开源仓只含数据库 schema（<code>init_database.sql</code>）与危化品结构化种子（<code>db/migrations/002_chemical_knowledge_graph.sql</code>，名称 / CAS / 禁忌 / 安全距离等元数据）以及评测样例。国标原文由使用方自备合法副本，放入运行时目录 <code>knowledgebase/</code>（已 gitignore）。种子解决的是可演示、可复现的结构化查询；全文检索若发生在运行时，也只针对使用方自己放入的合法副本，不会把标准正文推进 Git。</p>
+<p>本仓库不包含国家标准全文。开源仓含数据库 schema（<code>init_database.sql</code>）、危化品结构化种子（<code>db/migrations/002_chemical_knowledge_graph.sql</code>，名称 / CAS / 禁忌 / 安全距离等元数据）、评测样例（<code>Data/ComplianceEvalSet.json</code>），以及 <code>knowledgebase/</code> 下虚构园区规定与案例（供检索管道演示）。国标原文由使用方自备合法副本，放入运行时 <code>knowledgebase/国标/</code>（gitignore，不提交正文）。向量写入 pgvector，在有 embedding 服务时由运行时对语料切块生成，不随 Git 下发。甲醇 × 硝酸禁配走种子与规则引擎，不依赖国标全文，也不依赖向量。</p>
 <h3>3.4 身份、审计与降级</h3>
 <p>身份认证采用 JWT，角色为 <code>admin</code> / <code>auditor</code> / <code>viewer</code>。业务操作写入 <code>audit_logs</code>。审计默认留存 180 天，属于应用层实现，不等于管理制度与人员控制点齐全。SHA256 哈希链用于日志防篡改，属于应用层做法，不是密码模块或硬件信任根。敏感信息脱敏。生产配置只写必填项名称，不写真实值：<code>JWT_KEY</code>（不少于 32 字符）、<code>DB_PASSWORD</code>、<code>AUTH_ACCOUNTS_JSON</code>，只存在本机 <code>.env</code>，不进 Git。生产密钥轮换由部署方在控制台完成。仓库树已清理历史中的旧口令。</p>
 <p>降级：Function Calling 违约或 LLM 熔断时，切换确定性规则引擎。等保口径见第 5 章。可私有化部署、数据可不出域，这是部署取向，不是已通过密评或等保。审计管理员与系统管理员职责分离尚未覆盖；三角色尚不是等保意义上的职责分离。</p>
@@ -371,7 +371,7 @@ dotnet test Agent1.Tests --filter &quot;Category!=Integration&quot;</code></pre>
 <h2>第 5 章 开源协议、依赖与合规口径</h2>
 <p>本项目开源协议为 MIT，LICENSE 位于仓库根目录，README 带有协议徽章。版权人刘超越，年份 2026。协议不是 Apache，也不是 GPL。</p>
 <p>第三方摘要见 <code>NOTICE</code>，直接依赖清单见 <code>THIRD_PARTY_NOTICES.md</code>。后端主要依赖许可：.NET / ASP.NET Core / Semantic Kernel 为 MIT；PostgreSQL / Npgsql 为 PostgreSQL License；Dapper 为 Apache-2.0；Vue 3 等前端为 MIT。必须点名的 copyleft：NuGet 包 <code>PDFtoImage</code> 为 AGPL-3.0-or-later，使用方需自行评估，该许可在此标明。llama.cpp 为 MIT，二进制不随本仓分发。NOTICE 再次声明不含国标全文、非等保测评对象。</p>
-<p>本仓库不包含国家标准全文。开源仓提供 <code>init_database.sql</code> 与 <code>db/migrations/002_chemical_knowledge_graph.sql</code>。国家标准文件须由使用方取得合法副本，放入运行时 <code>knowledgebase/</code>，该目录不提交版本库。</p>
+<p>本仓库不包含国家标准全文。开源仓提供 <code>init_database.sql</code>、<code>db/migrations/002_chemical_knowledge_graph.sql</code>，以及 <code>knowledgebase/</code> 下虚构园区样例。国家标准全文须由使用方取得合法副本放入 <code>knowledgebase/国标/</code>，该正文不提交版本库。向量不随仓库分发。</p>
 <p>本仓库不是已定级、已备案或已测评的网络安全等级保护对象。参照 GB/T 22239 第三级中与安全审计、访问控制、身份鉴别相关的部分控制点精神，不是已测评的等保对象。等保测评对象是网络运营者正在运行的信息系统，不是开源仓库；园区上线须自行定级备案测评。应用层可以参照部分控制点精神实现日志留存、哈希链和三角色，但不能代替网络运营者办理定级、备案与测评。未覆盖项包括管理制度与人员、物理安全、网络边界、集中管控、备份容灾、密码模块与时钟同步、审计管理员与系统管理员职责分离、生产环境真实客户端 IP 等。</p>
 <p>评委复现命令与仓库 README 一致。LICENSE 全文与完整依赖表见仓库根目录对应文件。</p>
 <p>文档目录：<code>docs/architecture/</code>、<code>docs/deploy/</code>、<code>docs/testing/</code>、<code>docs/project/</code>。CONTRIBUTING、SECURITY、行为准则、Issue 模板尚未完成，列入第 6 章规划。</p>

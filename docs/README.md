@@ -1,88 +1,89 @@
-# 化工园区危化品合规审核AI Agent 文档库
+# 文档从哪找
 
-> **文档库版本**：v2.0（深度扩展版 — 2026-06-24）
-> **核心修复文档**：[P0-P1修复详细技术文档](troubleshooting/P0-P1修复详细技术文档.md) | [RAG工程Bug修复笔记](troubleshooting/RAG工程Bug修复笔记_2026-05-26.md) | [故障排查文档](troubleshooting/故障排查文档.md) | [代码自检清单](工程skill/代码自检清单%20Skill.md)
+公开作品名 **苍卫**。工程名仍是 Agent1 / `agent-system`。
 
-## 文档结构说明
+Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库根目录找「大赛」两个字。
 
-```
-docs/
-├── architecture/              # 架构设计相关文档
-├── articles/                  # 技术文章与参数注入方案
-├── deploy/                    # 部署评测文档
-│   └── 3090服务器评测.md      # RTX 3090 RAG GPU加速性能评测
-├── technical-principles/      # 技术原理深度解析
-├── testing/                   # 测试相关文档
-├── troubleshooting/           # 故障排查与修复
-├── learning-notes/            # 学习笔记与理解
-└── project/                   # 项目基本文档
-```
-
-## 文档分类详情
-
-### 1. architecture/ - 架构设计文档
-包含项目的架构设计、整改方案、适配方案、优化方案等文档，适合阅读顺序：
-1. 先看「架构设计文档.md」了解整体架构
-2. 再看「化工园区危化品合规审核AI Agent架构适配方案.md」了解行业适配
-3. 最后看「架构验证报告.md」了解架构验证结果
-4. **「ModelScope模型选型决策框架.md」** — 本地模型选型评估方法（Qwen3/DeepSeek-R1 对比决策过程）
-
-### 2. articles/ - 技术文章
-实战技术文章与参数注入方案探讨：
-- **「Semantic_Kernel_Ollama_enable_thinking_参数注入方案探讨.md」** — 如何通过 DelegatingHandler 向 Ollama 注入 think 参数，控制 Qwen3 思考模式
-- 附参考图片：ollama-api-chat-think-schema.png、ollama-api-chat-think-example.png
-
-### 3. deploy/ - 部署评测文档
-GPU 部署环境评测与性能基准：
-- **「3090服务器评测.md」** — RTX 3090 24GB 环境下 RAG GPU 全链路加速性能评估报告
-
-### 4. technical-principles/ - 技术原理文档
-深入解析项目的核心技术原理：
-- BM25检索算法详解
-- C#底层机制与检索算法
-- 向量数据库原理与部署
-- 化工RAG系统技术深度拆解
-
-### 5. testing/ - 测试文档
-包含测试方案、测试案例、手动测试指南等。
-
-### 6. troubleshooting/ - 故障排查文档
-记录项目开发过程中的故障问题与修复方案：
-- **P0-P1修复详细技术文档.md** — 工业工具→化工合规工具替换全流程（P0 + P1 + 3项Bug修复），含完整代码对比与技术原理解析
-
-### 7. learning-notes/ - 学习笔记
-项目学习过程中的理解记录、设计思考、问题解答等：
-- **「K1-K9的具体问题.md」** — K1–K9 知识点详细问答记录
-
-### 8. project/ - 项目基本文档
-项目基础信息文档，包括数据库配置说明、版本演进记录等：
-- **「优化与修复汇总_2026-06-12.md」** — RAG GPU 加速 + 评估修复 + Bug 修复 + 架构改造 全量汇总
-
-### 9. 根目录文档
-- **「Agent1 十项核心技术决策深度拆解.md」** — 项目十项核心技术决策的完整复盘与深度拆解
-- **「FunctionCalling模型评测BUG记录.md」** — Function Calling 模型评测过程中的 BUG 记录与修复过程
-- **「别小看这两个for循环！中文RAG检索的底层核心解法.md」** — 中文 RAG 检索中 BM25 核心算法解析
-- **「🔴 断点地图：RAG 全链路深度理解.md」** — RAG 全链路断点调试地图（含详细截图）
+日常只看下面「先看这些」。其余文件夹是历史笔记，不必每次翻。
 
 ---
 
-## 建议阅读路径
+## 先看这些（按你要干什么）
 
-**初学者路径**：
-1. 先看 learning-notes/ 了解学习过程
-2. 再看 architecture/ 理解整体架构
-3. 然后看 technical-principles/ 深入技术原理
+| 你要干什么 | 打开这个 | 备注 |
+|------------|----------|------|
+| 交作品 / 给评委介绍 | [project/os2026-作品介绍.md](project/os2026-作品介绍.md) | 正文。同目录还有 `.html`、`.pdf`（PDF 可能比 md 旧一版） |
+| 作品介绍配图 | [project/os2026-figures/](project/os2026-figures/) | fig1–fig4 |
+| 仓库首页、怎么启动 | 根目录 [README.md](../README.md) | 评委无 GPU 走 demo compose |
+| 最近改了什么 | [project/CHANGELOG.md](project/CHANGELOG.md) | 版本编年，不写在首页 |
+| 等保怎么表述 | [project/等级保护口径.md](project/等级保护口径.md) | 参照控制点，不是已测评 |
+| Docker 一键拉起 | [deploy/Docker容器化一键部署.md](deploy/Docker容器化一键部署.md) | 有卡路径 |
+| 开源怎么分发、模型不进 Git | [deploy/开源项目分发落地方案.md](deploy/开源项目分发落地方案.md) | 离线 tar 在仓库外 |
+| 飞致云 4090 怎么上机 | [deploy/2026-09-07_Featurize4090按量实例操作手册.md](deploy/2026-09-07_Featurize4090按量实例操作手册.md) | 按量实例 |
+| GPU 容器修过哪些步骤 | [deploy/2026-09-07_GPU容器化修复步骤.md](deploy/2026-09-07_GPU容器化修复步骤.md) | |
+| 测试从哪进 | [testing/测试总纲.md](testing/测试总纲.md) | 分层总入口 |
+| 4090 五层两档（quick / full） | [testing/2026-09-07_飞致云五层两档测试说明.md](testing/2026-09-07_飞致云五层两档测试说明.md) | **gpu-full 本轮未通过** |
+| gpu-full 对照 | [testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md](testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md) | |
+| GPU 全量校验清单 | [testing/GPU全量校验手册.md](testing/GPU全量校验手册.md) | |
+| 3070 实际跑过什么 | [testing/2026-09-06_RTX3070容器实测记录.md](testing/2026-09-06_RTX3070容器实测记录.md) | 文档限定实测 |
+| 3070 文档是否写超 | [project/2026-09-06_3070容器日志核验与文档真实性.md](project/2026-09-06_3070容器日志核验与文档真实性.md) | |
+| 知识库有什么、克隆缺什么 | [../knowledgebase/README.md](../knowledgebase/README.md) | 种子在 SQL；国标全文不进 Git；向量运行时生成 |
 
-**架构师路径**：
-1. 先看 architecture/ 掌握架构设计
-2. 再看 technical-principles/ 深入技术细节
-3. 最后看 testing/ 和 troubleshooting/ 了解验证与改进
+演示视频不在 Git 里，在发行版：  
+https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo  
+作品介绍封面「演示视频」栏写的是同一个地址。
 
-## 与软考结合
+## 交材料前还要在网页上改（仓库改不了）
 
-这个文档库完整覆盖了软考「系统架构设计师」的核心考点：
-- 软件架构设计（分层架构、策略模式等）
-- 信息检索系统（BM25、向量检索）
-- 知识管理与知识图谱
-- 系统安全与等级保护口径（参照部分控制点，非已测评）
+| 哪里 | 写成 |
+|------|------|
+| Gitee 仓库设置 → 仓库名称/显示名 | 苍卫 |
+| 大赛官网报名表 · 作品中文名 | 苍卫 |
+| 大赛官网报名表 · 演示视频 | 与封面栏同一发行版地址 |
 
+不要改 Gitee 的仓库路径 `agent-system`（克隆地址保持不变）。
+
+---
+
+## 目录一览（docs/ 下面）
+
+| 文件夹 | 放什么 | 平时要不要进 |
+|--------|--------|----------------|
+| `project/` | 大赛介绍、CHANGELOG、等保、项目备忘 | **要。大赛材料只在这里，文件名 `os2026-作品介绍.*`** |
+| `deploy/` | 部署、飞致云、分发 | 要上机或交离线包时 |
+| `testing/` | 测试总纲、GPU 手册、4090/3070 记录 | 要核测试口径时 |
+| `architecture/` | 架构、血谱 | 看系统设计时 |
+| `数据库化石/` | 表考古、台账 | 查库、核销问题时 |
+| `operations/` | 远程启动、联调 | 连真机时 |
+| `troubleshooting/` | 历史排障与修复长文 | 对上具体旧 bug 时 |
+| `technical-principles/` | 检索/向量等原理 | 学原理时 |
+| `frontend/` | 前端设计 | 改 UI 方案时 |
+| `analysis/` `articles/` `learning-notes/` `methodology/` `梳理项目/` `工程skill/` | 分析、文章、笔记、skill | 一般不必先看 |
+| `_archive/` | 归档旧口径 | 只查历史表述 |
+| `docs/` 根上若干 md/html | 断点地图、十项决策等长文 | 按文件名搜，不是大赛入口 |
+
+`project/` 里还有不少 6 月以前的全景/差距报告，**不是**大赛提交正文。提交正文只有 `os2026-作品介绍.md`（及 html/pdf）。
+
+---
+
+## 代码在哪（不是 docs，但常和文档一起找）
+
+| 你要找 | 路径 |
+|--------|------|
+| 核心库 | `Agent1/` |
+| HTTP API | `Agent1.Api/` |
+| 前端 | `agent1-web/` |
+| 大赛录片脚本 | `agent1-web/e2e-demo/` |
+| 后端测试 | `Agent1.Tests/` |
+| SQL / 危化品种子 | `db/`、`init_database.sql` |
+| 启动、下模型、五层测试、录片 | `scripts/`（`docker-up*`、`download-models*`、`gpu-five-layer.ps1`、`record-os2026-demo.ps1`） |
+| 模型清单（权重不入库） | `models/README.md` |
+| 语料说明（国标全文不入库） | `knowledgebase/README.md` |
+
+---
+
+## 不要在这些地方找大赛介绍
+
+- 仓库根目录（只有 README，没有作品介绍）
+- `docs/deploy/`、`docs/testing/`（部署和测试，不是介绍正文）
+- 文件名含「全景」「差距」「蓝图」「豆包」的（内部底稿或旧分析；豆包说明书已不进 Git）

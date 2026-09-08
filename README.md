@@ -105,18 +105,22 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 ## 边界
 
 - 仅作合规审查辅助，不替代持证安全管理人员的法定职责。
-- **本仓库不包含国家标准全文。** 国标原文须由使用方自备合法副本，放入运行时目录 `knowledgebase/`（已 `.gitignore`）。开源仓只含 schema（[init_database.sql](init_database.sql)）与危化品结构化种子（[db/migrations/002_chemical_knowledge_graph.sql](db/migrations/002_chemical_knowledge_graph.sql)）。
+- **本仓库不包含国家标准全文。** 远程克隆缺的是国标正文和向量，不是甲醇×硝酸这条验收。结构化种子在 `init_database.sql` 与 `db/migrations/002_chemical_knowledge_graph.sql`；虚构园区规定/案例在 `knowledgebase/园区规则/` 与 `knowledgebase/历史案例/`。国标全文自备后放入 `knowledgebase/国标/`，或在 `.env` 把 `KNOWLEDGE_BASE_PATH` 指到本机语料（例如仓库外的 `化工知识库`）。向量由运行时 embedding 写入 pgvector，不随 Git 下发。说明见 [knowledgebase/README.md](knowledgebase/README.md)。
 - 本仓库不是已定级、已备案或已测评的网络安全等级保护对象，见 [等级保护口径](docs/project/等级保护口径.md)。
 - 未对接真实 ERP / WMS / EHS 生产数据。
 - 生产口令只写本机 `.env`，不要提交。必填：`JWT_KEY`（不少于 32 字符）、`DB_PASSWORD`、`AUTH_ACCOUNTS_JSON`。
 
 ## 文档
 
-```
-docs/architecture/   架构与系统血谱
-docs/deploy/         GPU / Linux 部署、开源分发落地方案
-docs/testing/        测试手册；[3070 实测](docs/testing/2026-09-06_RTX3070容器实测记录.md)；[4090 两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md)
-docs/project/        等级保护口径、CHANGELOG、作品介绍
-```
+按用途找文件：[docs/README.md](docs/README.md)（Gitee 上搜 `os2026` 也能落到大赛材料）。
 
-长期开源分发（镜像仓库 / 模型不进 Git / 离线包）见 [开源项目分发落地方案](docs/deploy/开源项目分发落地方案.md)。
+| 用途 | 文件 |
+|------|------|
+| 大赛作品介绍 | [docs/project/os2026-作品介绍.md](docs/project/os2026-作品介绍.md)（同目录 html / pdf） |
+| 演示视频 | https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo （mp4 不进 Git） |
+| 近期变更 | [docs/project/CHANGELOG.md](docs/project/CHANGELOG.md) |
+| 一键部署 | [docs/deploy/Docker容器化一键部署.md](docs/deploy/Docker容器化一键部署.md) |
+| 开源分发 | [docs/deploy/开源项目分发落地方案.md](docs/deploy/开源项目分发落地方案.md) |
+| 4090 两档测试 | [docs/testing/2026-09-07_飞致云五层两档测试说明.md](docs/testing/2026-09-07_飞致云五层两档测试说明.md) |
+| 文档从哪找 | [docs/README.md](docs/README.md) |
+| 知识库三层数据 | [knowledgebase/README.md](knowledgebase/README.md)（国标全文不进 Git） |

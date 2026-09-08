@@ -1,5 +1,7 @@
 # 化工园区危化品合规审核AI Agent - 架构整改方案
 
+> 本文是早期整改底稿。运行时知识库路径是仓库内 `knowledgebase/`（可用 `.env` 的 `KNOWLEDGE_BASE_PATH` 覆盖），**不是**某台机器上的 `d:\桌面\agent\化工知识库`。国标全文不进 Git，见 [knowledgebase/README.md](../../knowledgebase/README.md)。
+
 ## 一、核心目标
 
 **完全聚焦于化工园区危化品合规审核场景**，遵循《化工园区危化品合规审核AI Agent架构适配方案.md》进行架构整改。
@@ -66,7 +68,7 @@ namespace Agent1.Config
     // 化工知识库配置
     public class ChemicalKnowledgeBaseConfig
     {
-        public string BasePath { get; set; } = @"d:\桌面\agent\化工知识库";
+        public string BasePath { get; set; } = "knowledgebase";
         public List<KnowledgeSourceConfig> Sources { get; set; } = new()
         {
             new() { Name = "国标", Path = "国标", Priority = 100 },
