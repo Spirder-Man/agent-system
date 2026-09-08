@@ -177,16 +177,27 @@ test('苍卫演示：登录一次，核心功能走完', async ({ page, request 
 
   await openNav(page, navTestId('/audit'), /\/audit/, '审计日志');
   const integrityBtn = page.getByTestId('audit-integrity-btn');
-  if (await integrityBtn.isVisible()) {
-    await clickForCamera(page, integrityBtn);
-    await expect(page.locator('body')).toContainText(/完整|未检测到篡改|intact|断裂|篡改/, { timeout: 15_000 });
-    const repairBtn = page.getByTestId('audit-repair-btn');
-    if (await repairBtn.isVisible().catch(() => false)) {
-      await clickForCamera(page, repairBtn);
-      await expect(page.locator('body')).toContainText(/完整|修复/, { timeout: 20_000 });
-    }
-    await hold(page, 4000);
+  await expect(integrityBtn).toBeVisible({ timeout: 15_000 });
+  await clickForCamera(page, integrityBtn);
+  const repairBtn = page.getByTestId('audit-repair-btn');
+  await expect
+    .poll(
+      async () => {
+        const label = ((await integrityBtn.textContent()) || '').trim();
+        if (/哈希链完整|intact/i.test(label)) return 'ok';
+        if (await repairBtn.isVisible()) return 'repair';
+        return '';
+      },
+      { timeout: 15_000 },
+    )
+    .not.toEqual('');
+  if (await repairBtn.isVisible().catch(() => false)) {
+    await hold(page, 1200);
+    await clickForCamera(page, repairBtn);
   }
+  await expect(integrityBtn).toHaveText(/哈希链完整/, { timeout: 20_000 });
+  await expect(page.getByText(/哈希链断裂/)).toHaveCount(0);
+  await hold(page, 5000);
 
   await openNav(page, navTestId('/settings'), /\/settings/, '系统设置');
 
