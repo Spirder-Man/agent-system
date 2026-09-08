@@ -532,7 +532,7 @@ def build_cover_and_body(md: str) -> str:
     <tr><th>默认分支</th><td>master</td></tr>
     <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
-    <tr><th>团队成员</th><td>个人项目，招募中</td></tr>
+    <tr><th>团队成员</th><td>党嘉韦（前端）</td></tr>
   </table>
 </div>
 """
