@@ -2,6 +2,7 @@
 """Render OS2026 作品介绍 Markdown to print HTML, then Edge PDF."""
 from __future__ import annotations
 
+import base64
 import html
 import re
 import subprocess
@@ -15,6 +16,8 @@ HTML_PATH = ROOT / "os2026-作品介绍.html"
 PDF_PATH = ROOT / "os2026-作品介绍.pdf"
 FIG1 = ROOT / "os2026-figures" / "fig1-call-chain.svg"
 FIG2 = ROOT / "os2026-figures" / "fig2-dual-channel.svg"
+FIG3 = ROOT / "os2026-figures" / "fig3-storage.png"
+FIG4 = ROOT / "os2026-figures" / "fig4-audit.png"
 EDGE = Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
 if not EDGE.exists():
     EDGE = Path(r"C:\Program Files\Microsoft\Edge\Application\msedge.exe")
@@ -209,6 +212,7 @@ th {
   text-align: center;
 }
 .figure svg { width: 100%; height: auto; max-height: 40mm; }
+.figure img { width: 100%; height: auto; max-height: 88mm; object-fit: contain; border: 0.4pt solid #bbb; }
 .caption {
   font-size: 10.5pt;
   margin-top: 4pt;
@@ -289,6 +293,12 @@ def fig_html(num: int, title: str, inner: str, note: str | None = None) -> str:
     return "\n".join(parts)
 
 
+def img_file(path: Path, alt: str) -> str:
+    raw = path.read_bytes()
+    b64 = base64.b64encode(raw).decode("ascii")
+    return f'<img src="data:image/png;base64,{b64}" alt="{html.escape(alt)}"/>'
+
+
 def placeholder(title: str, body: str) -> str:
     return (
         '<div class="placeholder">'
@@ -352,9 +362,13 @@ def convert(md: str) -> str:
             continue
 
         if stripped.startswith("**【图 3"):
-            inner = placeholder(
-                "储存兼容性页（演示截图占位）",
-                "甲醇 × 硝酸　禁止同库　GB 15603　交稿前替换为 demo 真实截图",
+            inner = (
+                img_file(FIG3, "储存兼容性：甲醇与硝酸禁止同库，GB 15603")
+                if FIG3.exists()
+                else placeholder(
+                    "储存兼容性页（演示截图占位）",
+                    "甲醇 × 硝酸　禁止同库　GB 15603",
+                )
             )
             note = "演示环境截图，种子库规则引擎，非生产数据。"
             if i + 1 < n and "图注：" in lines[i + 1]:
@@ -368,13 +382,16 @@ def convert(md: str) -> str:
             continue
 
         if stripped.startswith("**【图 4") or "**【图 4" in stripped:
-            inner = placeholder(
-                "审计日志或登录角色（演示截图占位）",
-                "admin 登录后的 /audit　交稿前替换为 demo 真实截图",
+            inner = (
+                img_file(FIG4, "审计日志与哈希链")
+                if FIG4.exists()
+                else placeholder("审计日志或登录角色（演示截图占位）", "admin 登录后的 /audit")
             )
             note = "演示环境截图，非生产数据。本稿为占位，交稿前替换为 demo 真实截图。"
             if stripped.startswith("**【图 4"):
                 i += 1
+                while i < n and not lines[i].strip():
+                    i += 1
                 if i < n and lines[i].strip().startswith("图注："):
                     note = lines[i].split("图注：", 1)[-1].strip()
                     i += 1
@@ -500,13 +517,13 @@ def build_cover_and_body(md: str) -> str:
     cover = f"""
 <div class="cover">
   <div class="kicker">2026 上海开源软件应用创新大赛　OS2026</div>
-  <h1>Agent1 — 化工园区危化品合规审查 AI Agent</h1>
+  <h1>仓卫 — 化工园区危化品合规审查 AI Agent</h1>
   <div class="sub">作品介绍</div>
   <p>赛道：AI+工业软件　·　开源协议：MIT　·　默认分支：master</p>
   <p class="tagline">法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。<br>
   LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。</p>
   <table>
-    <tr><th>作品中文名</th><td>Agent1 — 化工园区危化品合规审查 AI Agent</td></tr>
+    <tr><th>作品中文名</th><td>仓卫 — 化工园区危化品合规审查 AI Agent</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
     <tr><th>代码仓库</th><td>https://gitee.com/liuchao_yue/agent-system</td></tr>
@@ -525,7 +542,7 @@ def wrap_html(inner: str) -> str:
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<title>Agent1 作品介绍 · OS2026 AI+工业软件</title>
+<title>仓卫 作品介绍 · OS2026 AI+工业软件</title>
 <style>{CSS}</style>
 </head>
 <body>
@@ -582,7 +599,7 @@ def stamp_header_footer(pdf_path: Path) -> None:
     except ImportError:
         import fitz  # type: ignore
 
-    header = "Agent1 作品介绍 · OS2026 AI+工业软件"
+    header = "仓卫 作品介绍 · OS2026 AI+工业软件"
     footer = "gitee.com/liuchao_yue/agent-system"
     fontfile = Path(r"C:\Windows\Fonts\simhei.ttf")
     if not fontfile.exists():
