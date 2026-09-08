@@ -39,7 +39,7 @@ RUN apt-get update --allow-insecure-repositories && \
 COPY --from=build /app/publish .
 
 # COPY 后 chown，确保发布文件属主为 appuser
-RUN mkdir -p /app/logs && \
+RUN mkdir -p /app/logs /app/dataprotection-keys && \
     chown -R appuser:appuser /app
 
 USER appuser

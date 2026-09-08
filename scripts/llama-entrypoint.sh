@@ -1,5 +1,5 @@
 #!/bin/sh
-# Probe shared libraries then exec llama-server (b5092+ is dynamically linked).
+# Probe shared libraries then exec llama-server (this tag is dynamically linked; keep copying .so).
 set -eu
 
 BIN="${LLAMA_SERVER_BIN:-/opt/llama/bin/llama-server}"

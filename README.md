@@ -20,18 +20,25 @@ cp .env.example .env
 
 演示账号仅本地使用，勿用于生产：`admin` / `changeme`
 
-### 完整 GPU（推荐）
+分发形态与前提条件见 [开源项目分发落地方案](docs/deploy/开源项目分发落地方案.md)。当前默认仍是**本机构建**镜像；不要使用 [docker-compose.release.yml.example](docker-compose.release.yml.example) 去 `pull`（远程仓库尚未发布）。
 
-需要 NVIDIA GPU 与 `models/*.gguf`。`docker compose up -d` 启动 llama.cpp、API 与 Nginx 前端（默认 API `5000`、Web `80`）。步骤见 [Docker 容器化一键部署](docs/deploy/Docker容器化一键部署.md)。
+### 路径 1 — 有网 GPU（推荐）
+
+需要 NVIDIA GPU、Docker Compose V2，以及 `models/` 下的 GGUF（清单见 [models/README.md](models/README.md)）。首次会构建 CUDA llama 镜像，约 10–30 分钟。步骤详见 [Docker 容器化一键部署](docs/deploy/Docker容器化一键部署.md)。
 
 ```bash
-docker compose up -d
+# 编辑 .env：DB_PASSWORD、JWT_KEY；Windows 无管理员权限时设 WEB_PORT=8088
+powershell -File scripts/download-models.ps1   # 或 bash scripts/download-models.sh
+# Linux / 有卡:
+bash scripts/docker-up.sh gpu
+# Windows:
+# powershell -ExecutionPolicy Bypass -File scripts/docker-up.ps1 gpu
 curl http://localhost:5000/health/live
 ```
 
-浏览器打开 `http://localhost`（或 `.env` 中的 `WEB_PORT`）。登录后可在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
+浏览器打开 `http://localhost`（或 `.env` 的 `WEB_PORT`）。登录后在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
 
-### 无 GPU 演示
+### 路径 2 — 无 GPU 演示
 
 没有 GPU 时用 [docker-compose.demo.yml](docker-compose.demo.yml)：只启动 PostgreSQL 16 + API，不启动 llama.cpp。环境变量 `LLM_OPTIONAL=true`，储存禁忌走确定性规则引擎。
 
@@ -44,6 +51,13 @@ cd agent1-web && npm install && npm run dev
 - API：`http://localhost:5000`（健康检查 `GET /health/live`）
 - 前端：Vite 默认 `http://localhost:5173`
 - 自检脚本会登录后请求 `POST /api/Compliance/storage/compatibility`，同样应看到禁配与 GB 15603
+
+无 GPU 但需要带 llama.cpp 的完整栈时，叠 [docker-compose.cpu.yml](docker-compose.cpu.yml)（`-ngl 0`，仍要 8B + embed 两件 GGUF）：
+
+```bash
+bash scripts/docker-up.sh cpu
+# 或: powershell -File scripts/docker-up.ps1 cpu
+```
 
 无 Docker 时：
 
@@ -59,6 +73,17 @@ dotnet test Agent1.Tests --filter "Category!=Integration"
 dotnet run --project Agent1.Api
 cd agent1-web && npm run dev
 ```
+
+### 路径 3 — 断网 / 大赛离线包
+
+源码仓**不含** `docker save` 的 `.tar`。断网评委机使用仓库外的 `容器化部署/` 目录（与本 Git 仓并列，不入库）。
+
+- 正式离线包只需 4 个**运行** tar：`agent1-llama-cuda`、`agent-system-api`、`agent1-web`、`pgvector-pg16`。CUDA devel 编译链不要随包分发。
+- 离线包里的 `agent1-llama-cuda.tar` **仍不是**打过 `0.1.0` 的正式发布物。源码仓 `Dockerfile.llama*` 钉 llama.cpp **b5512**，这是构建目标，不是「已用本 Dockerfile 在 4090 重编并 `docker save`」。
+- **RTX 3070（2026-09-05/06）**：第一波缺 `libllama.so`（exit 127）；第二波 8B 可推理，vision 仍拒 `--mmproj`。见 [3070 实测](docs/testing/2026-09-06_RTX3070容器实测记录.md)。
+- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，**不能写「GPU 全量通过」**。见 [五层两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
+- 评委无 GPU 走路径 2。有卡复现用仓库外离线包或路径 1，不要把 3070 失败当成当前 4090 状态。
+- 模型与语料在离线包的 `cpu/models`、`cpu/knowledgebase`。
 
 ## 架构与功能
 
@@ -87,9 +112,9 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 
 ```
 docs/architecture/   架构与系统血谱
-docs/deploy/         GPU / Linux 部署
-docs/testing/        测试手册
+docs/deploy/         GPU / Linux 部署、开源分发落地方案
+docs/testing/        测试手册；[3070 实测](docs/testing/2026-09-06_RTX3070容器实测记录.md)；[4090 两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md)
 docs/project/        等级保护口径、CHANGELOG、作品介绍
 ```
 
-无 GPU 但需要带 llama.cpp 的完整栈时，见 [docker-compose.cpu.yml](docker-compose.cpu.yml)。
+长期开源分发（镜像仓库 / 模型不进 Git / 离线包）见 [开源项目分发落地方案](docs/deploy/开源项目分发落地方案.md)。

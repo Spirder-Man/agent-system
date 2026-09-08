@@ -24,18 +24,23 @@ RUN rm -f /etc/apt/sources.list.d/cuda*.list /etc/apt/sources.list.d/nvidia*.lis
 WORKDIR /build
 
 # 克隆 llama.cpp（repo 已迁移至 ggml-org，GitHub 自动 301 重定向）
-# Qwen3 架构需要 >= b5092
-RUN git clone --depth 1 --branch b5092 \
+# Qwen3 >= b5092；--mmproj（D01）>= b5331；tools+stream（D03）约 b5478。
+# 钉 b5512：b5478 打开 stream+tools 后含 #13786 崩溃修复。这是构建目标，不是 3070/4090 实测。
+RUN git clone --depth 1 --branch b5512 \
     https://github.com/ggml-org/llama.cpp.git . || \
-    git clone --depth 1 --branch b5092 \
+    git clone --depth 1 --branch b5512 \
     https://github.com/ggerganov/llama.cpp.git .
 
 # CUDA 编译（限制并行数 -j2 避免 Docker Desktop OOM）
 # 注意：devel 镜像无 libcuda.so.1 实体库，需链接 stub
+# CMAKE_CUDA_ARCHITECTURES 含 89 = Ada / RTX 4090
+# GGML_BUILD_*：无 git / 浅克隆时跳过 ggml 对 git 的 REQUIRED
 RUN ln -sf /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/libcuda.so.1 && \
     cmake -B build \
     -DGGML_CUDA=ON \
     -DBUILD_SHARED_LIBS=OFF \
+    -DGGML_BUILD_NUMBER=5512 \
+    -DGGML_BUILD_COMMIT=b5512 \
     -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
     -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" \
     -DCMAKE_BUILD_TYPE=Release && \
@@ -45,7 +50,7 @@ RUN ln -sf /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/libcuda.
     find /build/build -name '*.so*' -exec cp -a {} /out/ \;
 
 # ── Stage 2: 精简运行镜像 ──
-# llama.cpp b5092+ 动态链接 llama-server；只拷二进制会报 libllama.so 缺失
+# llama.cpp 此 tag 动态链接 llama-server；只拷二进制会报 libllama.so 缺失
 FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04
 
 RUN rm -f /etc/apt/sources.list.d/cuda*.list /etc/apt/sources.list.d/nvidia*.list || true; \

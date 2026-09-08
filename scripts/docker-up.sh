@@ -28,6 +28,43 @@ if [ "$MODE" = "cpu" ]; then
     COMPOSE_FILES+=(-f docker-compose.cpu.yml)
 fi
 
+VISION_VRAM_THRESHOLD_MIB=20000
+START_VISION=0
+
+vision_ocr_explicit() {
+    case "${ENABLE_VISION_OCR:-}" in
+        true|false|True|False|TRUE|FALSE) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+max_gpu_memory_mib() {
+    nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk '{gsub(/ /,"",$1); if ($1+0>m) m=$1+0} END {print m+0}'
+}
+
+resolve_start_vision() {
+    if vision_ocr_explicit; then
+        echo "   ENABLE_VISION_OCR=${ENABLE_VISION_OCR} (from .env, skip auto-detect)"
+        case "${ENABLE_VISION_OCR}" in
+            true|True|TRUE) START_VISION=1 ;;
+            *) START_VISION=0 ;;
+        esac
+        export ENABLE_VISION_OCR
+        return
+    fi
+    MAX_VRAM="$(max_gpu_memory_mib)"
+    if [ "${MAX_VRAM}" -ge "${VISION_VRAM_THRESHOLD_MIB}" ]; then
+        export ENABLE_VISION_OCR=true
+        START_VISION=1
+        echo "   GPU VRAM ${MAX_VRAM} MiB >= ${VISION_VRAM_THRESHOLD_MIB} -> ENABLE_VISION_OCR=true, start llama-vision"
+    else
+        export ENABLE_VISION_OCR=false
+        START_VISION=0
+        echo "   GPU VRAM ${MAX_VRAM} MiB < ${VISION_VRAM_THRESHOLD_MIB} -> skip llama-vision, ENABLE_VISION_OCR=false"
+        echo "   8B+VL same card needs ~24GB. To force: set ENABLE_VISION_OCR=true in .env and re-run docker-up."
+    fi
+}
+
 echo "════════════════════════════════════════"
 echo "  Agent1 容器化部署（后端 + 前端 / ${MODE}）"
 echo "  $(date '+%Y-%m-%d %H:%M:%S')"
@@ -46,7 +83,36 @@ fi
 # 2. 加载环境变量
 echo ""
 echo "📋 加载环境变量..."
-set -a; source .env; set +a
+for f in .env .env.example docker-compose.yml docker-compose.cpu.yml; do
+    [ -f "$f" ] && sed -i 's/\r$//' "$f" 2>/dev/null || true
+done
+# Do not `source .env`: unquoted AUTH_ACCOUNTS_JSON JSON is bash brace expansion.
+load_dotenv() {
+    local file="$1" line key val
+    while IFS= read -r line || [ -n "$line" ]; do
+        line="${line%$'\r'}"
+        case "$line" in
+            ''|'#'*) continue ;;
+        esac
+        case "$line" in
+            *=*) ;;
+            *) continue ;;
+        esac
+        key="${line%%=*}"
+        val="${line#*=}"
+        key="${key%"${key##*[![:space:]]}"}"
+        key="${key#"${key%%[![:space:]]*}"}"
+        case "$key" in
+            ''|*[!A-Za-z0-9_]*) continue ;;
+        esac
+        case "$val" in
+            \'*\') val="${val#\'}"; val="${val%\'}" ;;
+            \"*\") val="${val#\"}"; val="${val%\"}" ;;
+        esac
+        export "$key=$val"
+    done < "$file"
+}
+load_dotenv .env
 
 # 3. 检查 Docker
 echo "🐳 检查 Docker..."
@@ -61,7 +127,7 @@ if [ "$MODE" = "gpu" ]; then
     if command -v nvidia-smi > /dev/null 2>&1; then
         GPU_COUNT=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | wc -l)
         if [ "$GPU_COUNT" -gt 0 ]; then
-            echo "   GPU: $GPU_COUNT 卡检测到 → llama-server / llama-vision 将使用 GPU（-ngl 99）"
+            echo "   GPU: $GPU_COUNT 卡检测到 → llama-server 将使用 GPU（-ngl 99）"
             echo "   Embedding 默认 CPU（-ngl 0）。8B+VL 同卡建议 24GB 显存（3090）"
         else
             echo "   ⚠️  未检测到 GPU，可改用: bash scripts/docker-up.sh cpu"
@@ -69,9 +135,11 @@ if [ "$MODE" = "gpu" ]; then
     else
         echo "   ⚠️  nvidia-smi 不可用，GPU 直通可能失败；Windows 请用 cpu 模式"
     fi
+    resolve_start_vision
 else
     echo "   模式: CPU（llama.cpp 无 CUDA / 不申请 GPU / 不起视觉）"
     export ENABLE_VISION_OCR=false
+    START_VISION=0
 fi
 
 echo "   Host KNOWLEDGE_BASE_PATH: ${KNOWLEDGE_BASE_PATH:-./knowledgebase} → container /app/knowledgebase"
@@ -80,7 +148,11 @@ MODEL_ROOT="${MODELS_PATH:-$PROJECT_DIR/models}"
 if [ "$MODE" = "gpu" ]; then
     if [ ! -f "$MODEL_ROOT/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf" ] || [ ! -f "$MODEL_ROOT/mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf" ]; then
         echo "   ⚠️  缺少 VL GGUF（Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf + mmproj）"
-        echo "   llama-vision 将不健康；OCR / 识图不可用"
+        if [ "${START_VISION}" = "1" ]; then
+            echo "   llama-vision 将不健康；OCR / 识图不可用"
+        else
+            echo "   视觉已跳过，VL 文件可选"
+        fi
     else
         echo "   VL + mmproj 已找到（8083）"
     fi
@@ -94,9 +166,12 @@ docker compose "${COMPOSE_FILES[@]}" pull postgres 2>/dev/null || true
 if [ "$MODE" = "cpu" ]; then
     echo "🔨 构建 llama.cpp CPU 镜像 (首次约数分钟)..."
     docker compose "${COMPOSE_FILES[@]}" build llama-server llama-embed
-else
+elif [ "${START_VISION}" = "1" ]; then
     echo "🔨 构建 llama.cpp CUDA 镜像 (首次约10分钟，约 8G)..."
     docker compose "${COMPOSE_FILES[@]}" build llama-server llama-embed llama-vision
+else
+    echo "🔨 构建 llama.cpp CUDA 镜像 (首次约10分钟，约 8G；跳过视觉)..."
+    docker compose "${COMPOSE_FILES[@]}" build llama-server llama-embed
 fi
 
 echo "🔨 构建 API 镜像..."
@@ -108,9 +183,21 @@ docker compose "${COMPOSE_FILES[@]}" build web
 # 6. 启动后端 + 前端
 echo ""
 if [ "$MODE" = "gpu" ]; then
-    echo "🚀 启动 postgres / llama-server / llama-embed / llama-vision / api / web ..."
-    docker compose "${COMPOSE_FILES[@]}" up -d postgres llama-server llama-embed llama-vision api web
+    if [ "${START_VISION}" = "1" ]; then
+        echo "🚀 启动 postgres / llama-server / llama-embed / llama-vision / api / web ..."
+        # 点名 llama-vision 即使带 profiles: [vision] 也会启动；不要改成不点名的 up -d
+        docker compose "${COMPOSE_FILES[@]}" up -d postgres llama-server llama-embed llama-vision api web
+    else
+        echo "🛑 拆除残留 llama-vision（stop + rm -f；unless-stopped 在 Docker 重启后会回来）..."
+        docker compose "${COMPOSE_FILES[@]}" stop llama-vision >/dev/null 2>&1 || true
+        docker compose "${COMPOSE_FILES[@]}" rm -f llama-vision >/dev/null 2>&1 || true
+        echo "🚀 启动 postgres / llama-server / llama-embed / api / web（不起视觉）..."
+        docker compose "${COMPOSE_FILES[@]}" up -d postgres llama-server llama-embed api web
+    fi
 else
+    echo "🛑 若有残留 llama-vision，先拆除 ..."
+    docker compose "${COMPOSE_FILES[@]}" stop llama-vision >/dev/null 2>&1 || true
+    docker compose "${COMPOSE_FILES[@]}" rm -f llama-vision >/dev/null 2>&1 || true
     echo "🚀 启动 postgres / llama-server / llama-embed / api / web（不起视觉）..."
     docker compose "${COMPOSE_FILES[@]}" up -d postgres llama-server llama-embed api web
 fi
@@ -169,8 +256,10 @@ echo "  │ API (Metrics):    http://localhost:${API_HOST_PORT}/metrics"
 echo "  │ PostgreSQL:       localhost:${DB_PORT:-5432}"
 echo "  │ llama.cpp LLM:    http://localhost:${LLAMA_PORT:-8080}"
 echo "  │ llama.cpp Embed:  http://localhost:${LLAMA_EMBED_PORT:-8081}"
-if [ "$MODE" = "gpu" ]; then
+if [ "${START_VISION}" = "1" ]; then
 echo "  │ llama.cpp Vision: http://localhost:${LLAMA_VISION_PORT:-8083}"
+elif [ "$MODE" = "gpu" ]; then
+echo "  │ llama.cpp Vision: skipped (ENABLE_VISION_OCR=false)"
 fi
 echo "  └─────────────────────────────────────"
 echo ""

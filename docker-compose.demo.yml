@@ -54,6 +54,7 @@ services:
       - KNOWLEDGE_BASE_PATH=/app/knowledgebase
     volumes:
       - agent1_demo_api_logs:/app/logs
+      - agent1_demo_api_dataprotection:/app/dataprotection-keys
       - ./knowledgebase:/app/knowledgebase:ro
     depends_on:
       postgres:
@@ -72,6 +73,8 @@ volumes:
     name: agent1_demo_pg
   agent1_demo_api_logs:
     name: agent1_demo_api_logs
+  agent1_demo_api_dataprotection:
+    name: agent1_demo_api_dataprotection
 
 networks:
   agent1_demo_net:

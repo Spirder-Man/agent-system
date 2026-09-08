@@ -22,18 +22,24 @@ RUN apt-get update && \
 WORKDIR /build
 
 # 克隆 llama.cpp（repo 已迁移至 ggml-org，GitHub 自动 301 重定向）
-# Qwen3 架构需要 >= b5092；与 GPU 镜像使用同一 tag
-RUN git clone --depth 1 --branch b5092 \
+# 与 GPU 镜像同一 tag b5512（D01 --mmproj + D03 tools+stream 目标；未在 4090 冒烟）
+RUN git clone --depth 1 --branch b5512 \
     https://github.com/ggml-org/llama.cpp.git . || \
-    git clone --depth 1 --branch b5092 \
+    git clone --depth 1 --branch b5512 \
     https://github.com/ggerganov/llama.cpp.git .
 
 RUN cmake -B build \
     -DGGML_CUDA=OFF \
+    -DGGML_BUILD_NUMBER=5512 \
+    -DGGML_BUILD_COMMIT=b5512 \
     -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -j$(nproc) --target llama-server
+    cmake --build build -j$(nproc) --target llama-server && \
+    mkdir -p /out && \
+    cp -a /build/build/bin/llama-server /out/ && \
+    find /build/build -name '*.so*' -exec cp -a {} /out/ \;
 
 # ── Stage 2: 精简运行镜像 ──
+# llama.cpp 此 tag 动态链接 llama-server；find 收集 .so，避免新版库名变化
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -43,12 +49,11 @@ RUN apt-get update && \
     curl libgomp1 libcurl4 ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /build/build/bin/llama-server /usr/local/bin/llama-server
-COPY --from=builder /build/build/bin/libllama.so /usr/local/lib/libllama.so
-COPY --from=builder /build/build/bin/libggml.so /usr/local/lib/libggml.so
-COPY --from=builder /build/build/bin/libggml-base.so /usr/local/lib/libggml-base.so
-COPY --from=builder /build/build/bin/libggml-cpu.so /usr/local/lib/libggml-cpu.so
-RUN ldconfig
+COPY --from=builder /out/ /opt/llama/bin/
+ENV LD_LIBRARY_PATH=/opt/llama/bin
+RUN ln -sf /opt/llama/bin/llama-server /usr/local/bin/llama-server && \
+    echo /opt/llama/bin > /etc/ld.so.conf.d/llama.conf && \
+    ldconfig
 
 RUN mkdir -p /models
 

@@ -1,0 +1,8 @@
+# Agent1 GGUF checksums. Format: <sha256|SKIP>  <filename>
+# SKIP = scripts/download-models only checks presence and minimum size.
+# Replace SKIP with a 64-char lowercase hex digest after hashing a trusted copy:
+#   sha256sum Qwen_Qwen3-8B-Q4_K_M.gguf
+SKIP  Qwen_Qwen3-8B-Q4_K_M.gguf
+SKIP  nomic-embed-text-v1.5.f16.gguf
+SKIP  Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf
+SKIP  mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf

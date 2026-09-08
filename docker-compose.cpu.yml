@@ -55,6 +55,8 @@ services:
       - "2048"
       - "--batch-size"
       - "1024"
+      - "-ub"
+      - "2048"
     healthcheck:
       start_period: 120s
 

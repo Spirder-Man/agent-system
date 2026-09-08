@@ -1,0 +1,26 @@
+# Release overlay — DO NOT use until GPU smoke + images are pushed.
+#
+# Copy to docker-compose.release.yml, replace <REGISTRY> with the real
+# host/namespace (Gitee container registry or GHCR), then:
+#   docker compose -f docker-compose.yml -f docker-compose.release.yml pull
+#   docker compose -f docker-compose.yml -f docker-compose.release.yml up -d
+#
+# This file has no build:. Default docker-compose.yml still builds locally.
+# Invalid placeholder on purpose so an accidental pull does not hit a real repo.
+
+services:
+  llama-server:
+    build: !reset
+    image: "<REGISTRY>/agent1-llama-cuda:0.1.0"
+  llama-embed:
+    build: !reset
+    image: "<REGISTRY>/agent1-llama-cuda:0.1.0"
+  llama-vision:
+    build: !reset
+    image: "<REGISTRY>/agent1-llama-cuda:0.1.0"
+  api:
+    build: !reset
+    image: "<REGISTRY>/agent-system-api:0.1.0"
+  web:
+    build: !reset
+    image: "<REGISTRY>/agent1-web:0.1.0"

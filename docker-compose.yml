@@ -5,12 +5,21 @@
 # ==========================================
 # 使用方式:
 #   1. cp .env.example .env
-#   2. Windows: powershell -File scripts/docker-up.ps1 gpu|cpu
+#   2. 准备 models/（scripts/download-models.ps1 或 .sh）
+#   3. 日常用 docker-up（按显存决定是否起 vision）:
+#      Windows: powershell -File scripts/docker-up.ps1 gpu|cpu
 #      Linux:   bash scripts/docker-up.sh gpu|cpu
-#   或 docker compose up -d             （GPU）
-#      docker compose -f docker-compose.yml -f docker-compose.cpu.yml up -d
-#   3. docker compose logs -f api
-#   4. docker compose down
+#      裸 docker compose up -d 不启 llama-vision（profiles: [vision]）。
+#      24GB 要 VL：docker-up，或 docker compose --profile vision up -d
+#      点名 llama-vision 也会启动（docker-up 已点名，不必再加 --profile）。
+#      CPU: docker compose -f docker-compose.yml -f docker-compose.cpu.yml up -d
+#   4. docker compose logs -f api
+#   5. docker compose down
+#
+# 默认含 build:，会在本机编译 llama CUDA（首次 10–30 分钟）。
+# 发布镜像待 GPU 最小冒烟后写入 docker-compose.release.yml
+# （先复制 docker-compose.release.yml.example 并替换 <REGISTRY>）。
+# 现在不要用那份 example 做 docker compose pull。
 #
 # 可选观测栈:
 #   docker compose -f docker-compose.yml -f docker-compose.obs.yml up -d
@@ -33,6 +42,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init_database.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      # D04/D07：与 docker-compose.demo.yml 对齐。仅空数据卷首次 init 会跑；
+      # 已有 postgres_data 时需 docker compose down -v 或手动 psql 这些文件。
+      - ./db/migrations/002_chemical_knowledge_graph.sql:/docker-entrypoint-initdb.d/02_graph.sql:ro
+      - ./db/migrations/004_drift_anchor_baseline.sql:/docker-entrypoint-initdb.d/04_drift_anchors.sql:ro
+      - ./db/migrations/005_drift_probe_tables.sql:/docker-entrypoint-initdb.d/05_drift_probe.sql:ro
+      - ./db/migrations/006_drift_probe_templates.sql:/docker-entrypoint-initdb.d/06_drift_templates.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-chemical_park_ai_agent}"]
       interval: 5s
@@ -93,7 +108,7 @@ services:
 
   # ═══════════════════════════════════════
   # llama.cpp Embedding 服务 (:8081/v1)
-  # 默认 -ngl 0，避免与 LLM / Vision 抢显存
+  # 默认 -ngl 0，权重走 CPU；仍须挂 GPU，否则 CUDA 二进制缺 libcuda.so.1 → exit 127
   # ═══════════════════════════════════════
   llama-embed:
     build:
@@ -120,6 +135,8 @@ services:
       - "2048"
       - "--batch-size"
       - "1024"
+      - "-ub"
+      - "2048"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8081/health || exit 1"]
       interval: 10s
@@ -128,12 +145,22 @@ services:
       start_period: 30s
     networks:
       - agent1_net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   # ═══════════════════════════════════════
   # llama.cpp 视觉 / OCR（:8083/v1，Qwen2.5-VL + mmproj）
-  # 与 LLM 同卡；Bug-040：-c 32768 -np 4 --cache-ram 0
+  # 与 LLM 同卡；-c 32768 -np 4。b5512 无 --cache-ram，加上会 invalid argument 直接退出。
+  # profiles: vision — 裸 up -d 不启动。docker-up 点名服务即可拉起，不必 --profile。
   # ═══════════════════════════════════════
   llama-vision:
+    profiles:
+      - vision
     build:
       context: .
       dockerfile: Dockerfile.llama
@@ -159,8 +186,6 @@ services:
       - "32768"
       - "-np"
       - "4"
-      - "--cache-ram"
-      - "0"
       - "--jinja"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8083/health || exit 1"]
@@ -199,17 +224,19 @@ services:
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:?生产环境必须设置 DB_PASSWORD}
       - JWT_KEY=${JWT_KEY:?生产环境必须设置 JWT_KEY}
-      - AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-[]}
+      - 'AUTH_ACCOUNTS_JSON=${AUTH_ACCOUNTS_JSON:-[]}'
       - LLM_ENDPOINT=http://llama-server:8080/v1
       - VectorSearch__EmbeddingEndpoint=http://llama-embed:8081/v1
       - MULTIMODAL_ENDPOINT=http://llama-vision:8083/v1
-      - ENABLE_VISION_OCR=${ENABLE_VISION_OCR:-true}
+      - ENABLE_VISION_OCR=${ENABLE_VISION_OCR:-false}
       - KNOWLEDGE_BASE_PATH=/app/knowledgebase
+      - DATA_PROTECTION_KEYS_PATH=/app/dataprotection-keys
       - ALERT_EMAIL_PASSWORD=${ALERT_EMAIL_PASSWORD:-}
       - ALERT_RECIPIENT_EMAILS=${ALERT_RECIPIENT_EMAILS:-}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
     volumes:
       - api_logs:/app/logs
+      - api_dataprotection:/app/dataprotection-keys
       # 宿主机路径来自 .env 的 KNOWLEDGE_BASE_PATH（默认 ./knowledgebase）；容器内进程仍用下面的 /app/knowledgebase
       - ${KNOWLEDGE_BASE_PATH:-./knowledgebase}:/app/knowledgebase
     depends_on:
@@ -258,6 +285,8 @@ volumes:
     name: agent1_postgres_data
   api_logs:
     name: agent1_api_logs
+  api_dataprotection:
+    name: agent1_api_dataprotection
 
 networks:
   agent1_net:
