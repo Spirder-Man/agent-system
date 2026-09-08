@@ -121,7 +121,7 @@ FIG2_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 390" role
 CSS = r"""
 @page {
   size: A4;
-  margin: 1.8cm 2.5cm 1.8cm 2.5cm;
+  margin: 2.2cm 2.4cm 2.2cm 2.4cm;
 }
 * { box-sizing: border-box; }
 html, body {
@@ -129,21 +129,21 @@ html, body {
   padding: 0;
   font-family: SimSun, "Songti SC", serif;
   font-size: 12pt;
-  line-height: 1.3;
+  line-height: 1.7;
   color: #1a1a1a;
 }
 h1, h2, h3 {
   font-family: SimHei, "Microsoft YaHei", sans-serif;
   font-weight: normal;
   page-break-after: avoid;
-  line-height: 1.35;
+  line-height: 1.4;
 }
-h1 { font-size: 16pt; text-align: center; margin: 0 0 8pt; }
-h2 { font-size: 13.5pt; margin: 9pt 0 5pt; border-bottom: 0.6pt solid #1e3a5f; padding-bottom: 2pt; }
-h3 { font-size: 12pt; margin: 9pt 0 5pt; }
-p { margin: 0 0 6pt; text-align: justify; }
-ul, ol { margin: 0 0 8pt; padding-left: 1.6em; }
-li { margin-bottom: 3pt; }
+h1 { font-size: 16pt; text-align: center; margin: 0 0 12pt; }
+h2 { font-size: 14pt; margin: 18pt 0 10pt; border-bottom: 0.6pt solid #1e3a5f; padding-bottom: 4pt; }
+h3 { font-size: 12.5pt; margin: 14pt 0 8pt; }
+p { margin: 0 0 10pt; text-align: left; }
+ul, ol { margin: 0 0 12pt; padding-left: 1.7em; }
+li { margin-bottom: 5pt; line-height: 1.65; }
 strong { font-family: SimHei, "Microsoft YaHei", sans-serif; font-weight: normal; }
 a { color: inherit; text-decoration: none; }
 code {
@@ -154,27 +154,27 @@ code {
 }
 pre {
   font-family: Consolas, "Courier New", monospace;
-  font-size: 9pt;
-  line-height: 1.32;
+  font-size: 9.5pt;
+  line-height: 1.45;
   background: #f6f6f6;
   border: 0.4pt solid #ccc;
-  padding: 6pt 8pt;
+  padding: 8pt 10pt;
   white-space: pre-wrap;
   word-break: break-all;
   page-break-inside: auto;
-  margin: 0 0 8pt;
+  margin: 0 0 12pt;
 }
 pre code { background: none; padding: 0; font-size: inherit; }
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0 0 8pt;
-  font-size: 10pt;
+  margin: 4pt 0 14pt;
+  font-size: 10.5pt;
   page-break-inside: auto;
 }
 th, td {
   border: 0.4pt solid #555;
-  padding: 4pt 6pt;
+  padding: 6pt 8pt;
   vertical-align: top;
   text-align: left;
 }
@@ -184,42 +184,42 @@ th {
 }
 .cover {
   page-break-after: auto;
-  padding-top: 6mm;
+  padding-top: 8mm;
   text-align: center;
 }
 .cover .kicker {
   font-family: SimHei, "Microsoft YaHei", sans-serif;
   font-size: 11pt;
-  margin-bottom: 8pt;
+  margin-bottom: 10pt;
   letter-spacing: 0;
 }
-.cover h1 { font-size: 18pt; line-height: 1.35; margin: 8pt 0 6pt; }
-.cover .sub { font-size: 13pt; margin-bottom: 8pt; }
+.cover h1 { font-size: 18pt; line-height: 1.4; margin: 10pt 0 8pt; }
+.cover .sub { font-size: 13pt; margin-bottom: 10pt; }
 .cover .tagline {
-  margin: 8pt auto 10pt;
-  max-width: 94%;
+  margin: 10pt auto 14pt;
+  max-width: 92%;
   text-align: center;
-  line-height: 1.55;
+  line-height: 1.7;
 }
-.cover table { text-align: left; margin-top: 8pt; font-size: 10.5pt; }
+.cover table { text-align: left; margin-top: 10pt; font-size: 10.5pt; }
 .cover th { width: 26%; }
-.toc { page-break-after: auto; margin-top: 8pt; }
-.toc h2 { margin-top: 2pt; }
-.toc ul { font-size: 11pt; margin: 0 0 6pt; columns: 2; column-gap: 16pt; }
+.toc { page-break-after: auto; margin-top: 12pt; }
+.toc h2 { margin-top: 4pt; }
+.toc ul { font-size: 12pt; margin: 0 0 10pt; columns: 1; }
 .figure {
-  margin: 6pt 0 8pt;
+  margin: 10pt 0 12pt;
   page-break-inside: avoid;
   text-align: center;
 }
-.figure svg { width: 100%; height: auto; max-height: 40mm; }
+.figure svg { width: 100%; height: auto; max-height: 42mm; }
 .figure img { width: 100%; height: auto; max-height: 88mm; object-fit: contain; border: 0.4pt solid #bbb; }
 .caption {
   font-size: 10.5pt;
-  margin-top: 4pt;
+  margin-top: 6pt;
   text-align: center;
   font-family: SimHei, "Microsoft YaHei", sans-serif;
 }
-.fig-note { font-size: 10pt; color: #333; text-align: justify; margin: 0 0 10pt; }
+.fig-note { font-size: 10.5pt; color: #333; text-align: left; margin: 0 0 12pt; }
 .placeholder {
   border: 0.8pt dashed #666;
   background: #fafafa;
@@ -228,8 +228,8 @@ th {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 6pt;
-  margin: 3pt 0 2pt;
+  padding: 8pt;
+  margin: 6pt 0 4pt;
 }
 .placeholder .ph-title {
   font-family: SimHei, "Microsoft YaHei", sans-serif;
@@ -237,7 +237,7 @@ th {
   margin-bottom: 6pt;
 }
 .placeholder .ph-body { font-size: 10.5pt; color: #444; }
-hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 14pt 0; }
+hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 16pt 0; }
 """
 
 
