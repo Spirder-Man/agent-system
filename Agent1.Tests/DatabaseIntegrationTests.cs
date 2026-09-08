@@ -247,6 +247,41 @@ public class DatabaseIntegrationTests : IAsyncLifetime
         saved!.PageNumber.Should().Be(42, "PageNumber 应正确持久化");
     }
 
+    [Fact]
+    public async Task InsertDocument_SameSourcePath_UpsertsWithoutThrowing()
+    {
+        var sourcePath = $"{TestMarker}-upsert-src.pdf";
+        var rec1 = new KnowledgeDocumentRecord
+        {
+            FileName = $"{TestMarker}-upsert-v1",
+            SourcePath = sourcePath,
+            FileFormat = "pdf",
+            RegulationType = "国标",
+            Priority = "高",
+            ContentHash = $"{TestMarker}-hash-v1"
+        };
+        var id1 = await _db.InsertDocumentAsync(rec1);
+        await _db.InsertChunkAsync(new ChemicalDocumentRecord
+        {
+            Content = $"{TestMarker} upsert-v1 分块",
+            RegulationType = "国标",
+            Priority = "高",
+            SourceFile = sourcePath
+        }, id1);
+
+        var rec2 = new KnowledgeDocumentRecord
+        {
+            FileName = $"{TestMarker}-upsert-v2",
+            SourcePath = sourcePath,
+            FileFormat = "pdf",
+            RegulationType = "国标",
+            Priority = "高",
+            ContentHash = $"{TestMarker}-hash-v2"
+        };
+        var id2 = await _db.InsertDocumentAsync(rec2);
+        id2.Should().Be(id1, "同一 source_path 应复用文档 id，而不是 23505");
+    }
+
     // ═══════════════════════════════════════
     // 审计日志测试
     // ═══════════════════════════════════════

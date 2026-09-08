@@ -613,6 +613,21 @@ namespace Agent1.Services
                         @parentCategory, @extractionQuality, @pageCount,
                         @isFullText, @totalChunks, @contentHash, @lastModified
                     )
+                    ON CONFLICT (source_path) DO UPDATE SET
+                        file_name = EXCLUDED.file_name,
+                        file_format = EXCLUDED.file_format,
+                        file_size_bytes = EXCLUDED.file_size_bytes,
+                        regulation_type = EXCLUDED.regulation_type,
+                        regulation_number = EXCLUDED.regulation_number,
+                        regulation_title = EXCLUDED.regulation_title,
+                        priority = EXCLUDED.priority,
+                        parent_category = EXCLUDED.parent_category,
+                        extraction_quality = EXCLUDED.extraction_quality,
+                        page_count = EXCLUDED.page_count,
+                        is_full_text = EXCLUDED.is_full_text,
+                        total_chunks = EXCLUDED.total_chunks,
+                        content_hash = EXCLUDED.content_hash,
+                        last_modified = EXCLUDED.last_modified
                     RETURNING id;
                 ";
 
@@ -635,6 +650,14 @@ namespace Agent1.Services
 
                 var result = await command.ExecuteScalarAsync();
                 var documentId = Convert.ToInt32(result);
+
+                using (var wipe = new NpgsqlCommand(
+                    "DELETE FROM knowledge_chunks WHERE document_id = @id;", connection))
+                {
+                    wipe.Parameters.AddWithValue("@id", documentId);
+                    await wipe.ExecuteNonQueryAsync();
+                }
+
                 Console.WriteLine($"   ✅ 文档入库成功: {doc.FileName} (id={documentId}, 类型={doc.RegulationType})");
                 return documentId;
             }

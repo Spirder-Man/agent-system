@@ -9,6 +9,7 @@ using Agent1.Services.Monitoring;
 using Agent1.Services.Security;
 using Agent1.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -83,7 +84,7 @@ Serilog.Debugging.SelfLog.Enable(msg =>
 var alertDispatcher = new AlertDispatcher();
 alertDispatcher.Register(new ConsoleAlertService());
 
-Log.Logger = new LoggerConfiguration()
+var logCfg = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)          // 从 appsettings.json Serilog 节读取
     .Enrich.With<EnvironmentEnricher>()              // MachineName / ProcessId / OSVersion
     .Enrich.With<RunIdEnricher>()                    // RunId / StartTime
@@ -94,9 +95,11 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/agent1-api-.log",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7)                   // 保留最近 7 天
-    .WriteTo.Sink(new AlertSink(alertDispatcher))    // Critical 日志 → 告警分发
-    .WriteTo.Seq(Environment.GetEnvironmentVariable("SEQ_URL") ?? "http://localhost:5341")
-    .CreateLogger();
+    .WriteTo.Sink(new AlertSink(alertDispatcher));   // Critical 日志 → 告警分发
+var seqUrl = Environment.GetEnvironmentVariable("SEQ_URL");
+if (!string.IsNullOrWhiteSpace(seqUrl))
+    logCfg.WriteTo.Seq(seqUrl);
+Log.Logger = logCfg.CreateLogger();
 
 builder.Host.UseSerilog();
 
@@ -104,6 +107,12 @@ builder.Host.UseSerilog();
 // 依赖注入
 // ═══════════════════════════════════════════════════
 builder.Services.AddSingleton(AppConfig.Instance);
+var dataProtectionKeysPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH")
+    ?? Path.Combine(AppContext.BaseDirectory, "dataprotection-keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+    .SetApplicationName("Agent1");
 // LLM 并发保护: CPU 推理最多 2 个并发
 builder.Services.AddSingleton(new SemaphoreSlim(2, 2));
 builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
@@ -385,8 +394,13 @@ using (var scope = app.Services.CreateScope())
 // 中间件管线
 // ═══════════════════════════════════════════════════
 
-// HTTPS 重定向 + HSTS（生产环境启用，开发环境跳过）
-if (!app.Environment.IsDevelopment())
+// HTTPS 重定向 + HSTS：仅在确实监听 HTTPS 或显式打开时启用。
+// Docker / Nginx 同域反代是纯 HTTP（ASPNETCORE_URLS=http://+:8080），生产开重定向会刷端口警告（D14）。
+var listenUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "";
+var enableHttpsRedirect =
+    string.Equals(Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECT"), "true", StringComparison.OrdinalIgnoreCase)
+    || listenUrls.Contains("https://", StringComparison.OrdinalIgnoreCase);
+if (!app.Environment.IsDevelopment() && enableHttpsRedirect)
 {
     app.UseHttpsRedirection();
     app.UseHsts();

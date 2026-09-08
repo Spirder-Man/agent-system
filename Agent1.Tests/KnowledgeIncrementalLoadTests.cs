@@ -129,11 +129,12 @@ public class KnowledgeIncrementalLoadTests : IDisposable
 
     private ChemicalRAG CreateRag() => new(_kbRoot, _kb, databaseService: null);
 
-    private Dictionary<string, DateTime> ReadTracker()
+    private HashSet<string> ReadTrackerKeys()
     {
         var path = Path.Combine(_kbRoot, "file_tracker.json");
         if (!File.Exists(path)) return new();
-        return JsonSerializer.Deserialize<Dictionary<string, DateTime>>(File.ReadAllText(path)) ?? new();
+        using var doc = JsonDocument.Parse(File.ReadAllText(path));
+        return doc.RootElement.EnumerateObject().Select(p => p.Name).ToHashSet();
     }
 
     // ── T1: 增量识别非 TXT 格式（核心回归：原实现只扫 *.txt）────────────
@@ -147,7 +148,7 @@ public class KnowledgeIncrementalLoadTests : IDisposable
         await CreateRag().LoadKnowledgeBaseIncrementalAsync();
 
         _kb.AddedDocuments.Should().NotBeEmpty("txt 文件应被分块入库");
-        ReadTracker().Should().ContainKey(txt);
+        ReadTrackerKeys().Should().Contain(txt);
     }
 
     [Fact]
@@ -160,7 +161,7 @@ public class KnowledgeIncrementalLoadTests : IDisposable
 
         await CreateRag().LoadKnowledgeBaseIncrementalAsync();
 
-        ReadTracker().Should().NotContainKey(pdf, "解析失败的文件不应写入追踪器，下次增量应重试");
+        ReadTrackerKeys().Should().NotContain(pdf, "解析失败的文件不应写入追踪器，下次增量应重试");
     }
 
     // ── T2: 未修改文件跳过（保持增量机制优势）───────────────────────────
@@ -211,13 +212,13 @@ public class KnowledgeIncrementalLoadTests : IDisposable
         var txt = Path.Combine(_gbDir, "将被删除.txt");
         await File.WriteAllTextAsync(txt, SampleRegulationText, Encoding.UTF8);
         await CreateRag().LoadKnowledgeBaseIncrementalAsync();
-        ReadTracker().Should().ContainKey(txt);
+        ReadTrackerKeys().Should().Contain(txt);
 
         File.Delete(txt);
         await CreateRag().LoadKnowledgeBaseIncrementalAsync();
 
         _kb.RemovedSourceFiles.Should().Contain(txt);
-        ReadTracker().Should().NotContainKey(txt);
+        ReadTrackerKeys().Should().NotContain(txt);
     }
 
     // ── T5: 支持格式枚举（防 Windows "*.doc" 连带匹配 .docx 怪癖）────────
@@ -255,10 +256,28 @@ public class KnowledgeIncrementalLoadTests : IDisposable
         await CreateRag().LoadKnowledgeBaseAsync();
         var countAfterFull = _kb.AddedDocuments.Count;
         countAfterFull.Should().BeGreaterThan(0);
-        ReadTracker().Should().ContainKey(txt, "全量加载后必须登记追踪器，否则后续增量会整库重复入库");
+        ReadTrackerKeys().Should().Contain(txt, "全量加载后必须登记追踪器，否则后续增量会整库重复入库");
 
         await CreateRag().LoadKnowledgeBaseIncrementalAsync();
         _kb.AddedDocuments.Count.Should().Be(countAfterFull, "全量后立即增量不应产生任何重复入库");
         _kb.RemovedSourceFiles.Should().BeEmpty();
+    }
+
+    // ── T7: 内容变了但 mtime 不变时仍应重处理（D08 content_hash）──────────
+
+    [Fact]
+    public async Task Incremental_ContentChangedSameMtime_IsReprocessed()
+    {
+        var txt = Path.Combine(_gbDir, "哈希检测.txt");
+        await File.WriteAllTextAsync(txt, SampleRegulationText, Encoding.UTF8);
+        await CreateRag().LoadKnowledgeBaseIncrementalAsync();
+        var countAfterFirst = _kb.AddedDocuments.Count;
+        var frozenMtime = File.GetLastWriteTimeUtc(txt);
+
+        await File.WriteAllTextAsync(txt, SampleRegulationText + "\n第九条 哈希应检出此变更。", Encoding.UTF8);
+        File.SetLastWriteTimeUtc(txt, frozenMtime);
+
+        await CreateRag().LoadKnowledgeBaseIncrementalAsync();
+        _kb.AddedDocuments.Count.Should().BeGreaterThan(countAfterFirst, "content_hash 变化时即使 mtime 不变也应重新入库");
     }
 }

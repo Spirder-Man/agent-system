@@ -13,7 +13,10 @@
 
 import { type FullConfig } from '@playwright/test';
 
-const ACCOUNT = { username: 'admin', password: 'changeme' };
+const ACCOUNT = {
+  username: 'admin',
+  password: process.env.E2E_ADMIN_PASSWORD || 'changeme',
+};
 
 interface ApiClient {
   get: (url: string) => Promise<{ status: number; data: unknown }>;

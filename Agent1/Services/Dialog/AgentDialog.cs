@@ -176,7 +176,8 @@ namespace Agent1.Services
                     var beforeLen = result.Length;
                     result = OutputSanitizer.Sanitize(result, pipelineFacts.RegulationRefs);
                     var afterLen = result.Length;
-                    if (beforeLen != afterLen)
+                    // D17：1 字符多为空白/标点清理，不当成拦截事故刷 Warning
+                    if (beforeLen - afterLen >= 8)
                     {
                         Serilog.Log.Warning(
                             "[DecoupledPipeline] OutputSanitizer 拦截 {Removed} 字符 | TraceId={TraceId}",

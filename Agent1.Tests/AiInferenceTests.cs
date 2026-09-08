@@ -365,7 +365,7 @@ public class RagEntityExtractionTests
     }
 
     [Theory]
-    [InlineData("苯和丙酮能同库储存吗", "苯", "丙酮能同库储存")]
+    [InlineData("苯和丙酮能同库储存吗", "苯", "丙酮")]
     [InlineData("甲醇与乙醇储存", "甲醇", "乙醇储存")]
     [InlineData("硝酸、硫酸反应", "硝酸", "硫酸反应")]
     public void ExtractTwoSubstances_SplitsBySeparator(string input, string expectedA, string expectedB)

@@ -54,7 +54,7 @@ namespace Agent1.Services
         // ═══════════════════════════════════════════
         // 知识库双层表架构 — 文档级 + 分块级写入
         // ═══════════════════════════════════════════
-        /// <summary>插入文档记录，返回自增主键 document_id</summary>
+        /// <summary>插入或按 source_path 更新文档记录，返回主键；冲突时先清旧分块再给调用方重写。</summary>
         Task<int> InsertDocumentAsync(KnowledgeDocumentRecord doc);
         /// <summary>插入单个分块（含向量）到 knowledge_chunks</summary>
         Task InsertChunkAsync(ChemicalDocumentRecord chunk, int documentId);

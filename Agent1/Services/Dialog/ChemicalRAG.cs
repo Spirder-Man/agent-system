@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -195,8 +196,14 @@ namespace Agent1.Services
             SaveFileTracker();
             PrintQualityReport();
         }
-        // [P1] 知识库文件追踪器：记录每个文件的上次处理时间
-        private Dictionary<string, DateTime>? _fileTracker;
+        // [P1 / D08] 文件追踪：mtime + SHA-256；旧版 file_tracker.json 只有 DateTime，加载时兼容。
+        private sealed class FileTrackEntry
+        {
+            public DateTime LastWriteUtc { get; set; }
+            public string? ContentHash { get; set; }
+        }
+
+        private Dictionary<string, FileTrackEntry>? _fileTracker;
         private string FileTrackerPath => Path.Combine(_knowledgeBasePath, "file_tracker.json");
 
         /// <summary>
@@ -250,11 +257,12 @@ namespace Agent1.Services
                         break;
                     }
                     var lastWrite = File.GetLastWriteTimeUtc(file);
+                    var contentHash = ComputeFileSha256(file);
                     bool isTracked = _fileTracker!.TryGetValue(file, out var tracked);
-                    if (isTracked && lastWrite <= tracked)
+                    if (isTracked && ShouldSkipIncremental(tracked!, lastWrite, contentHash))
                     {
                         skippedFiles++;
-                        continue; // 未修改
+                        continue;
                     }
 
                     // [Bug-039 FIX ①] 无条件防御性删除：DB 是否有残留不能由内存 tracker 推断
@@ -264,7 +272,11 @@ namespace Agent1.Services
                     Console.WriteLine($"   {(isTracked ? "[更新]" : "[新增]")} {Path.GetFileName(file)}");
                     if (await processor(file))
                     {
-                        _fileTracker![file] = lastWrite;
+                        _fileTracker![file] = new FileTrackEntry
+                        {
+                            LastWriteUtc = lastWrite,
+                            ContentHash = contentHash
+                        };
                         if (isTracked) updatedFiles++; else newFiles++;
                     }
                     else
@@ -321,21 +333,39 @@ namespace Agent1.Services
 
         private void LoadFileTracker()
         {
+            _fileTracker = new Dictionary<string, FileTrackEntry>(StringComparer.OrdinalIgnoreCase);
             try
             {
-                if (File.Exists(FileTrackerPath))
+                if (!File.Exists(FileTrackerPath))
+                    return;
+
+                using var doc = JsonDocument.Parse(File.ReadAllText(FileTrackerPath));
+                foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    var json = File.ReadAllText(FileTrackerPath);
-                    _fileTracker = JsonSerializer.Deserialize<Dictionary<string, DateTime>>(json) ?? new();
-                }
-                else
-                {
-                    _fileTracker = new();
+                    if (prop.Value.ValueKind == JsonValueKind.String)
+                    {
+                        if (DateTime.TryParse(prop.Value.GetString(), out var dt))
+                            _fileTracker[prop.Name] = new FileTrackEntry { LastWriteUtc = dt };
+                    }
+                    else if (prop.Value.ValueKind == JsonValueKind.Object)
+                    {
+                        DateTime last = default;
+                        if (prop.Value.TryGetProperty("LastWriteUtc", out var lw) && lw.ValueKind == JsonValueKind.String)
+                            DateTime.TryParse(lw.GetString(), out last);
+                        else if (prop.Value.TryGetProperty("LastWriteUtc", out lw) && lw.ValueKind == JsonValueKind.Number)
+                            last = DateTime.UnixEpoch.AddMilliseconds(lw.GetInt64());
+
+                        string? hash = null;
+                        if (prop.Value.TryGetProperty("ContentHash", out var ch) && ch.ValueKind == JsonValueKind.String)
+                            hash = ch.GetString();
+
+                        _fileTracker[prop.Name] = new FileTrackEntry { LastWriteUtc = last, ContentHash = hash };
+                    }
                 }
             }
             catch
             {
-                _fileTracker = new();
+                _fileTracker = new Dictionary<string, FileTrackEntry>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -410,7 +440,7 @@ namespace Agent1.Services
             var ext = fileInfo.Extension.TrimStart('.').ToLowerInvariant();
 
             // 计算相对路径（与删除路径共用同一函数，保证删除键=插入键）
-            var relativePath = GetRelativeSourcePath(filePath);
+            var relativePath = NormalizeSourcePath(GetRelativeSourcePath(filePath));
 
             var doc = new KnowledgeDocumentRecord
             {
@@ -426,6 +456,7 @@ namespace Agent1.Services
                 ExtractionQuality = extractionQuality ?? "good",
                 PageCount = pageCount,
                 IsFullText = isFullText,
+                ContentHash = fileInfo.Exists ? ComputeFileSha256(filePath) : null,
                 LastModified = fileInfo.Exists ? fileInfo.LastWriteTimeUtc : null
             };
 
@@ -462,16 +493,40 @@ namespace Agent1.Services
         {
             var full = Path.GetFullPath(filePath);
             var root = Path.GetFullPath(_knowledgeBasePath);
+            string relative;
             if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-                return full.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            return filePath;
+                relative = full.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            else
+                relative = filePath;
+            return NormalizeSourcePath(relative);
         }
+
+        private static string NormalizeSourcePath(string path)
+            => path.Replace('\\', '/');
 
         // 成功处理后登记到文件追踪器（全量路径使用；增量路径在调度器中登记）
         private void TrackFile(string filePath)
         {
             if (_fileTracker == null) return;
-            _fileTracker[filePath] = File.GetLastWriteTimeUtc(filePath);
+            _fileTracker[filePath] = new FileTrackEntry
+            {
+                LastWriteUtc = File.GetLastWriteTimeUtc(filePath),
+                ContentHash = File.Exists(filePath) ? ComputeFileSha256(filePath) : null
+            };
+        }
+
+        private static bool ShouldSkipIncremental(FileTrackEntry tracked, DateTime lastWrite, string contentHash)
+        {
+            if (!string.IsNullOrEmpty(tracked.ContentHash))
+                return string.Equals(tracked.ContentHash, contentHash, StringComparison.OrdinalIgnoreCase);
+            return lastWrite <= tracked.LastWriteUtc;
+        }
+
+        private static string ComputeFileSha256(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            var hash = SHA256.HashData(stream);
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         /// <summary>

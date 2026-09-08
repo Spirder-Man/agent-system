@@ -88,6 +88,12 @@ namespace Agent1.Services
 
         public async Task<string> InvokeStreamAsync(string prompt, ConsoleColor color, FunctionChoiceBehavior? fcBehavior = null)
         {
+            var effectiveFc = fcBehavior ?? FunctionChoiceBehavior.Required();
+            // D03：llama.cpp 在 b5478 前拒 tools+stream。生产带 FC 时走非流式，
+            // b5512 若已支持 stream+tools 也不影响正确性；HyDE 等 None() 仍流式。
+            if (!IsNoneFunctionChoice(effectiveFc))
+                return await InvokePromptOnceForToolsAsync(prompt, color, effectiveFc);
+
             var result = new StringBuilder();
             Console.WriteLine();
             Console.ForegroundColor = color;
@@ -119,14 +125,8 @@ namespace Agent1.Services
             try
             {
                 // Phase 2a: 启用 SK Auto Function Calling — LLM 自主决定调用工具
-                // [Bug-015 根因位点] FunctionChoiceBehavior.Required() 强制每次必有工具调用。
-                // 当 llama-server -c 8192 KV Cache 不足时，模型无法在受限上下文中生成正确 FC JSON，
-                // 导致 SK 一直等待工具调用 → 2min 超时 → 重试循环 → 上下文进一步被工具结果填充 → 死循环
-                // [T13 无状态架构] cache_prompt=false 禁用服务端 KV Cache 复用，配合 -sps 0.0 确保每个请求独立
-                // [Bug C 修复] FC 策略由调用方显式声明，不再硬编码 Required()。
-                // 默认保持 Required() 向后兼容；HyDE/Reflection 等纯文本场景传 None()。
-                var effectiveFc = fcBehavior ?? FunctionChoiceBehavior.Required();
-                Console.WriteLine($"   [SK诊断] 模型={ModelConfig.ModelId}, FC={(effectiveFc?.GetType().Name ?? "None")}");
+                // [Bug C 修复] FC 策略由调用方显式声明。此处仅 None() 会走到流式。
+                Console.WriteLine($"   [SK诊断] 模型={ModelConfig.ModelId}, FC={(effectiveFc.GetType().Name)}");
 
                 var settings = new OpenAIPromptExecutionSettings
                 {
@@ -367,6 +367,44 @@ namespace Agent1.Services
             return string.Join("\n", cleanedLines).Trim();
         }
 
+        private static bool IsNoneFunctionChoice(FunctionChoiceBehavior fc)
+        {
+            var name = fc.GetType().Name;
+            return name.Contains("None", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 带 Function Calling 时不走 SSE stream，避免 llama.cpp `Cannot use tools with stream`。
+        /// 单次调用；重试仍由 InvokeStreamWithRetryAsync 包一层。
+        /// </summary>
+        private async Task<string> InvokePromptOnceForToolsAsync(string prompt, ConsoleColor color, FunctionChoiceBehavior fcBehavior)
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = color;
+            Console.WriteLine($"   [SK诊断] 模型={ModelConfig.ModelId}, FC={fcBehavior.GetType().Name}, tools 走非流式");
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var settings = new OpenAIPromptExecutionSettings
+            {
+                FunctionChoiceBehavior = fcBehavior,
+                Temperature = 0.3,
+            };
+            settings.ExtensionData = new Dictionary<string, object>
+            {
+                ["cache_prompt"] = false
+            };
+            LastFunctionCalls.Clear();
+            var kernelResult = await _kernel.InvokePromptAsync(
+                prompt, new KernelArguments(settings), cancellationToken: cts.Token);
+            var resultText = kernelResult.ToString() ?? "";
+            if (string.IsNullOrWhiteSpace(resultText) && LastFunctionCalls.Count > 0)
+            {
+                resultText = string.Join("\n\n",
+                    LastFunctionCalls.Select(fc => $"【{fc.FunctionName}】{fc.Result}"));
+            }
+            Console.ResetColor();
+            return CleanFinalOutput(resultText);
+        }
+
         /// <summary>
         /// [Bug C 修复] 旧重载委托到新重载，默认 FC=null → Required()，保持向后兼容。
         /// </summary>
@@ -598,9 +636,9 @@ namespace Agent1.Services
         }
 
         /// <summary>
-        /// [T13 无状态架构] 评测专用流式调用：支持按工具名称过滤 Function Calling，
+        /// [T13 无状态架构] 评测专用调用：按工具名称过滤 Function Calling，
         /// 避免无关工具定义污染上下文（info_query 类 case 减少 40% prompt 体积）。
-        /// 内置死循环检测 + cache_prompt=false 双重保护，配合 -sps 0.0 实现完全无状态评测。
+        /// 非流式 + cache_prompt=false，配合 -sps 0.0 实现完全无状态评测。
         /// </summary>
         public async Task<string> InvokeEvalWithToolsAsync(string prompt, IReadOnlyList<string> allowedToolNames)
         {
@@ -627,19 +665,9 @@ namespace Agent1.Services
             // 复用诊断过滤器
             evalKernel.FunctionInvocationFilters.Add(new FunctionCallDiagnosticsFilter(this));
 
-            // 死循环检测变量
-            int duplicateLineCount = 0;
-            string? lastFlushedLine = null;
-            const int MaxDuplicateLines = 8;
-            int cascadeCount = 0;
-            char? cascadeChar = null;
-            const int MaxCascade = 12;
-            int totalOutputChars = 0;
+            // D03：评测同样带 Auto() 工具，走非流式，避免 llama.cpp 拒 tools+stream。
+            // [T13] cache_prompt=false；[Bug B] Auto() 由模型决定是否调工具。
             const int MaxTotalChars = 5000;
-
-            // [T13 无状态架构] cache_prompt=false 禁用服务端 KV Cache 复用
-            // [Bug B 修复] Required() → Auto()：业务评测由 LLM 自主决定是否调用工具，
-            // 避免 Required() 在 FC 返回结果后继续强制新一轮调用导致死循环。
             var settings = new OpenAIPromptExecutionSettings
             {
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
@@ -652,95 +680,29 @@ namespace Agent1.Services
 
             LastFunctionCalls.Clear();
 
-            string buffer = "";
-            int bufferFlushThreshold = 50;
-
             try
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-
-                await foreach (var chunk in evalKernel.InvokePromptStreamingAsync<string>(
-                    prompt, new KernelArguments(settings), cancellationToken: cts.Token))
+                var kernelResult = await evalKernel.InvokePromptAsync(
+                    prompt, new KernelArguments(settings), cancellationToken: cts.Token);
+                var text = kernelResult.ToString() ?? "";
+                if (text.Length > MaxTotalChars)
                 {
-                    buffer += chunk;
-
-                    if (buffer.Length > bufferFlushThreshold)
-                    {
-                        string cleaned = CleanChunk(buffer);
-                        if (!string.IsNullOrWhiteSpace(cleaned))
-                        {
-                            // 死循环检测维度1: 连续相同行
-                            if (lastFlushedLine != null && cleaned == lastFlushedLine)
-                            {
-                                duplicateLineCount++;
-                                if (duplicateLineCount > MaxDuplicateLines)
-                                {
-                                    Console.WriteLine($"\n   ⚠️ [截断] 检测到连续重复输出({duplicateLineCount}次)，停止流式接收");
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                duplicateLineCount = 0;
-                                lastFlushedLine = cleaned;
-                            }
-
-                            // 死循环检测维度2: 字符级联
-                            foreach (char ch in cleaned)
-                            {
-                                if (ch == cascadeChar)
-                                {
-                                    cascadeCount++;
-                                    if (cascadeCount > MaxCascade)
-                                    {
-                                        Console.WriteLine($"\n   ⚠️ [截断] 检测到字符重复级联('{cascadeChar}'×{cascadeCount})，停止流式接收");
-                                        break;
-                                    }
-                                }
-                                else if (ch == ')' || ch == '）' || ch == '】' || ch == '}' || ch == '#' || ch == '*')
-                                {
-                                    cascadeChar = ch;
-                                    cascadeCount = 1;
-                                }
-                                else
-                                {
-                                    cascadeChar = null;
-                                    cascadeCount = 0;
-                                }
-                            }
-                            if (cascadeCount > MaxCascade) break;
-
-                            // 死循环检测维度3: 总长度硬截断
-                            totalOutputChars += cleaned.Length;
-                            if (totalOutputChars > MaxTotalChars)
-                            {
-                                Console.WriteLine($"\n   ⚠️ [截断] 输出超过{MaxTotalChars}字符上限，停止流式接收");
-                                break;
-                            }
-
-                            result.Append(cleaned);
-                            Console.Write(cleaned);
-                        }
-                        buffer = "";
-                    }
-
-                    await Task.Delay(10);
+                    Console.WriteLine($"\n   ⚠️ [截断] 输出超过{MaxTotalChars}字符上限");
+                    text = text.Substring(0, MaxTotalChars);
                 }
-
-                // 输出剩余内容
-                if (buffer.Length > 0)
-                {
-                    string cleaned = CleanChunk(buffer);
-                    if (!string.IsNullOrWhiteSpace(cleaned))
-                    {
-                        result.Append(cleaned);
-                        Console.Write(cleaned);
-                    }
-                }
+                result.Append(text);
+                Console.Write(text);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"\n⚠️ 生成错误: {ex.Message}");
+            }
+
+            if (result.Length == 0 && LastFunctionCalls.Count > 0)
+            {
+                result.Append(string.Join("\n\n",
+                    LastFunctionCalls.Select(fc => $"【{fc.FunctionName}】{fc.Result}")));
             }
 
             // 输出工具调用诊断

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // ============================================================
 // auth.fixture.ts — 真实 GPU E2E 认证 fixture
 //
@@ -8,10 +9,12 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
 // ── 测试账号（对齐远程 .env 中 AUTH_ACCOUNTS_JSON） ──
+// 飞致云离线包默认 7758521：导出 E2E_ADMIN_PASSWORD / E2E_AUDITOR_PASSWORD / E2E_VIEWER_PASSWORD
+// 缺省仍为 changeme，以免弄坏旧远程 AutoDL 跑法
 export const ACCOUNTS = {
-  admin: { username: 'admin', password: 'changeme' },
-  auditor: { username: 'auditor', password: 'changeme' },
-  viewer: { username: 'viewer', password: 'changeme' },
+  admin: { username: 'admin', password: process.env.E2E_ADMIN_PASSWORD || 'changeme' },
+  auditor: { username: 'auditor', password: process.env.E2E_AUDITOR_PASSWORD || 'changeme' },
+  viewer: { username: 'viewer', password: process.env.E2E_VIEWER_PASSWORD || 'changeme' },
 } as const;
 
 export type Role = keyof typeof ACCOUNTS;

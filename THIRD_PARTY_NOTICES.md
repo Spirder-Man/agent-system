@@ -67,7 +67,7 @@
 |------|------|--------|
 | llama.cpp / llama-server | 本地 LLM 与 embedding | MIT |
 | PostgreSQL 16 + pgvector | 关系库与向量检索 | PostgreSQL License |
-| Qwen / nomic-embed 等 GGUF 权重 | 推理（评委自备，不入库） | 各模型协议 |
+| Qwen / nomic-embed 等 GGUF 权重 | 推理（评委自备，不入库） | 各模型协议；文件名与检索说明见 [models/README.md](models/README.md) |
 
 ## 前端（npm）— 生产
 
