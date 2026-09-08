@@ -1,6 +1,6 @@
 # Agent1 — 化工园区危化品合规审查 AI Agent
 
-公开作品名：**苍卫**。工程与仓库名仍为 Agent1 / `agent-system`。
+公开作品名：**苍卫** — 面向复杂高风险场景的可审计合规 Agent。当前验证场是化工园区危化品储存审查。工程与仓库名仍为 Agent1 / `agent-system`。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 

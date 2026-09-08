@@ -63,8 +63,8 @@ test('苍卫演示：登录一次，核心功能走完', async ({ page, request 
     kicker: 'OS2026 · AI+工业软件',
     title: '苍卫',
     lines: [
-      { text: '化工园区危化品合规审查 AI Agent' },
-      { text: '法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。' },
+      { text: '面向复杂高风险场景的可审计合规 Agent' },
+      { text: '复杂场景里，事实由确定性代码给出，大模型只解释和建议。' },
       { text: REPO, accent: true },
     ],
     ms: 7000,
