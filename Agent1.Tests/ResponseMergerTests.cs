@@ -93,6 +93,20 @@ public class ResponseMergerTests
     }
 
     [Fact]
+    public void Merge_NoResultPlaceholder_DroppedWhenRuleEngineHasBan()
+    {
+        var factOutput = FactAssembler.BuildNoResult();
+        var explanation =
+            "【储存兼容性】甲醇与硝酸禁止同库储存\n\n【法规依据】GB 15603-2022 §4.2.3\n【数据质量】确定性规则引擎 (DICTIONARY_HIT)";
+
+        var result = ResponseMerger.Merge(factOutput, explanation);
+
+        result.Should().NotContain("无法给出确定结论");
+        result.Should().Contain("禁止同库储存");
+        result.Should().Contain("GB 15603");
+    }
+
+    [Fact]
     public void Merge_BothWhitespace_ReturnsTrimmedOrEmpty()
     {
         var result = ResponseMerger.Merge("   ", "\n  ");

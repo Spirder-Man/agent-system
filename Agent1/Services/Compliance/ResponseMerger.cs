@@ -26,7 +26,23 @@ namespace Agent1.Services
             // 如果 LLM 输出已经包含类似的事实内容（评测路径），不重复合并
             var llmCleaned = CleanLlmOutput(llmExplanation);
 
+            // 关键词快路径会把规则引擎结论送进解释通道；若事实通道仍是「无法确定」占位，叠在一起评委截图会自相矛盾。
+            if (IsNoResultPlaceholder(factOutput) && HasStructuredVerdict(llmCleaned))
+                return llmCleaned;
+
             return $"{factOutput}\n\n{llmCleaned}";
+        }
+
+        private static bool IsNoResultPlaceholder(string factOutput)
+            => factOutput.Contains("无法给出确定结论", StringComparison.Ordinal);
+
+        private static bool HasStructuredVerdict(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+            return text.Contains("【储存兼容性】", StringComparison.Ordinal)
+                || text.Contains("禁止同库", StringComparison.Ordinal)
+                || text.Contains("不得同库", StringComparison.Ordinal);
         }
 
         /// <summary>

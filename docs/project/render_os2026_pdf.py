@@ -131,6 +131,8 @@ html, body {
   font-size: 12pt;
   line-height: 1.7;
   color: #1a1a1a;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 h1, h2, h3 {
   font-family: SimHei, "Microsoft YaHei", sans-serif;
@@ -151,6 +153,10 @@ code {
   font-size: 10pt;
   background: #f3f3f3;
   padding: 0 2pt;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  hyphens: none;
+  -webkit-hyphens: none;
 }
 pre {
   font-family: Consolas, "Courier New", monospace;
@@ -160,11 +166,14 @@ pre {
   border: 0.4pt solid #ccc;
   padding: 8pt 10pt;
   white-space: pre-wrap;
-  word-break: break-all;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
   page-break-inside: auto;
   margin: 0 0 12pt;
 }
 pre code { background: none; padding: 0; font-size: inherit; }
+.nobr { white-space: nowrap; }
 table {
   width: 100%;
   border-collapse: collapse;
@@ -203,6 +212,7 @@ th {
 }
 .cover table { text-align: left; margin-top: 10pt; font-size: 10.5pt; }
 .cover th { width: 26%; }
+.cover td a { word-break: keep-all; overflow-wrap: break-word; hyphens: none; }
 .toc { page-break-after: auto; margin-top: 12pt; }
 .toc h2 { margin-top: 4pt; }
 .toc ul { font-size: 12pt; margin: 0 0 10pt; columns: 1; }
@@ -241,17 +251,44 @@ hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 16pt 0; }
 """
 
 
+def nobr_hyphen_tokens(escaped: str) -> str:
+    """Keep hyphenated tokens together using CSS nowrap (ASCII '-' only).
+
+    Do not use U+2011 / U+2060: SimSun substitutes them as wide visible glyphs.
+    """
+
+    def repl(m: re.Match[str]) -> str:
+        return f'<span class="nobr">{m.group(0)}</span>'
+
+    return re.sub(r"[^\s<]*-[^\s<]*", repl, escaped)
+
+
+def wbr_url(url: str) -> str:
+    """Allow wrap after '/' so agent-system is not split as agent- / system."""
+    if "://" in url:
+        scheme, rest = url.split("://", 1)
+        parts = [html.escape(p) for p in rest.split("/")]
+        glued = [f'<span class="nobr">{p}</span>' if "-" in p else p for p in parts]
+        return html.escape(scheme) + "://<wbr>" + "/<wbr>".join(glued)
+    return nobr_hyphen_tokens(html.escape(url))
+
+
 def inline_md(text: str) -> str:
     text = html.escape(text)
 
     def code_repl(m: re.Match[str]) -> str:
-        return f"<code>{m.group(1)}</code>"
+        return f"<code>{nobr_hyphen_tokens(m.group(1))}</code>"
 
     text = re.sub(r"`([^`]+)`", code_repl, text)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+
+    def url_repl(m: re.Match[str]) -> str:
+        url = m.group(1)
+        return f'<a href="{html.escape(url)}">{wbr_url(url)}</a>'
+
     text = re.sub(
         r"(https://gitee\.com/liuchao_yue/agent-system(?:/[A-Za-z0-9_./\-]+)*)",
-        r'<a href="\1">\1</a>',
+        url_repl,
         text,
     )
     return text
@@ -414,7 +451,7 @@ def convert(md: str) -> str:
             if skip_next_ascii_fig1:
                 skip_next_ascii_fig1 = False
                 continue
-            code = html.escape("\n".join(code_lines))
+            code = nobr_hyphen_tokens(html.escape("\n".join(code_lines)))
             body_html.append(f'<pre><code class="{html.escape(lang)}">{code}</code></pre>')
             continue
 
@@ -524,13 +561,13 @@ def build_cover_and_body(md: str) -> str:
   LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。</p>
   <table>
     <tr><th>作品中文名</th><td>苍卫 — 面向复杂高风险场景的可审计合规 Agent</td></tr>
-    <tr><th>工程名</th><td>Agent1 / agent-system（仓库目录名不变）</td></tr>
+    <tr><th>工程名</th><td>Agent1 / <span class="nobr">agent-system</span>（仓库目录名不变）</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>验证场</th><td>化工园区危化品储存审查（赛道应用场景；种子库仿真可复现）</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
-    <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">https://gitee.com/liuchao_yue/agent-system</a></td></tr>
+    <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">{wbr_url("https://gitee.com/liuchao_yue/agent-system")}</a></td></tr>
     <tr><th>默认分支</th><td>master</td></tr>
-    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo</a></td></tr>
+    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">{wbr_url("https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo")}</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
     <tr><th>团队成员</th><td>党嘉韦（前端）</td></tr>
   </table>
@@ -580,7 +617,14 @@ def print_pdf(html_path: Path, pdf_path: Path) -> None:
         html_uri,
     ]
     print("Edge print-to-pdf ...")
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    r = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=180,
+    )
     if r.returncode != 0:
         print(r.stdout)
         print(r.stderr, file=sys.stderr)
