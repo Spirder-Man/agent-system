@@ -2,6 +2,9 @@ node_modules/
 dist/
 .env
 *.log
+demo-output/
+playwright-report-demo/
+test-results/
 
 # TypeScript / Vite 增量构建产物（禁止提交）
 *.tsbuildinfo

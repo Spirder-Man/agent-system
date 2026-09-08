@@ -7,9 +7,14 @@
 # 本地归档（含历史密钥备份与对话日志，不入库）
 _archive/
 
-# 本地模型权重（评委自备，禁止提交）
-models/
+# 本地模型权重（评委自备，禁止提交 GGUF）；清单文件入库
+models/*
+!models/README.md
+!models/SHA256SUMS
 *.gguf
+
+# docker save 镜像包（离线分发，禁止提交）
+*.tar
 
 # 守护进程 PID 文件（运行时动态生成）
 .bloodmap_guard.pid
@@ -104,18 +109,18 @@ logs/linux/eval_report*.json
 # 其他构建/统计产物
 .CodeCounter/
 
-# 知识库文件（运行时生成）
-knowledgebase/
-
-# GGUF 模型（volume 挂载，禁止提交）
-models/
+# 知识库文件（运行时语料，禁止提交）；目录说明入库
+knowledgebase/*
+!knowledgebase/README.md
 
 # === 2026-07-21 新增：E2E 三层契约架构相关忽略项 ===
 
 # Playwright / 测试自动生成产物（禁止提交）
 agent1-web/playwright-report/
 agent1-web/playwright-report-real/
+agent1-web/playwright-report-demo/
 agent1-web/test-results/
+agent1-web/demo-output/
 eval_reports/
 
 # E2E 控制台输出转储（临时产物）
@@ -177,5 +182,5 @@ docs/软著申请材料/*.pdf
 docs/*20260811.csv
 !docs/数据库化石/全库15表字段明细_20260811.csv
 
-# 本地 llama.cpp 源码副本（镜像构建仍 git clone b5092；离线包在 容器化部署/gpu/llama.cpp）
+# 本地 llama.cpp 源码副本（镜像构建仍 git clone b5512；离线包在 容器化部署/gpu/llama.cpp）
 third_party/llama.cpp/
