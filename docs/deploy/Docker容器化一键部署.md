@@ -139,7 +139,7 @@ docker compose down -v       # 停止并删除 postgres 数据
 | 模型文件名 | 必须是 `Qwen_Qwen3-8B-Q4_K_M.gguf` 与 `nomic-embed-text-v1.5.f16.gguf`（不要用旧文档里的 `qwen3-8b-q4_k_m.gguf` / `Q8_0`） |
 | 缺模型 | llama 不健康；可先 `docker compose up -d postgres api web` 做无 LLM 检查，或改走 `docker-compose.demo.yml` |
 | `libllama.so` / exit 127 | 运行镜像必须带共享库。`4e5b6e8` 已收集 `.so`；3070 第一波仍是缺库旧 tar，第二波已能加载。**旧**离线 `agent1-llama-cuda.tar` 在换包前仍缺库，见落地方案 §8.0 |
-| `--mmproj` 拒参 | 3070 第二波 vision ×43。工作区现钉 **b5512**，须在 **4090** 上冒烟；未 Up / 未过冒烟前不要写「已修」 |
+| `--mmproj` 拒参 | 3070 第二波 vision ×43。工作区现钉 **b5512**（构建目标）。4090 离线包 vision 已健康；用本仓 Dockerfile 在 4090 重编并冒烟之前，不作为已发布的 `--mmproj` 修复结论 |
 | 阶段 B | GPU 最小冒烟通过后，再 push 钉版本镜像，改用 release overlay 做 `compose pull`，用户不必本机编 CUDA |
 
 ---

@@ -81,8 +81,8 @@ cd agent1-web && npm run dev
 - 正式离线包只需 4 个**运行** tar：`agent1-llama-cuda`、`agent-system-api`、`agent1-web`、`pgvector-pg16`。CUDA devel 编译链不要随包分发。
 - 离线包里的 `agent1-llama-cuda.tar` **仍不是**打过 `0.1.0` 的正式发布物。源码仓 `Dockerfile.llama*` 钉 llama.cpp **b5512**，这是构建目标，不是「已用本 Dockerfile 在 4090 重编并 `docker save`」。
 - **RTX 3070（2026-09-05/06）**：第一波缺 `libllama.so`（exit 127）；第二波 8B 可推理，vision 仍拒 `--mmproj`。见 [3070 实测](docs/testing/2026-09-06_RTX3070容器实测记录.md)。
-- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，**不能写「GPU 全量通过」**。见 [五层两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
-- 评委无 GPU 走路径 2。有卡复现用仓库外离线包或路径 1，不要把 3070 失败当成当前 4090 状态。
+- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，本轮总判定未通过。见 [五层两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
+- 无 GPU 评委路径为路径 2。有卡复现用仓库外离线包或路径 1。4090 离线包状态与 3070 实测不同。
 - 模型与语料在离线包的 `cpu/models`、`cpu/knowledgebase`。
 
 ## 架构与功能

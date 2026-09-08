@@ -178,6 +178,9 @@ docs/architecture/data/*.json
 docs/软著申请材料/*.zip
 docs/软著申请材料/*.pdf
 
+# 大赛作品介绍的第三方写作底稿（不进公开仓）
+docs/project/os2026-作品介绍PDF-豆包写作说明书.md
+
 # 编码损坏的字段明细副本（保留 docs/数据库化石/全库15表字段明细_20260811.csv）
 docs/*20260811.csv
 !docs/数据库化石/全库15表字段明细_20260811.csv
