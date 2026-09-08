@@ -32,7 +32,6 @@ const ForbiddenPage = () => import('@/pages/ForbiddenPage.vue');
 const CompliancePage = () => import('@/pages/ComplianceCheckPage.vue');
 const ComplianceHistoryPage = () => import('@/pages/ComplianceHistoryPage.vue');
 const TicketListPage = () => import('@/pages/TicketListPage.vue');
-// 以下页面尚未实现
 const InspectionPlansPage = () => import('@/pages/InspectionPlansPage.vue');
 const InspectionPlanDetailPage = () => import('@/pages/InspectionPlanDetailPage.vue');
 const InspectionRoundsPage = () => import('@/pages/InspectionRoundsPage.vue');
@@ -80,7 +79,7 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '无权限' },
   },
 
-// ── 业务路由 (admin / auditor / viewer 可访问) ──
+  // ── 业务路由 (admin / auditor / viewer 可访问) ──
   // viewer 可访问所有 GET 端点页面；POST/PUT/DELETE 按钮通过 v-permission 指令隐藏
   {
     path: '/dashboard',

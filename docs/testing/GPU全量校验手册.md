@@ -3,7 +3,10 @@
 > **SUT**：`docker-compose.yml`（默认 GPU，**不要**叠 `docker-compose.cpu.yml`）  
 > **六容器**：postgres · llama-server :8080 · llama-embed :8081 · llama-vision :8083 · api :5000 · web（`.env` 的 `WEB_PORT`，Windows 常用 8088）  
 > **对照**：CPU 冒烟见 [docker-cpu-smoke-findings.md](./docker-cpu-smoke-findings.md)（已停）；分层定义见 [测试总纲.md](./测试总纲.md)。本手册 = SM-05 上机清单。  
-> **结果表**：最近一次有卡记录已用日志回填，见 [2026-09-06 RTX 3070 容器实测记录](./2026-09-06_RTX3070容器实测记录.md)。**总判定失败**（8083 未通）。无 NVIDIA 卡的开发机不要当 GPU 验收；也不要用 09-05/06 那次「登录 200」宣称全量通过。
+> **有卡记录分两处，不要混写：**
+> - 2026-09-05/06 **RTX 3070**：见 [实测记录](./2026-09-06_RTX3070容器实测记录.md)。**总判定失败**（8083 未通）。不要用那次「登录 200」宣称全量通过。
+> - 2026-09-07 **飞致云 RTX 4090**：以 [五层两档说明](./2026-09-07_飞致云五层两档测试说明.md) 为准。`gpu-quick` 通过；`gpu-full` **未通过**（L2 缓存 0.12s）。
+> 无 NVIDIA 卡的开发机不要当 GPU 验收。§9 总结果表仍是 3070 上机回填，不要改成 4090。
 
 ---
 
@@ -338,7 +341,7 @@ curl -s -w "\nHTTP %{http_code} TIME %{time_total}\n" \
 
 | 档 | 脚本 | 算通过 | 不能写什么 |
 |---|---|---|---|
-| **gpu-quick**（日常，约 15–25min） | Gate1 + L2 甲醇问句 + Playwright **去掉** `llm-quality` | 薄切健康 | **不能**对外写「GPU 全量通过」 |
+| **gpu-quick**（日常，约 15–25min） | Gate1 + L2 非快路径问句（如「甲类仓库与明火点最少隔开多少米」）+ Playwright **去掉** `llm-quality` | 薄切健康 | **不能**对外写「GPU 全量通过」 |
 | **gpu-full**（要纲全量，约 1h） | 上表 1–6 + 识图 + 日志 D1–D6 | 手册本节 | 手点九个页面不是验收路径 |
 
 `gpu-quick` ≠ `gpu-full`。手点页面不是验收路径。

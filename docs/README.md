@@ -12,7 +12,7 @@ Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库�
 
 | 你要干什么 | 打开这个 | 备注 |
 |------------|----------|------|
-| 交作品 / 给评委介绍 | [project/os2026-作品介绍.md](project/os2026-作品介绍.md) | 正文。同目录还有 `.html`、`.pdf`（PDF 可能比 md 旧一版） |
+| 交作品 / 给评委介绍 | [project/os2026-作品介绍.md](project/os2026-作品介绍.md) | 正文。同目录 `.html`、`.pdf` 由 `render_os2026_pdf.py` 从 md 生成，与正文同步 |
 | 作品介绍配图 | [project/os2026-figures/](project/os2026-figures/) | fig1–fig4 |
 | 仓库首页、怎么启动 | 根目录 [README.md](../README.md) | 评委无 GPU 走 demo compose |
 | 最近改了什么 | [project/CHANGELOG.md](project/CHANGELOG.md) | 版本编年，不写在首页 |
