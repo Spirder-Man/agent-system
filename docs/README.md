@@ -39,7 +39,7 @@ https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
 |------|------|
 | Gitee 仓库设置 → 仓库名称/显示名 | 苍卫 |
 | 大赛官网报名表 · 作品中文名 | 苍卫 — 面向复杂高风险场景的可审计合规 Agent |
-| 大赛官网报名表 · 演示视频 | 与封面栏同一发行版地址 |
+| 大赛官网报名表 · 演示视频 | https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo |
 
 不要改 Gitee 的仓库路径 `agent-system`（克隆地址保持不变）。
 

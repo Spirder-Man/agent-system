@@ -47,6 +47,8 @@ curl http://localhost:5000/health/live
 ```bash
 docker compose -f docker-compose.demo.yml up -d --build
 bash scripts/demo-compatibility.sh
+# Windows 无 bash：
+# powershell -ExecutionPolicy Bypass -File scripts/demo-compatibility.ps1
 cd agent1-web && npm install && npm run dev
 ```
 

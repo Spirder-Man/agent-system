@@ -168,6 +168,7 @@ cd agent-system
 cp .env.example .env
 docker compose -f docker-compose.demo.yml up -d --build
 bash scripts/demo-compatibility.sh</code></pre>
+<p>Windows 无 bash 时，最后一步改为：<code>powershell -ExecutionPolicy Bypass -File scripts/demo-compatibility.ps1</code>。</p>
 <p>编排说明：</p>
 <ul><li><code>docker-compose.demo.yml</code> 启动 PostgreSQL 16 + pgvector 与 API</li><li>不启动 llama.cpp；<code>LLM_OPTIONAL=true</code>，结构化禁忌走规则引擎</li><li>脚本先等 <code>http://localhost:5000/health/live</code>，再 <code>POST /api/Auth/login</code></li><li>再请求 <code>POST /api/Compliance/storage/compatibility</code>，请求体 <code>{&quot;substanceA&quot;:&quot;甲醇&quot;,&quot;substanceB&quot;:&quot;硝酸&quot;}</code></li></ul>
 <p>通过条件：响应里能看到禁配含义（禁止、严禁、不可、不能同库或禁配），以及 <code>GB 15603</code>。甲醇与硝酸是验证场里的种子精确配对，不是模型生成条款。</p>
@@ -438,6 +439,7 @@ cd agent-system
 cp .env.example .env
 docker compose -f docker-compose.demo.yml up -d --build
 bash scripts/demo-compatibility.sh</code></pre>
+<p>Windows 无 bash 时，最后一步改为：<code>powershell -ExecutionPolicy Bypass -File scripts/demo-compatibility.ps1</code>。</p>
 <p>无 Docker 保底：</p>
 <pre><code class="bash">cd agent1-web &amp;&amp; npm install &amp;&amp; npm run dev:mock
 dotnet test Agent1.Tests --filter &quot;Category!=Integration&quot;</code></pre>

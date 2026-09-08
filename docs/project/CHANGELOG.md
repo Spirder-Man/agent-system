@@ -4,6 +4,11 @@
 
 ## 近期更新
 
+### 2026-09-08 — 无 GPU 评委脚本（Windows）
+
+- `scripts/demo-compatibility.sh` 请求体改为 JSON `\u` 转义，避免 Git Bash 把中文 `curl -d` 弄成 HTTP 400。
+- 新增 `scripts/demo-compatibility.ps1`（PowerShell 5.1/7）。干净目录 clone + `docker-compose.demo.yml` 已打出 `PASS`。本机无 NVIDIA，不跑路径 1 / `gpu-full`。
+
 ### 2026-09-08 — 公开作品名
 
 - 大赛公开作品名改为 **苍卫**。工程目录与仓库名仍为 Agent1 / `agent-system`。
