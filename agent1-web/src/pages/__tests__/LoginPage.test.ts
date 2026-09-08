@@ -52,7 +52,7 @@ describe('LoginPage', () => {
   describe('渲染', () => {
     it('应渲染登录标题和表单', () => {
       const wrapper = mountPage();
-      expect(wrapper.text()).toContain('Agent1');
+      expect(wrapper.text()).toContain('苍卫');
       expect(wrapper.text()).toContain('登录');
     });
 
@@ -130,8 +130,11 @@ describe('LoginPage', () => {
       mockRoute.query = { redirect: '/inspection/plans' };
       mockPost.mockResolvedValue({
         data: {
-          token: 't', refreshToken: 'r', username: 'admin',
-          role: 'admin', expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+          token: 't',
+          refreshToken: 'r',
+          username: 'admin',
+          role: 'admin',
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
         },
       });
 
@@ -167,7 +170,11 @@ describe('LoginPage', () => {
     it('登录中应显示 loading 状态并禁用按钮', async () => {
       // 使用延迟 resolve 来观察 loading 状态
       let resolveLogin!: (value: unknown) => void;
-      mockPost.mockReturnValue(new Promise((resolve) => { resolveLogin = resolve; }));
+      mockPost.mockReturnValue(
+        new Promise((resolve) => {
+          resolveLogin = resolve;
+        }),
+      );
 
       const wrapper = mountPage();
       const inputs = wrapper.findAll('input');
@@ -183,15 +190,26 @@ describe('LoginPage', () => {
       expect(btn.attributes('disabled')).toBeDefined();
 
       // 清理：resolve 避免泄漏
-      resolveLogin({ data: { token: 't', refreshToken: 'r', username: 'u', role: 'viewer', expiresAt: new Date(Date.now() + 3600_000).toISOString() } });
+      resolveLogin({
+        data: {
+          token: 't',
+          refreshToken: 'r',
+          username: 'u',
+          role: 'viewer',
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+        },
+      });
       await flushPromises();
     });
 
     it('输入应自动 trim', async () => {
       mockPost.mockResolvedValue({
         data: {
-          token: 't', refreshToken: 'r', username: 'admin',
-          role: 'admin', expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+          token: 't',
+          refreshToken: 'r',
+          username: 'admin',
+          role: 'admin',
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
         },
       });
 

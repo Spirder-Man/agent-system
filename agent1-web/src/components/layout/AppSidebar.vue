@@ -148,7 +148,7 @@ function navigateTo(path: string) {
   <div class="app-sidebar h-full flex flex-col bg-white border-r border-gray-200">
     <!-- Logo / 标题 -->
     <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-      <span class="text-lg font-bold text-blue-700">Agent1</span>
+      <span class="text-lg font-bold text-blue-700">苍卫</span>
       <span class="text-xs text-gray-400">化工合规</span>
     </div>
 
