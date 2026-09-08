@@ -517,13 +517,14 @@ def build_cover_and_body(md: str) -> str:
     cover = f"""
 <div class="cover">
   <div class="kicker">2026 上海开源软件应用创新大赛　OS2026</div>
-  <h1>仓卫 — 化工园区危化品合规审查 AI Agent</h1>
+  <h1>苍卫 — 化工园区危化品合规审查 AI Agent</h1>
   <div class="sub">作品介绍</div>
   <p>赛道：AI+工业软件　·　开源协议：MIT　·　默认分支：master</p>
   <p class="tagline">法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。<br>
   LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。</p>
   <table>
-    <tr><th>作品中文名</th><td>仓卫 — 化工园区危化品合规审查 AI Agent</td></tr>
+    <tr><th>作品中文名</th><td>苍卫 — 化工园区危化品合规审查 AI Agent</td></tr>
+    <tr><th>工程名</th><td>Agent1 / agent-system（仓库目录名不变）</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
     <tr><th>代码仓库</th><td>https://gitee.com/liuchao_yue/agent-system</td></tr>
@@ -542,7 +543,7 @@ def wrap_html(inner: str) -> str:
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<title>仓卫 作品介绍 · OS2026 AI+工业软件</title>
+<title>苍卫 作品介绍 · OS2026 AI+工业软件</title>
 <style>{CSS}</style>
 </head>
 <body>
@@ -599,7 +600,7 @@ def stamp_header_footer(pdf_path: Path) -> None:
     except ImportError:
         import fitz  # type: ignore
 
-    header = "仓卫 作品介绍 · OS2026 AI+工业软件"
+    header = "苍卫 作品介绍 · OS2026 AI+工业软件"
     footer = "gitee.com/liuchao_yue/agent-system"
     fontfile = Path(r"C:\Windows\Fonts\simhei.ttf")
     if not fontfile.exists():

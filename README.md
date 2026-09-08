@@ -1,5 +1,7 @@
 # Agent1 — 化工园区危化品合规审查 AI Agent
 
+公开作品名：**苍卫**。工程与仓库名仍为 Agent1 / `agent-system`。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。** LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。

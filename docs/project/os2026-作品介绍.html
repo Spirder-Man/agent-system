@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<title>仓卫 作品介绍 · OS2026 AI+工业软件</title>
+<title>苍卫 作品介绍 · OS2026 AI+工业软件</title>
 <style>
 @page {
   size: A4;
@@ -129,13 +129,14 @@ hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 14pt 0; }
 
 <div class="cover">
   <div class="kicker">2026 上海开源软件应用创新大赛　OS2026</div>
-  <h1>仓卫 — 化工园区危化品合规审查 AI Agent</h1>
+  <h1>苍卫 — 化工园区危化品合规审查 AI Agent</h1>
   <div class="sub">作品介绍</div>
   <p>赛道：AI+工业软件　·　开源协议：MIT　·　默认分支：master</p>
   <p class="tagline">法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。<br>
   LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。</p>
   <table>
-    <tr><th>作品中文名</th><td>仓卫 — 化工园区危化品合规审查 AI Agent</td></tr>
+    <tr><th>作品中文名</th><td>苍卫 — 化工园区危化品合规审查 AI Agent</td></tr>
+    <tr><th>工程名</th><td>Agent1 / agent-system（仓库目录名不变）</td></tr>
     <tr><th>赛道</th><td>AI+工业软件</td></tr>
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
     <tr><th>代码仓库</th><td>https://gitee.com/liuchao_yue/agent-system</td></tr>
@@ -161,7 +162,7 @@ cp .env.example .env
 docker compose -f docker-compose.demo.yml up -d --build
 bash scripts/demo-compatibility.sh</code></pre>
 <p><code>docker-compose.demo.yml</code> 启动 PostgreSQL 16 + pgvector 与 API，不启动 llama.cpp；环境变量 <code>LLM_OPTIONAL=true</code>，储存禁忌走规则引擎。验收脚本等待 <code>http://localhost:5000/health/live</code>，随后 <code>POST /api/Auth/login</code>，再请求 <code>POST /api/Compliance/storage/compatibility</code>，请求体为 <code>{&quot;substanceA&quot;:&quot;甲醇&quot;,&quot;substanceB&quot;:&quot;硝酸&quot;}</code>。通过条件是响应中能看到禁配含义（禁止、严禁、不可、不能同库或禁配）以及 <code>GB 15603</code>。查询甲醇与硝酸能否同库，应返回禁止同库，并给出 GB 15603 出处。氯气等同属氧化性气体场景同类，同属种子精确配对，不是模型生成条款。</p>
-<p>评分要点对应为：双通道（技术创新）、无 GPU 可复现（场景落地）、MIT 与 NOTICE 且不含国标全文（开源治理）、个人维护及后续规划（长期发展）。演示视频从甲醇与硝酸禁配及 GB 15603 起，再按侧栏展示已有界面。工程目录与仓库名称仍为 Agent1 / agent-system。摘要结论三条：事实不由模型生成；无 GPU 也能验收；仓库不含国标全文，也不是等保测评对象。</p>
+<p>评分要点对应为：双通道（技术创新）、无 GPU 可复现（场景落地）、MIT 与 NOTICE 且不含国标全文（开源治理）、个人维护及后续规划（长期发展）。演示视频从甲醇与硝酸禁配及 GB 15603 起，再按侧栏展示已有界面。公开作品名苍卫；工程目录与仓库名称仍为 Agent1 / agent-system。摘要结论三条：事实不由模型生成；无 GPU 也能验收；仓库不含国标全文，也不是等保测评对象。</p>
 <p>仓库：<a href="https://gitee.com/liuchao_yue/agent-system">https://gitee.com/liuchao_yue/agent-system</a></p>
 <h2>第 1 章 项目背景</h2>
 <h3>1.1 行业问题</h3>
@@ -209,7 +210,7 @@ dotnet test Agent1.Tests --filter &quot;Category!=Integration&quot;</code></pre>
 <p><code>dev:mock</code> 只看 UI，不需要后端。<code>dotnet test</code> 过滤掉集成类别，避免评委环境没有数据库时被误判为项目不能构建。</p>
 <h3>2.4 与视频的对应</h3>
 <p>演示视频与官网报名表同一地址，见封面「演示视频」栏。开场给出禁配结论与 GB 15603，随后按侧栏展示已有功能。后半段界面表示能力范围，不等于已闭环交付的生产模块。</p>
-<ul><li>片头：仓卫定位句与仓库 URL、服务检查</li><li>登录一次（admin）</li><li>仪表盘 / 运维看板</li><li>合规检查、合规历史、评测页（评测页只展示，不在片中跑完整评测集）</li><li>巡检计划 / 记录、工单、资产台账</li><li>危化品查询、储存兼容性（甲醇 × 硝酸 → 禁配 + GB 15603）</li><li>AI 合规助手、法规审计、应急、知识图谱、多模态、知识库</li><li>数据库诊断、工具诊断、审计哈希链、系统设置</li><li>片尾：开源复现说明</li></ul>
+<ul><li>片头：苍卫定位句与仓库 URL、服务检查</li><li>登录一次（admin）</li><li>仪表盘 / 运维看板</li><li>合规检查、合规历史、评测页（评测页只展示，不在片中跑完整评测集）</li><li>巡检计划 / 记录、工单、资产台账</li><li>危化品查询、储存兼容性（甲醇 × 硝酸 → 禁配 + GB 15603）</li><li>AI 合规助手、法规审计、应急、知识图谱、多模态、知识库</li><li>数据库诊断、工具诊断、审计哈希链、系统设置</li><li>片尾：开源复现说明</li></ul>
 <h2>第 3 章 技术架构</h2>
 <h3>3.1 总体结构</h3>
 <p>系统分前端、API、核心库、存储与推理运行时。前端工程目录 <code>agent1-web/</code>，技术为 Vue 3、Vite、Element Plus、Pinia、Vue Router、Axios、ECharts。后端 API 为 ASP.NET Core 8，工程 <code>Agent1.Api</code>。核心业务库为 <code>Agent1</code>（C# / .NET 8）。编排与模型接入使用 Microsoft.SemanticKernel（含 OpenAI / Ollama 连接器）。完整部署下本地推理为 llama.cpp（运行时自备，不随本仓分发二进制）。数据库为 PostgreSQL 16 + pgvector，访问层为 Npgsql、Dapper。演示编排 <code>docker-compose.demo.yml</code> 使用镜像 <code>pgvector/pgvector:pg16</code>，初始化 <code>init_database.sql</code> 与 <code>db/migrations/002_chemical_knowledge_graph.sql</code>。当前向量路径是 pgvector，不是 Milvus。</p>

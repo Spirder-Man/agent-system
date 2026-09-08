@@ -1,5 +1,5 @@
 /// <reference types="node" />
-// 仓卫演示片：片头 → 登录一次 → 侧栏核心功能走完 → 片尾。
+// 苍卫演示片：片头 → 登录一次 → 侧栏核心功能走完 → 片尾。
 // 必须打 Nginx 生产包，不要打 Vite。叠字不出现「评委」。
 
 import { test, expect, type Locator, type Page } from '@playwright/test';
@@ -34,7 +34,7 @@ async function waitResultOrError(page: Page, result: Locator, timeout = 120_000,
   await hold(page, 4500);
 }
 
-test('仓卫演示：登录一次，核心功能走完', async ({ page, request }) => {
+test('苍卫演示：登录一次，核心功能走完', async ({ page, request }) => {
   const nginx = await request.get('/nginx-health');
   const api = await request.get('/health/live');
   expect(nginx.ok(), 'nginx-health 失败。PLAYWRIGHT_BASE_URL 指向隧道端口（常见 http://localhost:18088）').toBeTruthy();
@@ -61,7 +61,7 @@ test('仓卫演示：登录一次，核心功能走完', async ({ page, request 
 
   await showCard(page, {
     kicker: 'OS2026 · AI+工业软件',
-    title: '仓卫',
+    title: '苍卫',
     lines: [
       { text: '化工园区危化品合规审查 AI Agent' },
       { text: '法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。' },
