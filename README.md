@@ -11,6 +11,8 @@
 - 仓库：[Gitee](https://gitee.com/liuchao_yue/agent-system) · [GitHub](https://github.com/Spirder-Man/agent-system) · 默认分支 `master`
 - 源码包：[v0.1.0](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0)（CPU / GPU / 容器化三档，不含模型）
 - 许可证：[LICENSE](LICENSE)（MIT） · 第三方：[NOTICE](NOTICE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+- 参与：[CONTRIBUTING.md](CONTRIBUTING.md) · 安全：[SECURITY.md](SECURITY.md) · 行为准则：[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- 工程阶段：[docs/platform/工程治理.md](docs/platform/工程治理.md)（第一阶段：文档 + 运维默认口 `:5000`；规则引擎/双通道未开改）
 - 等级保护口径：[docs/platform/等级保护口径.md](docs/platform/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
 
 ```bash
@@ -134,3 +136,5 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 | 一键部署 | [docs/infra/deploy/Docker容器化一键部署.md](docs/infra/deploy/Docker容器化一键部署.md) |
 | 4090 两档测试 | [docs/infra/2026-09-07_飞致云五层两档测试说明.md](docs/infra/2026-09-07_飞致云五层两档测试说明.md) |
 | 知识库三层数据 | [knowledgebase/README.md](knowledgebase/README.md)（国标全文不进 Git） |
+| 工程治理 | [docs/platform/工程治理.md](docs/platform/工程治理.md) · [scripts/README.md](scripts/README.md) |
+| 参与与安全 | [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |

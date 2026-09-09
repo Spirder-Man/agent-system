@@ -1,5 +1,7 @@
 #!/bin/bash
 # 双层门卫闭环验证 — 5 个边界场景全覆盖
+# 规范验收用 scripts/demo-compatibility。默认 API :5000。
+API="${API_URL:-http://localhost:5000}"
 LOG="/root/autodl-tmp/logs/api-e2e-double-gate.log"
 echo "=== 双层门卫闭环验证 ===" > $LOG
 echo "测试时间: $(date)" >> $LOG
@@ -12,7 +14,7 @@ curl -s -o /dev/null -w "llama:8080 HTTP %{http_code}\n" http://localhost:8080/h
 echo "" >> $LOG
 
 # 获取 token
-LOGIN_RESP=$(curl -s -X POST http://localhost:5001/api/auth/login \
+LOGIN_RESP=$(curl -s -X POST "$API/api/auth/login" \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"changeme"}')
 TOKEN=$(echo "$LOGIN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])" 2>/dev/null)
@@ -26,7 +28,7 @@ test_query() {
   echo "──────────────────────────────────────" >> $LOG
   echo "[$LABEL] $QUERY" >> $LOG
   echo "期望: $EXPECT" >> $LOG
-  RESP=$(curl -s -X POST http://localhost:5001/api/compliance/check \
+  RESP=$(curl -s -X POST "$API/api/compliance/check" \
     -H "Authorization: Bearer $TOKEN" \
     -H 'Content-Type: application/json' \
     -d "{\"query\":\"$QUERY\"}" 2>/dev/null)

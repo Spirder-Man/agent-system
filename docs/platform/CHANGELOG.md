@@ -4,6 +4,24 @@
 
 ## 近期更新
 
+### 2026-09-09 — 运维默认口对齐（第一阶段续）
+
+- 规范入口仍是 README：`docker-up` / `docker-compose.demo.yml` + `demo-compatibility`，API **:5000**。
+- 裸机 `start_services.sh`、`scripts/test_*.sh`、`health-check.ps1`、`vite.config.ts` 与 Real 档 Playwright 默认代理改为 `:5000`。SSH 隧道须显式传参。
+- **未改** 规则引擎、双通道、种子、`agent1-web/src`、CI job。
+
+### 2026-09-09 — 工程治理体系（第一阶段，无行为变更）
+
+- 总闸：[工程治理.md](./工程治理.md)。债标期：[工程债分拣.md](./工程债分拣.md)。页面四档：[页面完成度清单.md](./页面完成度清单.md)。
+- 血谱器官表 API 端口改为 **5000**；测试总纲文首声明条数与 SSH 隧道为历史快照。
+- **未改** `Agent1` / `Agent1.Api` / `agent1-web/src` / 种子 SQL / CI。
+
+### 2026-09-09 — 开源治理文件
+
+- 根目录补 `CONTRIBUTING.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md`。
+- GitHub Issue 表单：`.github/ISSUE_TEMPLATE/`（Bug / 功能 / 文档）；Gitee 同内容在 `.gitee/ISSUE_TEMPLATE/`。
+- PR 清单：`.github/pull_request_template.md`。安全漏洞走 GitHub Security Advisory 或 Gitee 私信，不走公开 Issue。
+
 ### 2026-09-09 — v0.1.0 三档源码包
 
 - 首次公开源码压缩包：容器化（demo compose，无模型）、CPU、GPU。不含 GGUF、不含 docker save、不含国标全文。

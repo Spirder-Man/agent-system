@@ -53,14 +53,6 @@
 | Microsoft.AspNetCore.Mvc.Testing | 8.0.0 | MIT |
 | coverlet.collector | 6.0.0 | MIT |
 
-## 运维小工具（NuGet）
-
-来源：[ssh-runner/SshRunner.csproj](ssh-runner/SshRunner.csproj)、[ssh-tunnel/SshTunnel.csproj](ssh-tunnel/SshTunnel.csproj)
-
-| 组件 | 版本（约） | 许可证 |
-|------|-----------|--------|
-| SSH.NET | 2024.2.0 / 2023.0.1 | MIT |
-
 ## 运行时另需自行部署（不随本仓分发二进制）
 
 | 组件 | 用途 | 许可证 |
@@ -118,12 +110,3 @@
 | @commitlint/cli | 21.2 | MIT |
 | @commitlint/config-conventional | 21.2 | MIT |
 | @types/markdown-it | 14.1 | MIT |
-
-## 旁路（task-email MCP）
-
-来源：[task-email/package.json](task-email/package.json)（非评委演示主路径）
-
-| 组件 | 版本（约） | 许可证 |
-|------|-----------|--------|
-| @modelcontextprotocol/sdk | 1.12 | MIT |
-| nodemailer | 6.9 | MIT |

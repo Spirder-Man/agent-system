@@ -4,5 +4,6 @@ echo "API PID: $API_PID"
 echo "=== JWT env ==="
 cat /proc/$API_PID/environ 2>/dev/null | tr '\0' '\n' | grep -E 'JWT|AUTH|DB_' || echo "no env found"
 echo "=== JWT from API debug ==="
-curl -s http://localhost:5001/health
+API="${API_URL:-http://localhost:5000}"
+curl -s "$API/health"
 echo ""

@@ -1,5 +1,7 @@
 #!/bin/bash
 # 测试规则引擎接管 — LLM 不可用时确定性降级
+# 规范验收用 scripts/demo-compatibility。默认 API :5000。
+API="${API_URL:-http://localhost:5000}"
 LOG="/root/autodl-tmp/logs/api-e2e-rule-v2.log"
 echo "=== 规则引擎接管测试 (Bug-033 修复后) ===" > $LOG
 echo "测试时间: $(date)" >> $LOG
@@ -12,7 +14,7 @@ echo "" >> $LOG
 
 # 2. 获取 token
 echo "--- 2. 获取 Token ---" >> $LOG
-LOGIN_RESP=$(curl -s -X POST http://localhost:5001/api/auth/login \
+LOGIN_RESP=$(curl -s -X POST "$API/api/auth/login" \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"changeme"}')
 echo "Login: $LOGIN_RESP" >> $LOG
@@ -22,7 +24,7 @@ echo "" >> $LOG
 
 # 3. 发送化工合规查询 (LLM 不可用 → 规则引擎接管)
 echo "--- 3. 合规检查: 苯和丙酮 ---" >> $LOG
-RESP=$(curl -s -X POST http://localhost:5001/api/compliance/check \
+RESP=$(curl -s -X POST "$API/api/compliance/check" \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"query":"苯和丙酮可以存放在同一库房吗？"}')

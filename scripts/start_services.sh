@@ -1,4 +1,5 @@
 #!/bin/bash
+# 裸机启动（非规范）。规范入口: docker-up / docker-compose.demo.yml。API 默认 :5000。
 set -e
 
 MODEL_DIR=/root/autodl-tmp/models
@@ -37,8 +38,8 @@ echo "  PID: $EMBED_PID"
 echo "  等待模型加载..."
 sleep 30
 
-# ===== 3. .NET API (端口 5001) =====
-echo "[3/3] 启动 .NET API (端口 5001)..."
+# ===== 3. .NET API (端口 5000，与 compose 一致) =====
+echo "[3/3] 启动 .NET API (端口 5000)..."
 
 PROJECT_DIR="${PROJECT_DIR:-/root/autodl-tmp/agent-system}"
 if [ -f "$PROJECT_DIR/.env" ]; then
@@ -55,7 +56,7 @@ export LLM_ENDPOINT="${LLM_ENDPOINT:-http://localhost:8080/v1}"
 export EMBEDDING_ENDPOINT="${EMBEDDING_ENDPOINT:-http://localhost:8081/v1}"
 export DB_HOST="${DB_HOST:-localhost}"
 export DB_NAME="${DB_NAME:-chemical_park_ai_agent}"
-export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5001}"
+export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5000}"
 export DOTNET_USE_POLLING_FILE_WATCHER=true
 export KNOWLEDGE_BASE_PATH="${KNOWLEDGE_BASE_PATH:-/root/autodl-tmp/knowledgebase}"
 
@@ -76,8 +77,8 @@ curl -s --max-time 5 http://localhost:8080/health 2>/dev/null && echo "" || echo
 echo -n "Embedding (8081): "
 curl -s --max-time 5 http://localhost:8081/health 2>/dev/null && echo "" || echo "未就绪"
 
-echo -n "API (5001): "
-curl -s --max-time 10 http://localhost:5001/health 2>/dev/null || echo "未就绪"
+echo -n "API (5000): "
+curl -s --max-time 10 http://localhost:5000/health 2>/dev/null || echo "未就绪"
 
 echo ""
 echo "===== 启动完成 ====="

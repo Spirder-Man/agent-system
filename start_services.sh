@@ -1,8 +1,10 @@
 #!/bin/bash
 # ============================================================
-# Agent1 远程服务一键启动脚本
+# Agent1 裸机一键启动（非规范入口）
+# 规范入口: scripts/docker-up 或 docker-compose.demo.yml
 # 用法: 在项目根目录准备 .env 后执行  bash start_services.sh
 # 启动顺序: PG → llama LLM → llama Embed → .NET API
+# API 默认 :5000（与 compose / Program.cs 一致）
 # 凭据只从 .env 读取，缺变量则退出
 # ============================================================
 set -euo pipefail
@@ -22,7 +24,7 @@ fi
 : "${JWT_KEY:?Set JWT_KEY in .env}"
 : "${AUTH_ACCOUNTS_JSON:?Set AUTH_ACCOUNTS_JSON in .env}"
 
-export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5001}"
+export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5000}"
 export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
 export DB_PASSWORD
 export JWT_KEY
@@ -113,7 +115,7 @@ nohup dotnet run --project Agent1.Api --configuration Release --no-launch-profil
   > "$LOG_DIR/api-e2e.log" 2>&1 &
 
 for i in $(seq 1 10); do
-  if curl -s http://localhost:5001/health > /dev/null 2>&1; then
+  if curl -s http://localhost:5000/health > /dev/null 2>&1; then
     echo "  API 就绪 (${i}x2s)"
     break
   fi
@@ -138,7 +140,7 @@ check() {
 
 check "LLM (8080)"        "http://localhost:8080/health"
 check "Embed (8081)"      "http://localhost:8081/health"
-check ".NET API (5001)"   "http://localhost:5001/health"
+check ".NET API (5000)"   "http://localhost:5000/health"
 
 echo ""
-curl -s http://localhost:5001/health | python3 -m json.tool 2>/dev/null || echo "API 未响应 → tail -20 $LOG_DIR/api-e2e.log"
+curl -s http://localhost:5000/health | python3 -m json.tool 2>/dev/null || echo "API 未响应 → tail -20 $LOG_DIR/api-e2e.log"

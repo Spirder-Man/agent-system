@@ -5,7 +5,7 @@
 > **对照**：CPU 冒烟见 [docker-cpu-smoke-findings.md](./docker-cpu-smoke-findings.md)（已停）；分层定义见 [测试总纲.md](../platform/测试总纲.md)。本手册 = SM-05 上机清单。  
 > **有卡记录分两处，不要混写：**
 > - 2026-09-05/06 **RTX 3070**：见 [实测记录](./2026-09-06_RTX3070容器实测记录.md)。**总判定失败**（8083 未通）。不要用那次「登录 200」宣称全量通过。
-> - 2026-09-07 **飞致云 RTX 4090**：以 [五层两档说明](./2026-09-07_飞致云五层两档测试说明.md) 为准。`gpu-quick` 通过；`gpu-full` **未通过**（L2 缓存 0.12s）。
+> - 2026-09-07 **飞致云 RTX 4090**：以 [五层两档说明](./2026-09-07_飞致云五层两档测试说明.md) 为准。`gpu-quick` 通过；`gpu-full` **未通过**（L2 缓存 0.12s）。公开仓不含当时的 SSH 五层驱动。
 > 无 NVIDIA 卡的开发机不要当 GPU 验收。§9 总结果表仍是 3070 上机回填，不要改成 4090。
 
 ---
@@ -116,10 +116,10 @@ nvidia-smi
 ADMIN_PWD='你的admin密码' bash scripts/pre-deploy-check.sh
 ```
 
-PowerShell 健康脚本默认打旧 SSH 隧道 `:15001`，Docker 本机必须改 URL：
+`health-check.ps1` 默认 `http://localhost:5000`。SSH 隧道须显式改 URL：
 
 ```powershell
-powershell -File agent1-web/scripts/health-check.ps1 -ApiUrl http://localhost:5000
+powershell -File agent1-web/scripts/health-check.ps1 -ApiUrl http://localhost:15001
 ```
 
 | 检查 | 通过标准 | 本机结果（2026-09-05/06 3070 日志回填） |
@@ -226,7 +226,7 @@ dotnet test Agent1.Tests/Agent1.Tests.csproj --filter "Category=Integration"
 
 对应总纲 §十 `e2e-real/` 9 个 spec。打 Nginx 生产包，**不要起 Vite**（`PLAYWRIGHT_BASE_URL` 已设时 `playwright.real.config.ts` 会关掉 `webServer`）。
 
-**不要** `npm run test:e2e:real`：其 `pretest` 会跑 `health-check.ps1` 且默认 `:15001`。直接 `npx playwright`，或 `npm run test:e2e:real:docker`（无 pretest）。飞致云一键见 [§12](#12-飞致云公司电脑一键编排)。
+**不要** `npm run test:e2e:real`：其 `pretest` 会跑 `health-check.ps1`（默认本机 `:5000`，且含 **benzene** 快路径）。直接 `npx playwright`，或 `npm run test:e2e:real:docker`（无 pretest）。飞致云一键见 [§12](#12-飞致云公司电脑一键编排)。
 
 **不要** 像 CPU 冒烟那样 `--grep-invert "viewer|扫描"`。`gpu-quick` 可以 `--grep-invert llm-quality`（日常薄切，不能当全量）。
 
@@ -390,7 +390,7 @@ curl -s -w "\nHTTP %{http_code} TIME %{time_total}\n" \
 
 ## 11. 已知坑（不改代码，上机避开）
 
-1. **`health-check.ps1` 默认 `http://localhost:15001`**（旧 SSH 隧道）。Docker 本机必须 `-ApiUrl http://localhost:5000`。
+1. **`health-check.ps1` 默认 `http://localhost:5000`。** SSH 隧道须显式 `-ApiUrl http://localhost:15001`。
 2. **`npm run test:e2e:real` 的 pretest 会跑上述脚本（含 benzene）。** Docker / 飞致云编排用 `npx playwright test --config=playwright.real.config.ts` 或 `npm run test:e2e:real:docker`（**无 pretest**），并设 `PLAYWRIGHT_BASE_URL=http://localhost:8088`。公司电脑打飞致云见 [§12](#12-飞致云公司电脑一键编排)。
 3. **`EvalController` 在 API 容器内 TCP 探 `localhost:8080`。** 容器里 8080 是 API 自己，探针会假阳性「在线」。真正推理走环境变量 `LLM_ENDPOINT=http://llama-server:8080/v1`。以 `status=completed` 和报告三率为准，不要以探针成功当 llama 已通。
 4. **`pre-deploy-check.sh` 不检查 8083。** 视觉必须单独 `curl :8083/health`。
@@ -408,7 +408,7 @@ curl -s -w "\nHTTP %{http_code} TIME %{time_total}\n" \
 > 分层与历史指标见 [测试总纲.md](../platform/测试总纲.md) v2.2（[蓝图](../platform/测试总纲-蓝图.html)）§4.2；日志六维见 [系统日志解读与排障实战指南](../Agent1.Tests/系统日志解读与排障实战指南.md) / [系统日志阅读与分析实战教学](../Agent1.Tests/系统日志阅读与分析实战教学.md)。  
 > Real E2E 失败模式：[E2E测试关注点-蓝图.html](../e2e/E2E测试关注点-蓝图.html)。
 
-**手点九个页面不是验收路径。** 算进自动化的页面/能力 = 且仅 = `agent1-web/e2e-real/` 的 9 个 spec。不要 `npm run test:e2e:real`（pretest 会打 `:15001` + **benzene**）。不要 `int-test-task11.sh` / AutoDL cron / `download-analysis.ps1`。
+**手点九个页面不是验收路径。** 算进自动化的页面/能力 = 且仅 = `agent1-web/e2e-real/` 的 9 个 spec。不要 `npm run test:e2e:real`（pretest 默认打本机 `:5000` + **benzene**）。不要 `int-test-task11.sh` / AutoDL cron / `download-analysis.ps1`。
 
 ### 12.1 测试要纲摘要（对齐总纲 + 蓝图）
 

@@ -1,0 +1,88 @@
+name: Bug 报告
+description: 复现失败、接口/页面行为与文档不符
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        安全漏洞请走仓库根目录 [SECURITY.md](https://github.com/Spirder-Man/agent-system/blob/master/SECURITY.md)，不要用本模板。
+        不要粘贴 `.env`、JWT、数据库口令、国家标准全文或企业内部制度。
+  - type: textarea
+    id: what
+    attributes:
+      label: 现象
+      description: 实际发生了什么。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从 clone 或启动命令写起。
+      placeholder: |
+        1. cp .env.example .env
+        2. docker compose -f docker-compose.demo.yml up -d --build
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+    validations:
+      required: true
+  - type: dropdown
+    id: path
+    attributes:
+      label: 运行路径
+      options:
+        - 无 GPU 演示（docker-compose.demo.yml）
+        - CPU（docker-up cpu）
+        - GPU（docker-up gpu）
+        - 本机 dotnet + 已有 PostgreSQL
+        - 仅前端 mock（npm run dev:mock）
+        - 不清楚
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: Windows 11 / Ubuntu 22.04 / …
+  - type: dropdown
+    id: health
+    attributes:
+      label: GET /health/live 是否已通过
+      options:
+        - 通过
+        - 未通过
+        - 未测 / 未起 API
+    validations:
+      required: true
+  - type: dropdown
+    id: methanol
+    attributes:
+      label: 是否与甲醇 × 硝酸储存兼容性有关
+      options:
+        - 是（期望禁配 + GB 15603）
+        - 否
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志或响应摘要
+      description: 脱敏后再贴。不要贴完整 .env、token、国标正文。
+      render: text
+  - type: checkboxes
+    id: guards
+    attributes:
+      label: 提交前
+      options:
+        - label: 未粘贴密钥、口令、JWT 或生产数据
+          required: true
+        - label: 未粘贴国家标准全文或企业内部未公开制度
+          required: true
+        - label: 已查 README / docs/platform/CHANGELOG.md，确认不是已知文档口径（例如 gpu-full 本轮未通过）
+          required: false

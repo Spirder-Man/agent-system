@@ -1,19 +1,19 @@
 # ============================================================
-# health-check.ps1 — Remote service health check
+# health-check.ps1 — API 健康检查
 #
-# Checks: API health / Auth login / LLM compliance / Assets
-# Prereq: SSH tunnel running (localhost:15001 -> remote API:5002)
+# 默认打本机 compose / docker-up 的 API :5000。
+# SSH 隧道时显式传:  -ApiUrl http://localhost:15001
 # ============================================================
 
 param(
-    [string]$ApiUrl = "http://localhost:15001"
+    [string]$ApiUrl = "http://localhost:5000"
 )
 
 $ErrorActionPreference = "Continue"
 $allOk = $true
 
 Write-Host "========================================"
-Write-Host "  Agent1 Remote Health Check"
+Write-Host "  Agent1 Health Check ($ApiUrl)"
 Write-Host "========================================"
 
 # ── 1. API health endpoint ──
@@ -115,7 +115,7 @@ Write-Host "========================================"
 if ($allOk) {
     Write-Host "  All services healthy — ready for real GPU E2E" -ForegroundColor Green
 } else {
-    Write-Host "  Some services unhealthy — check remote environment" -ForegroundColor Red
+    Write-Host "  Some services unhealthy" -ForegroundColor Red
 }
 Write-Host "========================================"
 if ($allOk) { exit 0 } else { exit 1 }

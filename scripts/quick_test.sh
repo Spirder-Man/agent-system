@@ -1,9 +1,11 @@
 #!/bin/bash
+# 规范验收用 scripts/demo-compatibility。默认 API :5000。
+API="${API_URL:-http://localhost:5000}"
 LOG="/tmp/quick_test.log"
 echo "=== Quick Test: 双层门卫+Handler闭环 ===" > $LOG
 
 # 获取 token
-TOKEN=$(curl -s -X POST http://localhost:5001/api/auth/login \
+TOKEN=$(curl -s -X POST "$API/api/auth/login" \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"changeme"}' \
   | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
@@ -12,7 +14,7 @@ test_q() {
   local label="$1"; local query="$2"
   echo "" >> $LOG
   echo "[$label] $query" >> $LOG
-  RESP=$(curl -s -X POST http://localhost:5001/api/compliance/check \
+  RESP=$(curl -s -X POST "$API/api/compliance/check" \
     -H "Authorization: Bearer $TOKEN" \
     -H 'Content-Type: application/json' \
     -d "{\"query\":\"$query\"}" 2>/dev/null)

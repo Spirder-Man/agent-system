@@ -13,8 +13,6 @@
     "test:e2e:real": "playwright test --config=playwright.real.config.ts",
     "pretest:e2e:real": "node scripts/check-test-ids.mjs && powershell -File scripts/health-check.ps1",
     "demo:record": "playwright test --config=playwright.demo.config.ts",
-    "tunnel:start": "powershell -File scripts/start-tunnel.ps1",
-    "tunnel:stop": "powershell -File scripts/stop-tunnel.ps1",
     "health:check": "powershell -File scripts/health-check.ps1",
     "prepare": "cd .. && git config core.hooksPath .husky || true"
   },

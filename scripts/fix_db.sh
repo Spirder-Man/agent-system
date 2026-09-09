@@ -22,7 +22,7 @@ export DB_HOST="localhost"
 export DB_NAME="chemical_park_ai_agent"
 export DB_USER="postgres"
 export DB_PASSWORD="postgres123"
-export ASPNETCORE_URLS="http://0.0.0.0:5001"
+export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5000}"
 export DOTNET_USE_POLLING_FILE_WATCHER=true
 export KNOWLEDGE_BASE_PATH="/root/autodl-tmp/knowledgebase"
 
@@ -33,5 +33,5 @@ echo "API PID: $!"
 
 sleep 25
 echo -n "Health: "
-curl -s --max-time 10 http://localhost:5001/health
+curl -s --max-time 10 http://localhost:5000/health
 echo ""

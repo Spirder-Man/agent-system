@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const isMock = mode === 'mock';
 
   // Mock 模式下不配置代理，MSW 在浏览器端全拦截
-  // 非 Mock 模式：VITE_PROXY_TARGET 默认 127.0.0.1:15000（SSH 隧道）
-  const proxyTarget = process.env.VITE_PROXY_TARGET || env.VITE_PROXY_TARGET || 'http://127.0.0.1:15000';
+  // 非 Mock：默认本机 / compose API :5000。SSH 隧道须显式设 VITE_PROXY_TARGET
+  const proxyTarget = process.env.VITE_PROXY_TARGET || env.VITE_PROXY_TARGET || 'http://localhost:5000';
 
   return {
     plugins: [vue()],

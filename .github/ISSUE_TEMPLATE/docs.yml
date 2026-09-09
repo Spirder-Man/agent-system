@@ -1,0 +1,23 @@
+name: 文档问题
+description: README、说明书、作品介绍或口径写错 / 过时
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: input
+    id: path
+    attributes:
+      label: 文档路径
+      placeholder: README.md / docs/platform/os2026-作品介绍.md / …
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题
+      description: 哪一句与仓库现状不符，期望改成什么。
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        等保、国标全文、gpu-full 等口径以现有文档为准，不要在 Issue 里贴标准正文。

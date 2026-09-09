@@ -1,0 +1,39 @@
+name: 功能建议
+description: 新能力或现有模块加深，须说明是否碰到事实通道
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本仓库的主约束：**法规号、储存禁忌、安全距离由确定性代码给出，大模型只解释。**
+        建议不要把「让模型自己改规则 / 改源码」当作默认方向。
+  - type: textarea
+    id: scene
+    attributes:
+      label: 使用场景
+      description: 谁在什么情况下需要它。验证场仍是化工园区储存审查辅助，不是已交付的园区生产系统。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议做法
+    validations:
+      required: true
+  - type: dropdown
+    id: fact-channel
+    attributes:
+      label: 是否改动事实通道
+      description: 事实通道包括工具返回值、RegulationRefs 白名单、规则引擎、OutputSanitizer。
+      options:
+        - 不改（只影响解释、页面或文档）
+        - 会改（须有可复现验收，不能只靠模型生成编号）
+        - 不清楚
+    validations:
+      required: true
+  - type: textarea
+    id: accept
+    attributes:
+      label: 怎样算做成
+      description: 一条可复现的检查（命令、页面或测试名）。

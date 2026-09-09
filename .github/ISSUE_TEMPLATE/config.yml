@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 安全漏洞（请勿公开开 Issue）
+    url: https://github.com/Spirder-Man/agent-system/security/advisories/new
+    about: 密钥、鉴权绕过、可写任意文件等，见仓库根目录 SECURITY.md。
+  - name: 评委 / 使用者先读 README
+    url: https://github.com/Spirder-Man/agent-system/blob/master/README.md
+    about: 无 GPU 走 docker-compose.demo.yml + scripts/demo-compatibility。

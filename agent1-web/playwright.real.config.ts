@@ -1,20 +1,17 @@
 // ============================================================
-// Playwright Real GPU E2E 配置 — Agent1 真实后端全链路测试
+// Playwright Real E2E — 真后端全链路
 //
-// 全链路: Browser → Vite → SSH Tunnel → .NET API → llama.cpp GPU
-//
-// 设计原则（对齐双 E2E 分层）:
-//   - 主力测试层: 验证 LLM 推理质量 + 工具调用 + 数据一致性
-//   - 全局 SSH 隧道: 隧道外部管理（npm run tunnel:start），Playwright 只管 Vite
-//   - CI 不跑: 此配置仅本地/手动执行，CI 使用 playwright.config.ts (MSW Mock)
+// 默认: Browser → Vite → 本机/compose API :5000
+// 旧 SSH 隧道: 先 npm run tunnel:start，并设 VITE_PROXY_TARGET=http://localhost:15001
+// CI 不跑本配置（CI 用 playwright.config.ts + MSW）
 // ============================================================
 
 import { defineConfig, devices } from '@playwright/test';
 
-// Docker 全栈冒烟: PLAYWRIGHT_BASE_URL=http://localhost:8088 VITE_PROXY_TARGET=http://localhost:5000
-// 未设置时仍走 Vite :5173 → SSH 隧道 :15001（旧远程 GPU 链路）
+// Docker / 本机 API: PLAYWRIGHT_BASE_URL=http://localhost:8088 VITE_PROXY_TARGET=http://localhost:5000
+// 默认代理 :5000。旧 SSH 隧道须设 VITE_PROXY_TARGET=http://localhost:15001
 const dockerBaseURL = process.env.PLAYWRIGHT_BASE_URL;
-const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:15001';
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:5000';
 
 export default defineConfig({
   testDir: './e2e-real',
