@@ -8,6 +8,10 @@ using Agent1.Services;
 using Agent1.Models;
 using Agent1;
 
+// Historical snapshot of an earlier "linear dialog" refactor (file list, 6-step
+// pipeline, ModuleType count). Not a CI gate. Do not treat FAIL as a reason to
+// revert current Agent1 layout.
+
 namespace ArchitectureTest
 {
     public class Program

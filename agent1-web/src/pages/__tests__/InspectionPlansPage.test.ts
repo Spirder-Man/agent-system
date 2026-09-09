@@ -10,6 +10,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { setActivePinia, createPinia } from 'pinia';
+import { useAuthStore } from '@/stores/auth';
 
 // ═══════════════ Mock 模块 ═══════════════
 
@@ -42,6 +44,24 @@ vi.mock('@/lib/axios', () => ({
 
 import InspectionPlansPage from '../InspectionPlansPage.vue';
 
+function mountPage(stubs: Record<string, boolean> = {}) {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  useAuthStore().setAuth({
+    token: 't',
+    refreshToken: 'r',
+    username: 'admin',
+    role: 'admin',
+    expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+  });
+  return mount(InspectionPlansPage, {
+    global: {
+      plugins: [pinia],
+      stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true, 'router-link': true, ...stubs },
+    },
+  });
+}
+
 describe('InspectionPlansPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,9 +75,7 @@ describe('InspectionPlansPage', () => {
       // 未 resolve 时处于 loading 状态
       mockGet.mockReturnValue(new Promise(() => {})); // 永远 pending
 
-      const wrapper = mount(InspectionPlansPage, {
-        global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
-      });
+      const wrapper = mountPage();
       await nextTick();
 
       expect(wrapper.findComponent({ name: 'SkeletonTable' }).exists()).toBe(true);
@@ -66,9 +84,7 @@ describe('InspectionPlansPage', () => {
     it('空数据应显示空状态', async () => {
       mockGet.mockResolvedValue({ data: [] });
 
-      const wrapper = mount(InspectionPlansPage, {
-        global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
-      });
+      const wrapper = mountPage();
       await flushPromises();
 
       expect(wrapper.findComponent({ name: 'EmptyState' }).exists()).toBe(true);
@@ -78,15 +94,18 @@ describe('InspectionPlansPage', () => {
       mockGet.mockResolvedValue({
         data: [
           {
-            planId: 'plan-1', name: '测试计划', area: 'A区',
-            inspector: '张三', status: 'Draft', items: 3, createdAt: '2026-07-01',
+            planId: 'plan-1',
+            name: '测试计划',
+            area: 'A区',
+            inspector: '张三',
+            status: 'Draft',
+            items: 3,
+            createdAt: '2026-07-01',
           },
         ],
       });
 
-      const wrapper = mount(InspectionPlansPage, {
-        global: { stubs: { 'el-button': false, 'el-table': true, 'el-dialog': true } },
-      });
+      const wrapper = mountPage({ 'el-button': false });
       await flushPromises();
 
       // 渲染后应有删除按钮（通过 title="删除计划" 识别）
@@ -98,9 +117,7 @@ describe('InspectionPlansPage', () => {
   describe('API 调用测试', () => {
     it('加载时调用 GET /api/inspection/plans', async () => {
       mockGet.mockResolvedValue({ data: [] });
-      mount(InspectionPlansPage, {
-        global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
-      });
+      mountPage();
       await flushPromises();
 
       expect(mockGet).toHaveBeenCalledWith('/api/inspection/plans');
@@ -108,9 +125,7 @@ describe('InspectionPlansPage', () => {
 
     it('API 失败应显示错误', async () => {
       mockGet.mockRejectedValue(new Error('Network error'));
-      const wrapper = mount(InspectionPlansPage, {
-        global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
-      });
+      const wrapper = mountPage();
       await flushPromises();
 
       expect(wrapper.text()).toContain('加载失败');
@@ -127,9 +142,7 @@ describe('InspectionPlansPage', () => {
         ],
       });
 
-      const wrapper = mount(InspectionPlansPage, {
-        global: { stubs: { 'el-table': true, 'el-button': true, 'el-dialog': true } },
-      });
+      const wrapper = mountPage();
       await flushPromises();
 
       // 应显示总数 3 的计划

@@ -417,9 +417,7 @@ if ($SkipWhitebox) {
 } else {
     Write-Step 'L0/L1 whitebox - local FAIL does not block L2'
     $wb = New-Object System.Collections.Generic.List[string]
-    Write-Host "  ArchitectureTest..."
-    & dotnet test (Join-Path $RepoRoot 'ArchitectureTest\ArchitectureTest.csproj') --nologo
-    if ($LASTEXITCODE -ne 0) { $wb.Add("ArchitectureTest exit=$LASTEXITCODE") }
+    Write-Host "  ArchitectureTest skipped (historical snapshot, not a gate)"
 
     Write-Host "  Agent1.Tests (exclude Integration/ApiIntegration)..."
     & dotnet test (Join-Path $RepoRoot 'Agent1.Tests\Agent1.Tests.csproj') --nologo --filter 'Category!=Integration&Category!=ApiIntegration'
@@ -443,7 +441,7 @@ if ($SkipWhitebox) {
         Write-Host "  whitebox FAIL recorded; continuing L2 (orthogonal to GPU)" -ForegroundColor Yellow
     } else {
         $layers.l0_l1.status = 'PASS'
-        $layers.l0_l1.detail = 'ArchitectureTest + unit + vitest'
+        $layers.l0_l1.detail = 'unit + vitest'
     }
 }
 

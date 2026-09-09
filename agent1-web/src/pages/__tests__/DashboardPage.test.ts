@@ -29,6 +29,10 @@ vi.mock('@/lib/axios', () => ({
   },
 }));
 
+vi.mock('vue-echarts', () => ({
+  default: { name: 'VChart', template: '<div class="v-chart-stub" />' },
+}));
+
 // Mock SkeletonCard / EmptyState
 vi.mock('@/components/common/SkeletonCard.vue', () => ({
   default: { name: 'SkeletonCard', template: '<div class="skeleton-card"><slot /></div>', props: { count: Number } },
@@ -193,34 +197,28 @@ describe('DashboardPage', () => {
   });
 
   describe('Overview 加载', () => {
-    it('加载时应显示骨架屏', async () => {
+    it('请求未完成时仍展示运营中心壳层', async () => {
       mockGet.mockReturnValue(new Promise(() => {}));
       const wrapper = mountPage();
       await flushPromises();
-      expect(wrapper.find('.skeleton-card').exists()).toBe(true);
+      expect(wrapper.text()).toContain('化工智能生产运营中心');
+      expect(wrapper.find('.skeleton-card').exists()).toBe(false);
     });
 
-    it('加载成功应显示统计卡片', async () => {
+    it('应显示 KPI 与工艺流程数字孪生', async () => {
       const wrapper = mountPage();
       await flushPromises();
-      expect(wrapper.text()).toContain('合规率');
-      expect(wrapper.text()).toContain('85%');
-      expect(wrapper.text()).toContain('资产总量');
-      expect(wrapper.text()).toContain('6');
-      expect(wrapper.text()).toContain('未闭环发现');
-      expect(wrapper.text()).toContain('5');
+      expect(wrapper.text()).toContain('化工智能生产运营中心');
+      expect(wrapper.text()).toContain('装置运行率');
+      expect(wrapper.text()).toContain('工艺流程数字孪生');
     });
 
-    it('加载失败应显示错误并支持重试', async () => {
+    it('开发态接口失败仍渲染页面，不出现空状态', async () => {
       mockGet.mockRejectedValue(new Error('Network error'));
       const wrapper = mountPage();
       await flushPromises();
-      expect(wrapper.find('.empty-state').exists()).toBe(true);
-      setupMocks();
-      const retryBtn = wrapper.find('.empty-state button');
-      await retryBtn.trigger('click');
-      await flushPromises();
       expect(wrapper.find('.empty-state').exists()).toBe(false);
+      expect(wrapper.text()).toContain('化工智能生产运营中心');
     });
   });
 
@@ -348,11 +346,11 @@ describe('DashboardPage', () => {
   });
 
   describe('Tab 面板', () => {
-    it('应显示合规发现列表', async () => {
+    it('应显示工艺流程节点', async () => {
       const wrapper = mountPage();
       await flushPromises();
-      expect(wrapper.text()).toContain('合规发现');
-      expect(wrapper.text()).toContain('苯与丙酮同库储存违规');
+      expect(wrapper.text()).toContain('工艺流程数字孪生');
+      expect(wrapper.text()).toContain('反应釜 R-101');
     });
 
     it('切换到巡检历史应显示计划', async () => {
@@ -381,11 +379,10 @@ describe('DashboardPage', () => {
   });
 
   describe('严重程度分布', () => {
-    it('应渲染各级别条形图', async () => {
+    it('应渲染温压趋势面板', async () => {
       const wrapper = mountPage();
       await flushPromises();
-      expect(wrapper.text()).toContain('发现按严重程度分布');
-      expect(wrapper.text()).toContain('Critical');
+      expect(wrapper.text()).toContain('温压趋势预测');
     });
   });
 });

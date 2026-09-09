@@ -9,8 +9,8 @@ export default defineConfig({
     environment: 'jsdom',
     // 全局 setup（如 msw server 等）
     setupFiles: ['./src/test-setup.ts'],
-    // 排除 node_modules 和 e2e 目录
-    exclude: ['node_modules', 'e2e'],
+    include: ['src/**/*.{test,spec}.ts'],
+    exclude: ['node_modules', 'e2e', 'e2e-real', 'e2e-demo', 'dist'],
     // 覆盖率配置
     coverage: {
       provider: 'v8',
@@ -18,6 +18,10 @@ export default defineConfig({
       reportsDirectory: './coverage',
       exclude: [
         'node_modules/',
+        'dist/',
+        'e2e/',
+        'e2e-real/',
+        'e2e-demo/',
         'src/env.d.ts',
         'vitest.config.ts',
         'src/test-setup.ts',
