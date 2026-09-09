@@ -1,0 +1,12 @@
+---
+description: 禁止散落脚本；临时文件只进 scripts/_scratch；收工必须清理
+alwaysApply: true
+---
+
+# 禁止散落
+
+- **新脚本**只写 `scripts/_scratch/`（gitignore）。禁止写在仓库根、桌面、`docs/`、`Agent1/`、用户主目录。
+- 收工：删除 `_scratch` 文件，或写晋升提案（改 `scripts/README.md` 规范入口表，等维护者同意）。
+- 一次性 / AutoDL / base64 备份在 `scripts/_legacy/`，**不要当入口、不要复活当默认启动器**。
+- 规范入口只有：`docker-up`、`download-models`、`demo-compatibility`、`pack-source-releases`、`llama-entrypoint`、`check-coverage`。
+- 不要为「这次方便」在根目录留 `test.ps1` / `fix.sh`。过程写入 `docs/platform/开发会话纪要/`。

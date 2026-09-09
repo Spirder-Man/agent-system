@@ -1,85 +1,149 @@
 #!/bin/bash
-# 裸机启动（非规范）。规范入口: docker-up / docker-compose.demo.yml。API 默认 :5000。
-set -e
+# ============================================================
+# Agent1 裸机一键启动（非规范入口）
+# 规范入口: scripts/docker-up 或 docker-compose.demo.yml
+# 用法: 在项目根目录准备 .env 后执行  bash scripts/start_services.sh
+#        或 bash start_services.sh（根目录转发到本文件）
+# 启动顺序: PG → llama LLM → llama Embed → .NET API
+# API 默认 :5000（与 compose / Program.cs 一致）
+# 凭据只从仓库根 .env 读取，缺变量则退出
+# AutoDL 写死路径的旧版见 scripts/_legacy/start_services.sh
+# ============================================================
+set -euo pipefail
 
-MODEL_DIR=/root/autodl-tmp/models
-LLAMA_SERVER=/root/autodl-tmp/llama.cpp/build/bin/llama-server
-PROJECT_DIR=/root/autodl-tmp/agent-system
-LOG_DIR=/root/autodl-tmp/logs
-
-mkdir -p $LOG_DIR
-
-# 清理旧进程
-pkill -9 -f llama-server 2>/dev/null || true
-pkill -9 -f "Agent1.Api" 2>/dev/null || true
-sleep 2
-
-# ===== 1. LLM 服务 (Qwen3-8B, 端口 8080) =====
-echo "[1/3] 启动 LLM 服务 (Qwen3-8B, 端口 8080)..."
-CUDA_VISIBLE_DEVICES=0 nohup $LLAMA_SERVER \
-    -m $MODEL_DIR/Qwen_Qwen3-8B-Q4_K_M.gguf \
-    --host 0.0.0.0 --port 8080 \
-    -ngl 99 -c 4096 \
-    > $LOG_DIR/llm-server.log 2>&1 &
-LLM_PID=$!
-echo "  PID: $LLM_PID"
-
-# ===== 2. Embedding 服务 (nomic-embed, 端口 8081) =====
-echo "[2/3] 启动 Embedding 服务 (nomic-embed, 端口 8081)..."
-CUDA_VISIBLE_DEVICES=0 nohup $LLAMA_SERVER \
-    -m $MODEL_DIR/nomic-embed-text-v1.5.f16.gguf \
-    --host 0.0.0.0 --port 8081 \
-    -ngl 99 --embeddings \
-    > $LOG_DIR/embed-server.log 2>&1 &
-EMBED_PID=$!
-echo "  PID: $EMBED_PID"
-
-# 等待模型加载
-echo "  等待模型加载..."
-sleep 30
-
-# ===== 3. .NET API (端口 5000，与 compose 一致) =====
-echo "[3/3] 启动 .NET API (端口 5000)..."
-
-PROJECT_DIR="${PROJECT_DIR:-/root/autodl-tmp/agent-system}"
-if [ -f "$PROJECT_DIR/.env" ]; then
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [ -f "$ROOT/.env" ]; then
   set -a
   # shellcheck disable=SC1091
-  source "$PROJECT_DIR/.env"
+  source "$ROOT/.env"
   set +a
+else
+  echo "缺少 $ROOT/.env ，请先: cp .env.example .env 并填入本机口令"
+  exit 1
 fi
+
 : "${DB_PASSWORD:?Set DB_PASSWORD in .env}"
 : "${JWT_KEY:?Set JWT_KEY in .env}"
 : "${AUTH_ACCOUNTS_JSON:?Set AUTH_ACCOUNTS_JSON in .env}"
 
-export LLM_ENDPOINT="${LLM_ENDPOINT:-http://localhost:8080/v1}"
-export EMBEDDING_ENDPOINT="${EMBEDDING_ENDPOINT:-http://localhost:8081/v1}"
-export DB_HOST="${DB_HOST:-localhost}"
-export DB_NAME="${DB_NAME:-chemical_park_ai_agent}"
 export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5000}"
-export DOTNET_USE_POLLING_FILE_WATCHER=true
-export KNOWLEDGE_BASE_PATH="${KNOWLEDGE_BASE_PATH:-/root/autodl-tmp/knowledgebase}"
+export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
+export DB_PASSWORD
+export JWT_KEY
+export AUTH_ACCOUNTS_JSON
 
-cd $PROJECT_DIR
-nohup dotnet run --project Agent1.Api -c Release --no-launch-profile \
-    > $LOG_DIR/api-e2e.log 2>&1 &
-API_PID=$!
-echo "  PID: $API_PID"
+PROJECT_DIR="${PROJECT_DIR:-$ROOT}"
+LLAMA_BIN="${LLAMA_BIN:-$HOME/autodl-tmp/llama.cpp/build/bin/llama-server}"
+MODEL_DIR="${MODEL_DIR:-$ROOT/models}"
+LOG_DIR="${LOG_DIR:-$ROOT/logs}"
 
-# ===== 健康检查 =====
+mkdir -p "$LOG_DIR"
+cd "$PROJECT_DIR"
+
+echo "========================================"
+echo "  Agent1 四服务启动"
+echo "========================================"
+
+# ── 1. PostgreSQL ──
+echo "[1/4] PostgreSQL..."
+if pg_isready -q 2>/dev/null; then
+  echo "  已运行"
+else
+  pg_ctlcluster 16 main start 2>/dev/null && echo "  已启动" || {
+    pg_ctl start -D /var/lib/postgresql/16/main -l /var/log/postgresql/postgresql.log 2>/dev/null && echo "  已启动" || echo "  启动失败"
+  }
+fi
+
+# ── 2. llama.cpp LLM ──
+echo "[2/4] llama.cpp LLM (8080)..."
+pkill -f "llama-server.*8080" 2>/dev/null || true
+sleep 1
+
+if [ ! -f "$LLAMA_BIN" ]; then
+  echo "  llama-server 未找到: $LLAMA_BIN"
+  echo "  请设置 LLAMA_BIN，或改用 scripts/docker-up"
+  exit 1
+fi
+
+LLM_MODEL=$(ls "$MODEL_DIR"/[Qq]wen*gguf 2>/dev/null | head -1)
+if [ -z "$LLM_MODEL" ]; then
+  echo "  LLM 模型未找到 ($MODEL_DIR)"
+  exit 1
+fi
+
+nohup "$LLAMA_BIN" -m "$LLM_MODEL" \
+  --host 0.0.0.0 --port 8080 -c 32768 -ngl 99 --flash-attn on \
+  > "$LOG_DIR/llama-server.log" 2>&1 &
+echo "  已启动 (pid $!) → $(basename "$LLM_MODEL")"
+
+# ── 3. llama.cpp Embedding ──
+echo "[3/4] llama.cpp Embedding (8081)..."
+pkill -f "llama-server.*8081" 2>/dev/null || true
+sleep 1
+
+EMBED_MODEL=$(ls "$MODEL_DIR"/{nomic,bge}*gguf 2>/dev/null | head -1)
+if [ -z "$EMBED_MODEL" ]; then
+  echo "  Embedding 模型未找到，跳过"
+else
+  nohup "$LLAMA_BIN" -m "$EMBED_MODEL" \
+    --host 0.0.0.0 --port 8081 --embedding -c 8192 -ngl 99 -b 2048 -ub 2048 \
+    > "$LOG_DIR/llama-embed.log" 2>&1 &
+  echo "  已启动 (pid $!) → $(basename "$EMBED_MODEL")"
+fi
+
+# ── 4. 心跳轮询等 LLM 就绪 ──
+echo "[4/4] 等待 LLM 模型加载..."
+LOADED=false
+for i in $(seq 1 20); do
+  if curl -s http://localhost:8080/health > /dev/null 2>&1; then
+    echo "  LLM 就绪 (${i}x3s)"
+    LOADED=true
+    break
+  fi
+  sleep 3
+done
+if [ "$LOADED" = false ]; then
+  echo "  LLM 超时未就绪，查看日志: tail -5 $LOG_DIR/llama-server.log"
+fi
+
+# ── 5. .NET API ──
 echo ""
-echo "===== 健康检查 ====="
-sleep 10
+echo "--- 启动 .NET API ---"
+pkill -f "dotnet.*Agent1.Api" 2>/dev/null || true
+sleep 2
 
-echo -n "LLM (8080): "
-curl -s --max-time 5 http://localhost:8080/health 2>/dev/null && echo "" || echo "未就绪"
+dotnet build Agent1.Api/Agent1.Api.csproj -c Release --nologo -v q
+nohup dotnet run --project Agent1.Api --configuration Release --no-launch-profile \
+  > "$LOG_DIR/api-e2e.log" 2>&1 &
 
-echo -n "Embedding (8081): "
-curl -s --max-time 5 http://localhost:8081/health 2>/dev/null && echo "" || echo "未就绪"
+for i in $(seq 1 10); do
+  if curl -s http://localhost:5000/health > /dev/null 2>&1; then
+    echo "  API 就绪 (${i}x2s)"
+    break
+  fi
+  sleep 2
+done
 
-echo -n "API (5000): "
-curl -s --max-time 10 http://localhost:5000/health 2>/dev/null || echo "未就绪"
+# ── 最终验证 ──
+echo ""
+echo "========================================"
+echo "  健康检查"
+echo "========================================"
+
+check() {
+  local name=$1 url=$2
+  printf "  %-20s " "$name"
+  if curl -s --max-time 3 "$url" > /dev/null 2>&1; then
+    echo "ok"
+  else
+    echo "fail"
+  fi
+}
+
+check "LLM (8080)"        "http://localhost:8080/health"
+check "Embed (8081)"      "http://localhost:8081/health"
+check ".NET API (5000)"   "http://localhost:5000/health"
 
 echo ""
-echo "===== 启动完成 ====="
-echo "LLM PID: $LLM_PID | Embed PID: $EMBED_PID | API PID: $API_PID"
+curl -s http://localhost:5000/health | python3 -m json.tool 2>/dev/null || echo "API 未响应 → tail -20 $LOG_DIR/api-e2e.log"

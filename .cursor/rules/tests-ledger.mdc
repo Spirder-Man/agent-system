@@ -1,0 +1,14 @@
+---
+description: 改测试必须更新测试台账；CI 范围以 ci.yml 为准，不要用测试总纲条数
+globs: "**/*Tests.cs,agent1-web/**/*.test.ts,agent1-web/**/*.spec.ts,agent1-web/e2e/**,agent1-web/e2e-real/**,agent1-web/e2e-demo/**"
+alwaysApply: false
+---
+
+# 测试台账
+
+真源：[docs/platform/测试台账.md](../../docs/platform/测试台账.md) 与 `.github/workflows/ci.yml`。
+
+- CI：**dotnet 非 Integration**、**Vitest**、**Integration + 临时 PG**。Playwright **未**进 CI。
+- 改测试文件后，更新台账「最近变更」（日期 + 哪一层）。不要去改 [测试总纲.md](../../docs/platform/测试总纲.md) 千行正文。
+- 按台账变更矩阵补对侧：testid → `test-ids.ts`；契约 → `types/api.ts` + MSW。
+- 本阶段不改 `Data/Compliance*.json`、`db/migrations/**`、`.github/workflows/**`。

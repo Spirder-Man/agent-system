@@ -1,0 +1,26 @@
+---
+description: 第一阶段冻结目录、三硬规则、先读 AGENTS 与工程治理
+alwaysApply: true
+---
+
+# 工程总闸
+
+先读 [AGENTS.md](../../AGENTS.md) 与 [docs/platform/工程治理.md](../../docs/platform/工程治理.md)。
+
+## 冻结（禁止改）
+
+`Agent1/**`、`Agent1.Api/**`、`agent1-web/src/**`、`init_database.sql`、`db/migrations/**`、`.github/workflows/**`。
+
+禁止顺手重命名 `ChemicalDatabaseService` / `ChemicalSubstanceDatabase`、清乱码块、扩种子、改评测白名单、改双通道、删侧栏页面。
+
+## 硬规则
+
+1. 法规号、储存禁忌、安全距离由确定性代码给出；大模型只解释和建议。
+2. 无 GPU 仍须结构化结论：`docker-compose.demo.yml` + `scripts/demo-compatibility`。
+3. 改同源拷贝组先查 [docs/platform/同源拷贝联动手册.md](../../docs/platform/同源拷贝联动手册.md)。
+
+## 真源
+
+端口 → `docs/platform/运行时端口登记.md`。测试 → `docs/platform/测试台账.md`。目录 → `docs/platform/目录地图.md`。`docs/platform/skills/` 与测试总纲不是门禁。
+
+提交/推送走技能 `review-commit-push`，等用户回复 **通过**。

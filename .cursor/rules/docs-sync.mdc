@@ -1,0 +1,19 @@
+---
+description: 改血管、契约、页面完成度时必须同批改说明书或血谱或页面清单
+globs: Agent1/**,Agent1.Api/**,agent1-web/src/**,docs/**
+alwaysApply: false
+---
+
+# 文档必须同批
+
+第一阶段业务代码仍冻结。若用户明确允许改代码，或你在改 `docs/**`：
+
+| 改了什么 | 同批更新 |
+|----------|----------|
+| 数据源 / 消费者 / 降级顺序 | [系统血谱.md](../../docs/platform/系统血谱.md) |
+| HTTP JSON 契约 | `agent1-web/src/types/api.ts`、对应模块说明书 |
+| 路由 / 侧栏 / 页面完成度 | [页面完成度清单.md](../../docs/platform/页面完成度清单.md) |
+| 默认口 | [运行时端口登记.md](../../docs/platform/运行时端口登记.md) |
+| 克隆用户能感知的变更 | [CHANGELOG.md](../../docs/platform/CHANGELOG.md) |
+
+过程与临时脚本去向写 [开发会话纪要](../../docs/platform/开发会话纪要/README.md)，不要只改代码不留痕。不要把方法底稿 `docs/platform/skills/` 当成已接线的 CI。

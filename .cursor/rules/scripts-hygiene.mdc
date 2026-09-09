@@ -1,0 +1,15 @@
+---
+description: scripts 目录卫生：规范入口表；一次性脚本禁止提交
+globs: scripts/**,*.ps1,*.sh
+alwaysApply: false
+---
+
+# 脚本卫生
+
+入口表：[scripts/README.md](../../scripts/README.md)。
+
+- **规范**：`docker-up`、`download-models`、`demo-compatibility`、`pack-source-releases`、`llama-entrypoint`、`check-coverage`。
+- **可留的裸机非规范**：`start_services.sh`、`start-api.sh`、`test_rule_engine.sh`、`test_double_gate.sh`、`quick_test.sh`。根目录 `start_services.sh` 只允许转发。
+- **`_legacy/`**：只读化石，不改判定逻辑当日常入口。
+- **`_scratch/`**：唯一允许的临时落点；禁止 git add。
+- 不要提交 `*.b64`、机房写死路径、任务编号一次性脚本到 `scripts/` 根层。

@@ -32,6 +32,10 @@ Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库�
 | 你要干什么 | 打开这个 | 备注 |
 |------------|----------|------|
 | 现在先看这个（工程阶段、冻结、债往哪期） | [platform/工程治理.md](platform/工程治理.md) | 第一阶段不动业务代码。下一步：[工程债分拣](platform/工程债分拣.md) → [页面完成度](platform/页面完成度清单.md) |
+| 每个目录干什么 | [platform/目录地图.md](platform/目录地图.md) | Agent 浓缩版：[../AGENTS.md](../AGENTS.md) |
+| 端口 / Docker 会不会和本地挤 | [platform/运行时端口登记.md](platform/运行时端口登记.md) | 全栈与 demo compose **不能**同开（都要 :5000） |
+| CI 到底跑什么、改测改哪 | [platform/测试台账.md](platform/测试台账.md) | 真源是 `ci.yml`；Playwright 未进 CI |
+| Agent 这次干了什么 | [platform/开发会话纪要/](platform/开发会话纪要/) | 过程；仓库可见变更仍写 CHANGELOG |
 | 下载三档源码包 | [platform/release-notes-v0.1.0.md](platform/release-notes-v0.1.0.md) | CPU / GPU / 容器化；[GitHub](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0) · [Gitee](https://gitee.com/liuchao_yue/agent-system/releases/tag/v0.1.0) |
 | 交作品 / 给评委介绍 | [platform/os2026-作品介绍.md](platform/os2026-作品介绍.md) | 正文。同目录 `.html`、`.pdf` 由 `render_os2026_pdf.py` 从 md 生成 |
 | 作品介绍配图 | [platform/os2026-figures/](platform/os2026-figures/) | fig1–fig4 |
@@ -43,7 +47,7 @@ Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库�
 | 开源怎么分发、模型不进 Git | [infra/deploy/开源项目分发落地方案.md](infra/deploy/开源项目分发落地方案.md) | 离线 tar 在仓库外 |
 | 飞致云 4090 怎么上机 | [infra/deploy/2026-09-07_Featurize4090按量实例操作手册.md](infra/deploy/2026-09-07_Featurize4090按量实例操作手册.md) | 按量实例 |
 | GPU 容器修过哪些步骤 | [infra/deploy/2026-09-07_GPU容器化修复步骤.md](infra/deploy/2026-09-07_GPU容器化修复步骤.md) | |
-| 测试从哪进 | [e2e/说明书.md](e2e/说明书.md)、[Agent1.Tests/说明书.md](Agent1.Tests/说明书.md)、CI | 分层定义见 [测试总纲](platform/测试总纲.md)（条数是历史快照） |
+| 测试从哪进 | [platform/测试台账.md](platform/测试台账.md) | 模块说明书：[e2e/说明书.md](e2e/说明书.md)、[Agent1.Tests/说明书.md](Agent1.Tests/说明书.md)。分层定义见 [测试总纲](platform/测试总纲.md)（条数是历史快照） |
 | 4090 五层两档（quick / full） | [infra/2026-09-07_飞致云五层两档测试说明.md](infra/2026-09-07_飞致云五层两档测试说明.md) | **gpu-full 本轮未通过** |
 | gpu-full 对照 | [infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md](infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md) | |
 | GPU 全量校验清单 | [infra/GPU全量校验手册.md](infra/GPU全量校验手册.md) | |
@@ -72,6 +76,10 @@ https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
 | 文件 | 放什么 |
 |------|--------|
 | `工程治理.md` | **阶段总闸**：冻结目录、硬规则、现网入口 |
+| `目录地图.md` | 顶层目录认路 |
+| `运行时端口登记.md` | 端口真源与互斥 |
+| `测试台账.md` | CI / 本地测什么；变更矩阵 |
+| `开发会话纪要/` | Agent 过程与临时脚本去向 |
 | `工程债分拣.md` | 病灶/台账标期；本阶段不改代码 |
 | `页面完成度清单.md` | 路由四档：核 / 演示 / 预览 / 运维 |
 | `os2026-作品介绍.*` | **大赛提交正文**（及 html/pdf/配图） |
@@ -82,9 +90,9 @@ https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
 | `病灶登记表.md` / `同源拷贝联动手册.md` | 血谱配套 |
 | `测试总纲.md` | 测试分层定义（数量为历史快照，不是现网门禁） |
 | `Agent1 十项核心技术决策深度拆解.md` | 跨模块技术决策 |
-| `skills/` | 方法底稿，**不是**现网 CI 门禁 |
+| `skills/` | 方法底稿，**不是**现网 CI 门禁，也 **不是** Cursor Skill |
 
-仓库根目录另有开源治理（不属于 `platform/` 正文）：[CONTRIBUTING.md](../CONTRIBUTING.md)、[SECURITY.md](../SECURITY.md)、[CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)。Issue 模板在 `.github/ISSUE_TEMPLATE/` 与 `.gitee/ISSUE_TEMPLATE/`。
+仓库根目录另有开源治理（不属于 `platform/` 正文）：[AGENTS.md](../AGENTS.md)、[CONTRIBUTING.md](../CONTRIBUTING.md)、[SECURITY.md](../SECURITY.md)、[CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)。Issue 模板在 `.github/ISSUE_TEMPLATE/` 与 `.gitee/ISSUE_TEMPLATE/`。Cursor 规则/技能在 `.cursor/`。
 
 `_archive/project/` 里还有 6 月以前的全景/差距报告，**不是**大赛提交正文。提交正文只有 `platform/os2026-作品介绍.md`（及 html/pdf）。
 

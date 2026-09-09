@@ -1,5 +1,7 @@
 # 代码自检清单 Skill
 
+> **不是 Cursor Skill，不是现网 CI 门禁。** Agent 纪律见仓库 `.cursor/skills/` 与 [AGENTS.md](../../../AGENTS.md)。
+
 > **文档版本**：v2.0（深度扩展版）  
 > **深度扩展**：2026-06-24 — 基于 Agent1 项目 30 个实战 Bug 提炼的 C# null 安全、并发安全、Key 一致性自检清单  
 > **关联文档**：[P0-P1修复详细技术文档](../_archive/troubleshooting/P0-P1修复详细技术文档.md) | [RAG工程Bug修复笔记](../_archive/troubleshooting/RAG工程Bug修复笔记_2026-05-26.md)

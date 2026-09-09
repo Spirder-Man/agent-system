@@ -4,6 +4,13 @@
 
 ## 近期更新
 
+### 2026-09-09 — 工程操作系统（防散落）
+
+- Agent 入口：[AGENTS.md](../../AGENTS.md)。认路：[目录地图.md](./目录地图.md)。端口真源：[运行时端口登记.md](./运行时端口登记.md)。测试真源：[测试台账.md](./测试台账.md)（CI 以 `ci.yml` 为准；Playwright **未**进 CI）。过程：[开发会话纪要/](./开发会话纪要/)。
+- 仓库 `.cursor/rules/`（6）与 `.cursor/skills/`（5）。`docs/platform/skills/` 标明不是 Cursor Skill、不是 CI 门禁。
+- 非规范脚本迁到 `scripts/_legacy/`（不删内容）。根目录 `start_services.sh` 转发到 `scripts/start_services.sh`。临时脚本只进 `scripts/_scratch/`（gitignore）。
+- 必要 MCP 只有 GitHub（`.cursor/mcp.json` 读环境变量，不写 token）。未改规则引擎、双通道、种子、`agent1-web/src`、CI job。
+
 ### 2026-09-09 — 运维默认口对齐（第一阶段续）
 
 - 规范入口仍是 README：`docker-up` / `docker-compose.demo.yml` + `demo-compatibility`，API **:5000**。

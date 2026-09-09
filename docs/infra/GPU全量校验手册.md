@@ -15,7 +15,7 @@
 1. **分层用总纲，不另立教材项目。** L0 静态/架构 → L1 单元（白盒）→ L2 集成 → L3 Mock / Real E2E（系统/黑盒）→ L4 性能/评测。冒烟是 L2+L3 的薄切片，不是第六层。
 2. **前关不过，后关不算通过。** Gate 0 机器 → Gate 1 栈冒烟 → L0/L1 白盒 → L2 集成 → L3-Real 系统 → L4 验收（评测集 + 视觉）。
 3. **`benzene` 以及带「甲醇/硝酸/安全距离」的问句，亚秒返回不是 GPU 证据。** `/api/Compliance/check` 走 `ExecuteEvalFastAsync`，这些词都是 `KeywordTriggers`，会先跑工具再**跳过 llama FC**。GPU 证明问句不要带这些触发词，例如「甲类仓库与明火点最少隔开多少米」，耗时应数秒～几十秒，`toolsUsed` 含 `GetSafetyDistance`。
-4. **不原样跑 AutoDL 裸机脚本。** `scripts/int-test-task11.sh`（写死 `/root/autodl-tmp`、CLI 菜单 13）和 `scripts/auto_test_v2.sh`（CLI 菜单）不是 Docker SUT。用本文 HTTP / Playwright / Eval API 等价替换。
+4. **不原样跑 AutoDL 裸机脚本。** `scripts/_legacy/int-test-task11.sh`（写死 `/root/autodl-tmp`、CLI 菜单 13）和 `scripts/_legacy/auto_test_v2.sh`（CLI 菜单）不是 Docker SUT。用本文 HTTP / Playwright / Eval API 等价替换。
 5. **白盒不依赖 GPU，但仍列入全量清单。** GPU 机上回归一次，证明代码能编过；不能拿单元 PASS 代替 8083 / 评测。
 
 ```mermaid

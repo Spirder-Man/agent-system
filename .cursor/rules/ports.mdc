@@ -1,0 +1,15 @@
+---
+description: 改端口或启动配置时必须同步端口登记，禁止把隧道/IDE 口写成默认
+globs: docker-compose*.yml,docker-compose*.yaml,.env.example,vite.config.ts,**/launchSettings.json,scripts/docker-up.*,agent1-web/scripts/health-check.ps1,agent1-web/playwright*.ts
+alwaysApply: false
+---
+
+# 端口
+
+真源：[docs/platform/运行时端口登记.md](../../docs/platform/运行时端口登记.md)。改默认口必须同批改该表。
+
+- 主机 API 默认 **5000**。容器内 API 是 8080，不要当主机入口。
+- 隧道 `15000`/`15001`、IDE `52319`/`52320` **禁止**写成 Vite / 脚本 / 文档的默认值；必须显式参数。
+- 全栈 compose 与 `docker-compose.demo.yml` 都要主机 5000，**不能同开**。
+- 冲突只用 `.env` 已有变量（`API_PORT`、`WEB_PORT`、`DEMO_DB_PORT` 等），禁止发明第三套默认口。
+- 本阶段不改 `launchSettings.json`。

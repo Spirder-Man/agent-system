@@ -196,3 +196,8 @@ docs/*20260811.csv
 
 # 本地 llama.cpp 源码副本（镜像构建仍 git clone b5512；离线包在 容器化部署/gpu/llama.cpp）
 third_party/llama.cpp/
+
+# Agent 临时脚本（收工删除；禁止提交）
+scripts/_scratch/*
+!scripts/_scratch/.gitkeep
+!scripts/_scratch/README.md

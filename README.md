@@ -13,6 +13,7 @@
 - 许可证：[LICENSE](LICENSE)（MIT） · 第三方：[NOTICE](NOTICE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 - 参与：[CONTRIBUTING.md](CONTRIBUTING.md) · 安全：[SECURITY.md](SECURITY.md) · 行为准则：[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - 工程阶段：[docs/platform/工程治理.md](docs/platform/工程治理.md)（第一阶段：文档 + 运维默认口 `:5000`；规则引擎/双通道未开改）
+- Agent / 目录 / 端口 / 测试真源：[AGENTS.md](AGENTS.md) · [目录地图](docs/platform/目录地图.md) · [运行时端口登记](docs/platform/运行时端口登记.md) · [测试台账](docs/platform/测试台账.md)
 - 等级保护口径：[docs/platform/等级保护口径.md](docs/platform/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
 
 ```bash

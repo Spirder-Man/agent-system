@@ -1,5 +1,7 @@
 # 工程质量防御体系 Skill
 
+> **不是 Cursor Skill，不是现网 CI 门禁。** Agent 纪律见仓库 `.cursor/skills/` 与 [AGENTS.md](../../../AGENTS.md)。
+
 > **文档版本**：v2.0（深度扩展版）  
 > **深度扩展**：2026-06-24 — 新增"Bug 防御三层体系"及"代码审查检查清单 v2.0"  
 > **关联文档**：[代码自检清单 Skill](代码自检清单%20Skill.md) | [RAG工程Bug修复笔记](../_archive/troubleshooting/RAG工程Bug修复笔记_2026-05-26.md)

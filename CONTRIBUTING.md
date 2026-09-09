@@ -4,7 +4,7 @@
 
 主约束与 README 相同：**法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。** 改事实通道必须能用测试或脚本证伪，不能只靠生成文本。
 
-**阶段冻结（第一阶段）**：不改规则引擎、双通道、`agent1-web/src/**`、迁移/种子、CI job。允许改文档，以及辅助脚本的默认 API 口（本机 `:5000`）。总闸见 [docs/platform/工程治理.md](docs/platform/工程治理.md)。
+**阶段冻结（第一阶段）**：不改规则引擎、双通道、`agent1-web/src/**`、迁移/种子、CI job。允许改文档、`AGENTS.md`、`.cursor/**`，以及辅助脚本的默认 API 口（本机 `:5000`）。总闸见 [docs/platform/工程治理.md](docs/platform/工程治理.md)。Agent 认路：[AGENTS.md](AGENTS.md)。
 
 ## 先读
 
@@ -16,6 +16,7 @@
 | 讨论规矩 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
 | 模块说明书 | [docs/README.md](docs/README.md) |
 | 工程阶段与冻结 | [docs/platform/工程治理.md](docs/platform/工程治理.md) |
+| 目录 / 端口 / 测试真源 | [docs/platform/目录地图.md](docs/platform/目录地图.md) · [运行时端口登记](docs/platform/运行时端口登记.md) · [测试台账](docs/platform/测试台账.md) |
 
 镜像仓：[Gitee](https://gitee.com/liuchao_yue/agent-system) · [GitHub](https://github.com/Spirder-Man/agent-system)。任选一边提 Issue / PR 即可，不要同一改动两边各开一发且互不引用。
 
@@ -25,6 +26,7 @@
 - 国家标准全文、企业内部未公开制度（见 [knowledgebase/README.md](knowledgebase/README.md)）
 - GGUF 权重、`docker save` 的 tar
 - 演示账号以外的生产身份数据
+- `scripts/_scratch/` 里的 Agent 临时脚本
 
 演示口令 `admin` / `changeme` 只用于本地，不要写进生产。
 
