@@ -57,11 +57,13 @@ class Program
         var results = new List<LatencyStats>();
 
         results.Add(await RunBenchmark(http, "health/live", "GET", "/health/live"));
-        results.Add(await RunBenchmark(http, "health (full)", "GET", "/health"));
+        // /health 在无 LLM 时固定 503，CI --light 不打，避免把依赖探测当成性能失败
+        if (!LightMode)
+            results.Add(await RunBenchmark(http, "health (full)", "GET", "/health"));
         results.Add(await RunBenchmark(http, "metrics", "GET", "/metrics"));
         results.Add(await RunBenchmark(http, "auth/login", "POST", "/api/auth/login", """{"username":"admin","password":"admin123"}"""));
 
-        if (_refreshToken != null)
+        if (!LightMode && _refreshToken != null)
             results.Add(await RunBenchmark(http, "auth/refresh", "POST", "/api/auth/refresh", $"{{\"refreshToken\":\"{_refreshToken}\"}}"));
 
         // 全量模式：压测合规/监管/知识图谱端点 (需 LLM + DB)

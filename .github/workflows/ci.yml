@@ -234,8 +234,10 @@ jobs:
             ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }}
 
   # ═══════════════════════════════════════
-  # Job 4: 性能基准回归检测 (轻量级，无需 DB/LLM)
-  # - 启动 API 后台进程 → 等待就绪 → 压测健康端点 → 对比历史基线
+  # Job 4: 性能基准回归检测（轻量 HTTP，不打 LLM）
+  # - API 启动校验需要 DB_PASSWORD；登录 refresh token 落库，故挂与集成测试相同的 Postgres
+  # - 空知识库目录，避免启动阶段扫文件 / 打嵌入端点拖过就绪窗口
+  # - 失败时打印 stdout+stderr 和进程状态（配置错误写在 stdout，不是 stderr）
   # - 回归阈值: P95 延迟退步 >50% 或错误率 >5% → 构建失败
   # ═══════════════════════════════════════
   benchmark:
@@ -243,10 +245,32 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://127.0.0.1:5000
       JWT_KEY: Agent1-CI-JWT-Key-2026
+      DB_HOST: localhost
+      DB_NAME: chemical_park_ai_agent
+      DB_USERNAME: postgres
+      DB_PASSWORD: integration_test_pwd
+      KNOWLEDGE_BASE_PATH: /tmp/agent1-empty-kb
+      AUTH_ACCOUNTS_JSON: '[{"Username":"admin","Password":"admin123","Role":"admin"}]'
 
     outputs:
       perf_summary: ${{ steps.bench-run.outputs.perf_summary }}
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: chemical_park_ai_agent
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: integration_test_pwd
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -257,28 +281,71 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Build
-        run: dotnet build --configuration Release
+        run: |
+          echo "::remove-matcher owner=csc::"
+          echo "::remove-matcher owner=msvc::"
+          dotnet build --configuration Release -v q
+
+      - name: Init Database
+        run: |
+          PGPASSWORD=integration_test_pwd psql -h localhost -U postgres -d chemical_park_ai_agent -f init_database.sql
 
       - name: Start API in background
         run: |
-          nohup dotnet run --project Agent1.Api --configuration Release --urls http://localhost:5000 > /tmp/api-stdout.log 2> /tmp/api-stderr.log &
-          echo "API PID: $!"
-          echo "Waiting for API to become ready..."
+          mkdir -p /tmp/agent1-empty-kb
+          dump_api_logs() {
+            echo "----- api process -----"
+            if [ -f /tmp/api.pid ]; then
+              API_PID=$(cat /tmp/api.pid)
+              if kill -0 "$API_PID" 2>/dev/null; then
+                echo "pid=$API_PID still running"
+              else
+                echo "pid=$API_PID already exited"
+                wait "$API_PID" 2>/dev/null || echo "exit_code=$?"
+              fi
+            else
+              echo "pid file missing"
+            fi
+            echo "----- api stdout (last 80 lines) -----"
+            tail -n 80 /tmp/api-stdout.log 2>/dev/null || echo "(no stdout log)"
+            echo "----- api stderr (last 80 lines) -----"
+            tail -n 80 /tmp/api-stderr.log 2>/dev/null || echo "(no stderr log)"
+          }
+
+          API_DLL="Agent1.Api/bin/Release/net8.0/Agent1.Api.dll"
+          if [ ! -f "$API_DLL" ]; then
+            echo "::error::Built API dll not found at $API_DLL"
+            exit 1
+          fi
+
+          nohup stdbuf -oL -eL dotnet "$API_DLL" > /tmp/api-stdout.log 2> /tmp/api-stderr.log &
+          echo $! > /tmp/api.pid
+          echo "API PID: $(cat /tmp/api.pid)"
+          echo "Waiting for /health/live on $ASPNETCORE_URLS ..."
+
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:5000/health/live 2>/dev/null; then
-              echo ""
-              echo "✅ API ready (attempt $i/30)"
-              break
+            if curl -sf http://127.0.0.1:5000/health/live >/dev/null; then
+              echo "API ready (attempt $i/30)"
+              exit 0
+            fi
+            API_PID=$(cat /tmp/api.pid)
+            if ! kill -0 "$API_PID" 2>/dev/null; then
+              echo "::error::API process exited before /health/live (pid $API_PID). Startup crash or config reject, not a slow listen."
+              dump_api_logs
+              exit 1
             fi
             sleep 2
           done
-          curl -sf http://localhost:5000/health/live || { echo "::error::API did not start in time"; cat /tmp/api-stderr.log; exit 1; }
+
+          echo "::error::API still running but /health/live did not respond in ~60s. Startup is blocked before Kestrel listen (DB/KB init), not a compiler warning."
+          dump_api_logs
+          exit 1
 
       - name: '⏱️ Run Performance Benchmark'
         id: bench-run
         run: |
           dotnet build Benchmark --configuration Release --no-restore
-          dotnet exec Benchmark/bin/Release/net8.0/Benchmark.dll 5 20 http://localhost:5000 --json --light --output ./bench-baseline.json 2>&1 | tee /tmp/bench-output.txt
+          dotnet exec Benchmark/bin/Release/net8.0/Benchmark.dll 5 20 http://127.0.0.1:5000 --json --light --output ./bench-baseline.json 2>&1 | tee /tmp/bench-output.txt
           
           if [ -f "./bench-baseline.json" ]; then
             echo "✅ Baseline saved: $(wc -c < ./bench-baseline.json) bytes"
@@ -358,7 +425,10 @@ jobs:
       - name: Stop API
         if: always()
         run: |
-          pkill -f "dotnet run.*Agent1.Api" 2>/dev/null || true
+          if [ -f /tmp/api.pid ]; then
+            kill "$(cat /tmp/api.pid)" 2>/dev/null || true
+          fi
+          pkill -f "Agent1.Api.dll" 2>/dev/null || true
           echo "API stopped"
 
   # ═══════════════════════════════════════
