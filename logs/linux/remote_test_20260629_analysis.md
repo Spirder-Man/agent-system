@@ -602,5 +602,5 @@ Git commit: 557917d (六阶段架构重构全部交付)
 > 📁 **日志保存路径**：`logs/linux/remote_test_20260629_analysis.md`  
 > 📁 **架构收敛报告**：远程 `/root/autodl-tmp/agent-system/架构收敛测试报告.txt`  
 > 📁 **分析依据**：完全遵循 Task 11 测试日志逐行深度解析.md 的六维度格式  
-> 📁 **参考部署文档**：`docs/deploy/Agent1-3090启动与全量测试手册.md`、`docs/deploy/Linux新机快速启动.md`
+> 📁 **参考部署文档**：`docs/infra/deploy/Agent1-3090启动与全量测试手册.md`、`docs/infra/deploy/Linux新机快速启动.md`
 

@@ -23,7 +23,7 @@ bash scripts/download-models.sh
 
 8B + embed 为完整对话 / RAG 所必需。VL 两件仅 GPU 视觉需要。
 
-2026-09-05/06 RTX 3070 实测：8B 与 embed 已加载；vision 因 `--mmproj` 拒参从未加载 VL。缺 VL 文件不是那次 8083 失败的主因。详见 [3070 实测记录](../docs/testing/2026-09-06_RTX3070容器实测记录.md)。
+2026-09-05/06 RTX 3070 实测：8B 与 embed 已加载；vision 因 `--mmproj` 拒参从未加载 VL。缺 VL 文件不是那次 8083 失败的主因。详见 [3070 实测记录](../docs/infra/2026-09-06_RTX3070容器实测记录.md)。模块边界见 [docs/models/说明书.md](../docs/models/说明书.md)。
 
 `SHA256SUMS` 里哈希暂为 `SKIP`：脚本只检查文件存在与最小体积。填入真实 SHA256 后才会做校验。
 

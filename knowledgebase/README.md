@@ -31,4 +31,4 @@ knowledgebase/
 
 缺第 3 层时：API 仍启动；`/health` 里 `knowledge_base_docs` 可能只有样例条数；RAG 向量召回差或仅 BM25。不要因此认为甲醇 × 硝酸验收失败。
 
-不要把国标 PDF/TXT 或企业内部制度 `git add` 进本仓库。离线大赛包若含语料，在仓库外的 `cpu/knowledgebase`，见 [开源项目分发落地方案](../docs/deploy/开源项目分发落地方案.md)。
+不要把国标 PDF/TXT 或企业内部制度 `git add` 进本仓库。离线大赛包若含语料，在仓库外的 `cpu/knowledgebase`，见 [开源项目分发落地方案](../docs/infra/deploy/开源项目分发落地方案.md)。模块边界见 [docs/knowledgebase/说明书.md](../docs/knowledgebase/说明书.md)。

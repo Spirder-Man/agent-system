@@ -4,7 +4,7 @@
 
 传递依赖（各包再引入的库）以该包自带许可证为准，本文件不穷尽。
 
-本仓库 **不含国家标准全文**。详见 [NOTICE](NOTICE) 与 README「数据与版权」。本仓库 **不是** 已定级备案或已测评的等级保护对象，见 [docs/project/等级保护口径.md](docs/project/等级保护口径.md)。
+本仓库 **不含国家标准全文**。详见 [NOTICE](NOTICE) 与 README「数据与版权」。本仓库 **不是** 已定级备案或已测评的等级保护对象，见 [docs/platform/等级保护口径.md](docs/platform/等级保护口径.md)。
 
 ## 后端（NuGet）— 生产
 

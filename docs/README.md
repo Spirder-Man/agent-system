@@ -4,7 +4,26 @@
 
 Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库根目录找「大赛」两个字。
 
-日常只看下面「先看这些」。其余文件夹是历史笔记，不必每次翻。
+文档按**代码模块边界**分目录。每个模块一本说明书（职责、不负责什么、怎么跑、契约、主流程）。历史笔记在 [`_archive/`](_archive/README.md)，不必每次翻。
+
+---
+
+## 按模块
+
+| 模块 | 代码 | 说明书 | 负责 |
+|------|------|--------|------|
+| platform（跨模块） | （无独立工程） | 见下表「跨模块规范」 | 大赛材料、血谱、测试总纲、等保、CHANGELOG |
+| Agent1 | [`../Agent1/`](../Agent1/) | [Agent1/说明书.md](Agent1/说明书.md) | 双通道合规、RAG、规则引擎、编排、审计链 |
+| Agent1.Api | [`../Agent1.Api/`](../Agent1.Api/) | [Agent1.Api/说明书.md](Agent1.Api/说明书.md) | REST、JWT、中间件、健康检查 |
+| agent1-web | [`../agent1-web/`](../agent1-web/) | [agent1-web/说明书.md](agent1-web/说明书.md) | Vue 页面、契约 `types/api.ts`、MSW |
+| e2e | `agent1-web/e2e*` | [e2e/说明书.md](e2e/说明书.md) | Playwright 三档：Mock / 真 API / 大赛录片 |
+| Agent1.Tests | [`../Agent1.Tests/`](../Agent1.Tests/) | [Agent1.Tests/说明书.md](Agent1.Tests/说明书.md) | xUnit；旁路 ArchitectureTest、Benchmark |
+| db | [`../db/`](../db/)、`init_database.sql` | [db/说明书.md](db/说明书.md) | schema、迁移、危化品种子 |
+| knowledgebase | [`../knowledgebase/`](../knowledgebase/) | [knowledgebase/说明书.md](knowledgebase/说明书.md) | 三层语料约定（国标全文不进 Git） |
+| models | [`../models/`](../models/) | [models/说明书.md](models/说明书.md) | GGUF 清单（权重不进 Git） |
+| infra | compose、`scripts/`、观测栈 | [infra/说明书.md](infra/说明书.md) | Docker、一键部署、GPU 五层测试 |
+
+附属目录（`ssh-runner/`、`ssh-tunnel/`、`task-email/`、`prompts/`、`tools/`）不单独成册，入口见 [infra/说明书.md](infra/说明书.md) §附属。
 
 ---
 
@@ -12,21 +31,23 @@ Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库�
 
 | 你要干什么 | 打开这个 | 备注 |
 |------------|----------|------|
-| 交作品 / 给评委介绍 | [project/os2026-作品介绍.md](project/os2026-作品介绍.md) | 正文。同目录 `.html`、`.pdf` 由 `render_os2026_pdf.py` 从 md 生成，与正文同步 |
-| 作品介绍配图 | [project/os2026-figures/](project/os2026-figures/) | fig1–fig4 |
+| 下载三档源码包 | [platform/release-notes-v0.1.0.md](platform/release-notes-v0.1.0.md) | CPU / GPU / 容器化；[GitHub](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0) · [Gitee](https://gitee.com/liuchao_yue/agent-system/releases/tag/v0.1.0) |
+| 交作品 / 给评委介绍 | [platform/os2026-作品介绍.md](platform/os2026-作品介绍.md) | 正文。同目录 `.html`、`.pdf` 由 `render_os2026_pdf.py` 从 md 生成 |
+| 作品介绍配图 | [platform/os2026-figures/](platform/os2026-figures/) | fig1–fig4 |
 | 仓库首页、怎么启动 | 根目录 [README.md](../README.md) | 评委无 GPU 走 demo compose |
-| 最近改了什么 | [project/CHANGELOG.md](project/CHANGELOG.md) | 版本编年，不写在首页 |
-| 等保怎么表述 | [project/等级保护口径.md](project/等级保护口径.md) | 参照控制点，不是已测评 |
-| Docker 一键拉起 | [deploy/Docker容器化一键部署.md](deploy/Docker容器化一键部署.md) | 有卡路径 |
-| 开源怎么分发、模型不进 Git | [deploy/开源项目分发落地方案.md](deploy/开源项目分发落地方案.md) | 离线 tar 在仓库外 |
-| 飞致云 4090 怎么上机 | [deploy/2026-09-07_Featurize4090按量实例操作手册.md](deploy/2026-09-07_Featurize4090按量实例操作手册.md) | 按量实例 |
-| GPU 容器修过哪些步骤 | [deploy/2026-09-07_GPU容器化修复步骤.md](deploy/2026-09-07_GPU容器化修复步骤.md) | |
-| 测试从哪进 | [testing/测试总纲.md](testing/测试总纲.md) | 分层总入口 |
-| 4090 五层两档（quick / full） | [testing/2026-09-07_飞致云五层两档测试说明.md](testing/2026-09-07_飞致云五层两档测试说明.md) | **gpu-full 本轮未通过** |
-| gpu-full 对照 | [testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md](testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md) | |
-| GPU 全量校验清单 | [testing/GPU全量校验手册.md](testing/GPU全量校验手册.md) | |
-| 3070 实际跑过什么 | [testing/2026-09-06_RTX3070容器实测记录.md](testing/2026-09-06_RTX3070容器实测记录.md) | 文档限定实测 |
-| 3070 文档是否写超 | [project/2026-09-06_3070容器日志核验与文档真实性.md](project/2026-09-06_3070容器日志核验与文档真实性.md) | |
+| 最近改了什么 | [platform/CHANGELOG.md](platform/CHANGELOG.md) | 版本编年，不写在首页 |
+| 等保怎么表述 | [platform/等级保护口径.md](platform/等级保护口径.md) | 参照控制点，不是已测评 |
+| 系统怎么连在一起 | [platform/系统血谱.md](platform/系统血谱.md) | L0/L1 数据流；改链路须同批更新 |
+| Docker 一键拉起 | [infra/deploy/Docker容器化一键部署.md](infra/deploy/Docker容器化一键部署.md) | 有卡路径 |
+| 开源怎么分发、模型不进 Git | [infra/deploy/开源项目分发落地方案.md](infra/deploy/开源项目分发落地方案.md) | 离线 tar 在仓库外 |
+| 飞致云 4090 怎么上机 | [infra/deploy/2026-09-07_Featurize4090按量实例操作手册.md](infra/deploy/2026-09-07_Featurize4090按量实例操作手册.md) | 按量实例 |
+| GPU 容器修过哪些步骤 | [infra/deploy/2026-09-07_GPU容器化修复步骤.md](infra/deploy/2026-09-07_GPU容器化修复步骤.md) | |
+| 测试从哪进 | [platform/测试总纲.md](platform/测试总纲.md) | 分层总入口 |
+| 4090 五层两档（quick / full） | [infra/2026-09-07_飞致云五层两档测试说明.md](infra/2026-09-07_飞致云五层两档测试说明.md) | **gpu-full 本轮未通过** |
+| gpu-full 对照 | [infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md](infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md) | |
+| GPU 全量校验清单 | [infra/GPU全量校验手册.md](infra/GPU全量校验手册.md) | |
+| 3070 实际跑过什么 | [infra/2026-09-06_RTX3070容器实测记录.md](infra/2026-09-06_RTX3070容器实测记录.md) | 文档限定实测 |
+| 3070 文档是否写超 | [infra/2026-09-06_3070容器日志核验与文档真实性.md](infra/2026-09-06_3070容器日志核验与文档真实性.md) | |
 | 知识库有什么、克隆缺什么 | [../knowledgebase/README.md](../knowledgebase/README.md) | 种子在 SQL；国标全文不进 Git；向量运行时生成 |
 
 演示视频不在 Git 里，在发行版：  
@@ -45,45 +66,27 @@ https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
 
 ---
 
-## 目录一览（docs/ 下面）
+## 跨模块规范（`platform/`）
 
-| 文件夹 | 放什么 | 平时要不要进 |
-|--------|--------|----------------|
-| `project/` | 大赛介绍、CHANGELOG、等保、项目备忘 | **要。大赛材料只在这里，文件名 `os2026-作品介绍.*`** |
-| `deploy/` | 部署、飞致云、分发 | 要上机或交离线包时 |
-| `testing/` | 测试总纲、GPU 手册、4090/3070 记录 | 要核测试口径时 |
-| `architecture/` | 架构、血谱 | 看系统设计时 |
-| `数据库化石/` | 表考古、台账 | 查库、核销问题时 |
-| `operations/` | 远程启动、联调 | 连真机时 |
-| `troubleshooting/` | 历史排障与修复长文 | 对上具体旧 bug 时 |
-| `technical-principles/` | 检索/向量等原理 | 学原理时 |
-| `frontend/` | 前端设计 | 改 UI 方案时 |
-| `analysis/` `articles/` `learning-notes/` `methodology/` `梳理项目/` `工程skill/` | 分析、文章、笔记、skill | 一般不必先看 |
-| `_archive/` | 归档旧口径 | 只查历史表述 |
-| `docs/` 根上若干 md/html | 断点地图、十项决策等长文 | 按文件名搜，不是大赛入口 |
+| 文件 | 放什么 |
+|------|--------|
+| `os2026-作品介绍.*` | **大赛提交正文**（及 html/pdf/配图） |
+| `release-notes-v0.1.0.md` | 首次公开源码包说明 |
+| `CHANGELOG.md` | 版本编年 |
+| `等级保护口径.md` | 等保表述边界 |
+| `系统血谱.md` | 数据流地图 |
+| `病灶登记表.md` / `同源拷贝联动手册.md` | 血谱配套 |
+| `测试总纲.md` | 测试分层总入口 |
+| `Agent1 十项核心技术决策深度拆解.md` | 跨模块技术决策 |
+| `skills/` | 工程 Skill 模板 |
 
-`project/` 里还有不少 6 月以前的全景/差距报告，**不是**大赛提交正文。提交正文只有 `os2026-作品介绍.md`（及 html/pdf）。
-
----
-
-## 代码在哪（不是 docs，但常和文档一起找）
-
-| 你要找 | 路径 |
-|--------|------|
-| 核心库 | `Agent1/` |
-| HTTP API | `Agent1.Api/` |
-| 前端 | `agent1-web/` |
-| 大赛录片脚本 | `agent1-web/e2e-demo/` |
-| 后端测试 | `Agent1.Tests/` |
-| SQL / 危化品种子 | `db/`、`init_database.sql` |
-| 启动、下模型、五层测试、录片 | `scripts/`（`docker-up*`、`download-models*`、`gpu-five-layer.ps1`、`record-os2026-demo.ps1`） |
-| 模型清单（权重不入库） | `models/README.md` |
-| 语料说明（国标全文不入库） | `knowledgebase/README.md` |
+`_archive/project/` 里还有 6 月以前的全景/差距报告，**不是**大赛提交正文。提交正文只有 `platform/os2026-作品介绍.md`（及 html/pdf）。
 
 ---
 
 ## 不要在这些地方找大赛介绍
 
 - 仓库根目录（只有 README，没有作品介绍）
-- `docs/deploy/`、`docs/testing/`（部署和测试，不是介绍正文）
-- 文件名含「全景」「差距」「蓝图」「豆包」的（内部底稿或旧分析；豆包说明书已不进 Git）
+- `docs/infra/`、`docs/Agent1.Tests/`（部署和测试，不是介绍正文）
+- 文件名含「全景」「差距」「蓝图」的（内部底稿或旧分析）
+- [`_archive/`](_archive/README.md)（归档，不当入口）

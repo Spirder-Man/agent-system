@@ -8,12 +8,14 @@
 
 面向化工园区 EHS / 企业安全员与安全管理部的合规审查辅助：两种危化品能否同库、危险类别与安全距离、巡检与工单、操作留痕。不是通用聊天机器人，也不是已交付的园区生产系统。
 
-- 仓库：[https://gitee.com/liuchao_yue/agent-system](https://gitee.com/liuchao_yue/agent-system) · 默认分支 `master`
+- 仓库：[Gitee](https://gitee.com/liuchao_yue/agent-system) · [GitHub](https://github.com/Spirder-Man/agent-system) · 默认分支 `master`
+- 源码包：[v0.1.0](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0)（CPU / GPU / 容器化三档，不含模型）
 - 许可证：[LICENSE](LICENSE)（MIT） · 第三方：[NOTICE](NOTICE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-- 等级保护口径：[docs/project/等级保护口径.md](docs/project/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
+- 等级保护口径：[docs/platform/等级保护口径.md](docs/platform/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
 
 ```bash
 git clone https://gitee.com/liuchao_yue/agent-system.git
+# 或: git clone https://github.com/Spirder-Man/agent-system.git
 cd agent-system
 cp .env.example .env
 ```
@@ -22,11 +24,11 @@ cp .env.example .env
 
 演示账号仅本地使用，勿用于生产：`admin` / `changeme`
 
-分发形态与前提条件见 [开源项目分发落地方案](docs/deploy/开源项目分发落地方案.md)。当前默认仍是**本机构建**镜像；不要使用 [docker-compose.release.yml.example](docker-compose.release.yml.example) 去 `pull`（远程仓库尚未发布）。
+分发形态与前提条件见 [开源项目分发落地方案](docs/infra/deploy/开源项目分发落地方案.md)。当前默认仍是**本机构建**镜像；不要使用 [docker-compose.release.yml.example](docker-compose.release.yml.example) 去 `pull`（远程仓库尚未发布）。
 
 ### 路径 1 — 有网 GPU（推荐）
 
-需要 NVIDIA GPU、Docker Compose V2，以及 `models/` 下的 GGUF（清单见 [models/README.md](models/README.md)）。首次会构建 CUDA llama 镜像，约 10–30 分钟。步骤详见 [Docker 容器化一键部署](docs/deploy/Docker容器化一键部署.md)。
+需要 NVIDIA GPU、Docker Compose V2，以及 `models/` 下的 GGUF（清单见 [models/README.md](models/README.md)）。首次会构建 CUDA llama 镜像，约 10–30 分钟。步骤详见 [Docker 容器化一键部署](docs/infra/deploy/Docker容器化一键部署.md)。
 
 ```bash
 # 编辑 .env：DB_PASSWORD、JWT_KEY；Windows 无管理员权限时设 WEB_PORT=8088
@@ -84,8 +86,8 @@ cd agent1-web && npm run dev
 
 - 正式离线包只需 4 个**运行** tar：`agent1-llama-cuda`、`agent-system-api`、`agent1-web`、`pgvector-pg16`。CUDA devel 编译链不要随包分发。
 - 离线包里的 `agent1-llama-cuda.tar` **仍不是**打过 `0.1.0` 的正式发布物。源码仓 `Dockerfile.llama*` 钉 llama.cpp **b5512**，这是构建目标，不是「已用本 Dockerfile 在 4090 重编并 `docker save`」。
-- **RTX 3070（2026-09-05/06）**：第一波缺 `libllama.so`（exit 127）；第二波 8B 可推理，vision 仍拒 `--mmproj`。见 [3070 实测](docs/testing/2026-09-06_RTX3070容器实测记录.md)。
-- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，本轮总判定未通过。见 [五层两档说明](docs/testing/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/testing/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
+- **RTX 3070（2026-09-05/06）**：第一波缺 `libllama.so`（exit 127）；第二波 8B 可推理，vision 仍拒 `--mmproj`。见 [3070 实测](docs/infra/2026-09-06_RTX3070容器实测记录.md)。
+- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，本轮总判定未通过。见 [五层两档说明](docs/infra/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
 - 无 GPU 评委路径为路径 2。有卡复现用仓库外离线包或路径 1。4090 离线包状态与 3070 实测不同。
 - 模型与语料在离线包的 `cpu/models`、`cpu/knowledgebase`。
 
@@ -108,21 +110,27 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 
 - 仅作合规审查辅助，不替代持证安全管理人员的法定职责。
 - **本仓库不包含国家标准全文。** 远程克隆缺的是国标正文和向量，不是甲醇×硝酸这条验收。结构化种子在 `init_database.sql` 与 `db/migrations/002_chemical_knowledge_graph.sql`；虚构园区规定/案例在 `knowledgebase/园区规则/` 与 `knowledgebase/历史案例/`。国标全文自备后放入 `knowledgebase/国标/`，或在 `.env` 把 `KNOWLEDGE_BASE_PATH` 指到本机语料（例如仓库外的 `化工知识库`）。向量由运行时 embedding 写入 pgvector，不随 Git 下发。说明见 [knowledgebase/README.md](knowledgebase/README.md)。
-- 本仓库不是已定级、已备案或已测评的网络安全等级保护对象，见 [等级保护口径](docs/project/等级保护口径.md)。
+- 本仓库不是已定级、已备案或已测评的网络安全等级保护对象，见 [等级保护口径](docs/platform/等级保护口径.md)。
 - 未对接真实 ERP / WMS / EHS 生产数据。
 - 生产口令只写本机 `.env`，不要提交。必填：`JWT_KEY`（不少于 32 字符）、`DB_PASSWORD`、`AUTH_ACCOUNTS_JSON`。
 
 ## 文档
 
-按用途找文件：[docs/README.md](docs/README.md)（Gitee 上搜 `os2026` 也能落到大赛材料）。
+按模块找说明书：[docs/README.md](docs/README.md)（Gitee 上搜 `os2026` 也能落到大赛材料）。
 
-| 用途 | 文件 |
+| 模块 / 用途 | 文件 |
 |------|------|
-| 大赛作品介绍 | [docs/project/os2026-作品介绍.md](docs/project/os2026-作品介绍.md)（同目录 html / pdf） |
+| 源码包 v0.1.0 | [docs/platform/release-notes-v0.1.0.md](docs/platform/release-notes-v0.1.0.md) · [GitHub](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0) · [Gitee](https://gitee.com/liuchao_yue/agent-system/releases/tag/v0.1.0) |
+| 大赛作品介绍 | [docs/platform/os2026-作品介绍.md](docs/platform/os2026-作品介绍.md)（同目录 html / pdf） |
 | 演示视频 | https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo （mp4 不进 Git） |
-| 近期变更 | [docs/project/CHANGELOG.md](docs/project/CHANGELOG.md) |
-| 一键部署 | [docs/deploy/Docker容器化一键部署.md](docs/deploy/Docker容器化一键部署.md) |
-| 开源分发 | [docs/deploy/开源项目分发落地方案.md](docs/deploy/开源项目分发落地方案.md) |
-| 4090 两档测试 | [docs/testing/2026-09-07_飞致云五层两档测试说明.md](docs/testing/2026-09-07_飞致云五层两档测试说明.md) |
-| 文档从哪找 | [docs/README.md](docs/README.md) |
+| 核心库 | [docs/Agent1/说明书.md](docs/Agent1/说明书.md) |
+| HTTP API | [docs/Agent1.Api/说明书.md](docs/Agent1.Api/说明书.md) |
+| 前端 | [docs/agent1-web/说明书.md](docs/agent1-web/说明书.md) |
+| E2E | [docs/e2e/说明书.md](docs/e2e/说明书.md) |
+| 后端测试 | [docs/Agent1.Tests/说明书.md](docs/Agent1.Tests/说明书.md) |
+| 数据库 | [docs/db/说明书.md](docs/db/说明书.md) |
+| 部署 / GPU | [docs/infra/说明书.md](docs/infra/说明书.md) |
+| 近期变更 | [docs/platform/CHANGELOG.md](docs/platform/CHANGELOG.md) |
+| 一键部署 | [docs/infra/deploy/Docker容器化一键部署.md](docs/infra/deploy/Docker容器化一键部署.md) |
+| 4090 两档测试 | [docs/infra/2026-09-07_飞致云五层两档测试说明.md](docs/infra/2026-09-07_飞致云五层两档测试说明.md) |
 | 知识库三层数据 | [knowledgebase/README.md](knowledgebase/README.md)（国标全文不进 Git） |

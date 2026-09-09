@@ -1,6 +1,6 @@
 # 远程评测六维度深度分析报告（飞致云 Docker）
 
-> **自动生成** | 维度框架: D1-D6 | 方法: [系统日志解读与排障实战指南.md](../../docs/testing/系统日志解读与排障实战指南.md) / [系统日志阅读与分析实战教学.md](../../docs/testing/系统日志阅读与分析实战教学.md)
+> **自动生成** | 维度框架: D1-D6 | 方法: [系统日志解读与排障实战指南.md](../../docs/Agent1.Tests/系统日志解读与排障实战指南.md) / [系统日志阅读与分析实战教学.md](../../docs/Agent1.Tests/系统日志阅读与分析实战教学.md)
 >
 > 日志源已从 AutoDL `/root/autodl-tmp/logs` 改为 `ssh` + `docker compose logs`（gpu-eval-analyze.ps1）。不调用 download-analysis.ps1。
 
@@ -131,7 +131,7 @@ __FAIL_D__
 - [ ] 结论准确率优化：如果 C 类失败 > 3 例，检查 RAG 召回质量 + Reflection
 - [ ] 性能基线：如果单例耗时 > 30s，检查 Prompt 长度 + 模型并发配置
 
-本轮不改 EvalEngine / 评测集。P2 结论准确率代码耦合见 docs/testing/P2-结论准确率提升-代码耦合分析.md。
+本轮不改 EvalEngine / 评测集。P2 结论准确率代码耦合见 docs/Agent1.Tests/P2-结论准确率提升-代码耦合分析.md。
 
 ---
 
@@ -203,5 +203,5 @@ __FAIL_APPENDIX__
 | llama LLM | __LLM_LOG__ |
 | llama Embed | __EMBED_LOG__ |
 
-> [测试总纲.md](../../docs/testing/测试总纲.md) §4.2
-> [GPU全量校验手册.md](../../docs/testing/GPU全量校验手册.md)
+> [测试总纲.md](../../docs/platform/测试总纲.md) §4.2
+> [GPU全量校验手册.md](../../docs/infra/GPU全量校验手册.md)

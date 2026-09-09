@@ -416,8 +416,8 @@ cat >> "$ANALYSIS_FILE" << EOF
 
 > 📖 **关联技能**: [remote-log-analysis.md](../.agents/skills/remote-log-analysis.md)
 > 📖 **方法论文档**: [engineering-deep-learning-methodology.md](../.agents/skills/engineering-deep-learning-methodology.md)
-> 📖 **测试总纲**: [测试总纲.md](../docs/testing/测试总纲.md)
-> 📖 **Bug知识库**: [Bug知识库.md](../docs/project/Bug知识库.md)
+> 📖 **测试总纲**: [测试总纲.md](../docs/platform/测试总纲.md)
+> 📖 **Bug知识库**: [Bug知识库.md](../docs/_archive/project/Bug知识库.md)
 
 > ⚠️ **D2-D4 中的 AI 辅助分析占位项需人工确认后填写**，完整六维度分析见 remote-log-analysis 技能的一问一答交互流程。
 

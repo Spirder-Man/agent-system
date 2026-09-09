@@ -305,5 +305,5 @@ Get-ChildItem "$localDir\*.log" | ForEach-Object {
 ## 关联文档
 
 - [工程问题深度拆解与远程日志分析技能](file:///d:/桌面/agent/项目/Agent1/.agents/skills/engineering-deep-learning-methodology.md) — 完整方法论 + 提问驱动模式
-- [Task 11 测试日志逐行深度解析](../docs/testing/Task%2011%20测试日志逐行深度解析.md) — 六维度分析标准范式
-- [Bug知识库](../docs/project/Bug知识库.md) — 历史 Bug 与系统弱点
+- [Task 11 测试日志逐行深度解析](../docs/infra/Task%2011%20测试日志逐行深度解析.md) — 六维度分析标准范式
+- [Bug知识库](../docs/_archive/project/Bug知识库.md) — 历史 Bug 与系统弱点

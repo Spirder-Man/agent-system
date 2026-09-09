@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const USER = process.env.E2E_ADMIN_USER || 'admin';
 const PASS = (process.env.E2E_ADMIN_PASSWORD || 'changeme').trim();
-const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../docs/project/os2026-figures');
+const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../docs/platform/os2026-figures');
 
 test('capture fig3 storage and fig4 audit', async ({ page, request }) => {
   await page.setViewportSize({ width: 1280, height: 800 });

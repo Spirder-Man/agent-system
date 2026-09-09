@@ -172,6 +172,7 @@ db/backups/
 
 # 发布产物与本地工具依赖
 /publish/
+/dist/
 tools/ffmpeg-npm/
 tools/ffmpeg.zip
 

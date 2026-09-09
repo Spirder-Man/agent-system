@@ -6,8 +6,8 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 root = Path(r"c:/Users/lcy/Desktop/agent-system")
-md = root / "docs/project/os2026-作品介绍.md"
-pdf = root / "docs/project/os2026-作品介绍.pdf"
+md = root / "docs/platform/os2026-作品介绍.md"
+pdf = root / "docs/platform/os2026-作品介绍.pdf"
 remote_dir = "D:/桌面/agent/开源大赛提交"
 host = "company-pc"
 
