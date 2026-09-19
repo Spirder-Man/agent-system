@@ -35,6 +35,6 @@
 - **RTX 3070（2026-09-05/06）**：未过最小冒烟。
 - **飞致云 RTX 4090 离线包（2026-09-07/08）**：`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，**本轮总判定未通过**。离线包能跑 ≠ 本仓 `Dockerfile.llama`（钉 llama.cpp b5512）已在 4090 重编发布。
 
-演示视频（与本 tag 无关）仍在：https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
+演示视频（B站）：https://www.bilibili.com/video/BV1ieeu66E1A
 
 文档入口：[README.md](../../README.md)、[docs/README.md](../README.md)。

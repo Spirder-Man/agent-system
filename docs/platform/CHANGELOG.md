@@ -4,6 +4,12 @@
 
 ## 近期更新
 
+### 2026-09-17 — 演示视频口径切换到 B站
+
+- 大赛演示视频正式入口改为 B站：`https://www.bilibili.com/video/BV1ieeu66E1A`。同源更新：根 `README.md`、`docs/README.md`（含报名表栏）、`docs/platform/os2026-作品介绍.md` 封面、`render_os2026_pdf.py` 封面表、`release-notes-v0.1.0.md`。
+- 原始 mp4 仍保留在 Gitee Release `os2026-demo`，不进 Git（`docs/e2e/说明书.md` 口径不变）。
+- 重新生成 `os2026-作品介绍.html` / `.pdf`。未改代码、规则引擎、种子、CI。
+
 ### 2026-09-09 — 工程操作系统（防散落）
 
 - Agent 入口：[AGENTS.md](../../AGENTS.md)。认路：[目录地图.md](./目录地图.md)。端口真源：[运行时端口登记.md](./运行时端口登记.md)。测试真源：[测试台账.md](./测试台账.md)（CI 以 `ci.yml` 为准；Playwright **未**进 CI）。过程：[开发会话纪要/](./开发会话纪要/)。

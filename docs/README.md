@@ -55,9 +55,9 @@ Gitee 网页上搜索 **`os2026`**，就能落到大赛材料。不要在仓库�
 | 3070 文档是否写超 | [infra/2026-09-06_3070容器日志核验与文档真实性.md](infra/2026-09-06_3070容器日志核验与文档真实性.md) | |
 | 知识库有什么、克隆缺什么 | [../knowledgebase/README.md](../knowledgebase/README.md) | 种子在 SQL；国标全文不进 Git；向量运行时生成 |
 
-演示视频不在 Git 里，在发行版：  
-https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo  
-作品介绍封面「演示视频」栏写的是同一个地址。
+演示视频（B站，正式入口）：  
+https://www.bilibili.com/video/BV1ieeu66E1A  
+作品介绍封面「演示视频」栏写的是同一个地址。原始 mp4 仍留在 Gitee Release `os2026-demo`，不进 Git。
 
 ## 交材料前还要在网页上改（仓库改不了）
 
@@ -65,7 +65,7 @@ https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo
 |------|------|
 | Gitee 仓库设置 → 仓库名称/显示名 | 苍卫 |
 | 大赛官网报名表 · 作品中文名 | 苍卫 — 面向复杂高风险场景的可审计合规 Agent |
-| 大赛官网报名表 · 演示视频 | https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo |
+| 大赛官网报名表 · 演示视频 | https://www.bilibili.com/video/BV1ieeu66E1A |
 
 不要改 Gitee 的仓库路径 `agent-system`（克隆地址保持不变）。
 

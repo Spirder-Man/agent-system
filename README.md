@@ -125,7 +125,7 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 |------|------|
 | 源码包 v0.1.0 | [docs/platform/release-notes-v0.1.0.md](docs/platform/release-notes-v0.1.0.md) · [GitHub](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0) · [Gitee](https://gitee.com/liuchao_yue/agent-system/releases/tag/v0.1.0) |
 | 大赛作品介绍 | [docs/platform/os2026-作品介绍.md](docs/platform/os2026-作品介绍.md)（同目录 html / pdf） |
-| 演示视频 | https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo （mp4 不进 Git） |
+| 演示视频 | https://www.bilibili.com/video/BV1ieeu66E1A （B站；原始 mp4 在 Gitee Release，不进 Git） |
 | 核心库 | [docs/Agent1/说明书.md](docs/Agent1/说明书.md) |
 | HTTP API | [docs/Agent1.Api/说明书.md](docs/Agent1.Api/说明书.md) |
 | 前端 | [docs/agent1-web/说明书.md](docs/agent1-web/说明书.md) |

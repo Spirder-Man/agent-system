@@ -152,7 +152,7 @@ hr.sep { border: none; border-top: 0.4pt solid #ccc; margin: 16pt 0; }
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
     <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">https://<wbr>gitee.com/<wbr>liuchao_yue/<wbr><span class="nobr">agent-system</span></a></td></tr>
     <tr><th>默认分支</th><td>master</td></tr>
-    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">https://<wbr>gitee.com/<wbr>liuchao_yue/<wbr><span class="nobr">agent-system</span>/<wbr>releases/<wbr>tag/<wbr><span class="nobr">os2026-demo</span></a></td></tr>
+    <tr><th>演示视频</th><td><a href="https://www.bilibili.com/video/BV1ieeu66E1A">https://<wbr>www.bilibili.com/<wbr>video/<wbr>BV1ieeu66E1A</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
     <tr><th>团队成员</th><td>党嘉韦（前端）</td></tr>
   </table>
@@ -435,12 +435,12 @@ dotnet test Agent1.Tests <span class="nobr">--filter</span> &quot;Category!=Inte
 <ul><li>参照 GB/T 22239 第三级中与安全审计、访问控制、身份鉴别相关的部分控制点精神</li><li>等保测评对象是网络运营者正在运行的信息系统，不是开源仓库</li><li>应用层可以实现日志留存、哈希链和三角色，不能代替定级、备案与测评</li></ul>
 <p>未覆盖项包括：管理制度与人员、物理安全、网络边界、集中管控、备份容灾、密码模块与时钟同步、审计管理员与系统管理员职责分离、生产环境真实客户端 IP 等。</p>
 <p>评委复现命令与仓库 README 一致。文档目录：<code>docs/platform/</code>、<code>docs/infra/</code>、各模块说明书见 <code>docs/README.md</code>。</p>
-<p>CONTRIBUTING、SECURITY、行为准则、Issue 模板尚未完成，列入第 7 章规划。</p>
+<p>开源治理文件已提供：根目录 <code>CONTRIBUTING.md</code>、<code>SECURITY.md</code>、<code>CODE_OF_CONDUCT.md</code>；GitHub Issue 表单在 <code>.github/ISSUE_TEMPLATE/</code>，Gitee 在 <code>.gitee/ISSUE_TEMPLATE/</code>；PR 清单在 <code>.github/pull_request_template.md</code>。</p>
 <h2>第 7 章 团队与后续规划</h2>
 <p>对外负责人为刘超越。党嘉韦负责前端。后续仍希望补充领域复核与社区响应方面的合作者。</p>
 <p>近期规划：</p>
-<ol><li>补开源治理文件（CONTRIBUTING、SECURITY、Issue 模板）</li><li>在使用方自备合法标准副本的前提下扩展结构化种子覆盖，标准全文不进入 Git</li><li>寻求仿真 / 试点后再谈 ERP / WMS 真实集成</li></ol>
-<p>上述三项为规划，尚未落地。生产密钥只存在本机 <code>.env</code>，不进 Git。仓库默认分支为 master。</p>
+<ol><li>在使用方自备合法标准副本的前提下扩展结构化种子覆盖，标准全文不进入 Git</li><li>寻求仿真 / 试点后再谈 ERP / WMS 真实集成</li></ol>
+<p>上述两项为规划，尚未落地。开源治理文件（CONTRIBUTING、SECURITY、行为准则、Issue / PR 模板）已落地，见第 6 章。生产密钥只存在本机 <code>.env</code>，不进 Git。仓库默认分支为 master。</p>
 <h2>附录 A 评委复现命令</h2>
 <p>演示账号仅本地 demo，勿用于生产：<code>admin</code> / <code>changeme</code>。</p>
 <p>无 GPU 评委路径：</p>

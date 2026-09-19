@@ -567,7 +567,7 @@ def build_cover_and_body(md: str) -> str:
     <tr><th>开源协议</th><td>MIT（仓库根目录 LICENSE）</td></tr>
     <tr><th>代码仓库</th><td><a href="https://gitee.com/liuchao_yue/agent-system">{wbr_url("https://gitee.com/liuchao_yue/agent-system")}</a></td></tr>
     <tr><th>默认分支</th><td>master</td></tr>
-    <tr><th>演示视频</th><td><a href="https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo">{wbr_url("https://gitee.com/liuchao_yue/agent-system/releases/tag/os2026-demo")}</a></td></tr>
+    <tr><th>演示视频</th><td><a href="https://www.bilibili.com/video/BV1ieeu66E1A">{wbr_url("https://www.bilibili.com/video/BV1ieeu66E1A")}</a></td></tr>
     <tr><th>团队负责人</th><td>刘超越</td></tr>
     <tr><th>团队成员</th><td>党嘉韦（前端）</td></tr>
   </table>
