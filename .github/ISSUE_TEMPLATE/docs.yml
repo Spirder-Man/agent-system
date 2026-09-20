@@ -1,5 +1,5 @@
 name: 文档问题
-description: README、说明书、作品介绍或口径写错 / 过时
+description: README、说明书或口径写错 / 过时
 title: "[Docs] "
 labels: ["documentation"]
 body:
@@ -7,7 +7,7 @@ body:
     id: path
     attributes:
       label: 文档路径
-      placeholder: README.md / docs/platform/os2026-作品介绍.md / …
+      placeholder: README.md / docs/platform/工程治理.md / …
     validations:
       required: true
   - type: textarea
