@@ -4,6 +4,10 @@
 
 ## 近期更新
 
+### 2026-09-20 — README 增加项目介绍与招募节
+
+- 根 `README.md` 新增「项目介绍与招募」：背景、应用场景与实际用途、近期进展、后续技术更新、招人、愿景。口径与《作品介绍》《边界》一致，未夸大交付状态。
+
 ### 2026-09-17 — 演示视频口径切换到 B站
 
 - 大赛演示视频正式入口改为 B站：`https://www.bilibili.com/video/BV1ieeu66E1A`。同源更新：根 `README.md`、`docs/README.md`（含报名表栏）、`docs/platform/os2026-作品介绍.md` 封面、`render_os2026_pdf.py` 封面表、`release-notes-v0.1.0.md`。
