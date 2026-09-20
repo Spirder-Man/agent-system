@@ -16,14 +16,14 @@
 - **事实通道** — C# 确定性代码输出法规编号、禁忌结论、安全距离；法规编号受白名单管控，模型幻觉进来的 GB 号出不了系统
 - **解释通道** — 大模型只做专业解读与操作建议，不得回写编号
 
-它不是通用聊天机器人，也不是已交付的园区生产系统；评委无 GPU 也能一条命令复现核心结论。
+它不是通用聊天机器人，也不是已交付的园区生产系统；无 GPU 环境也能一条命令复现核心结论。
 
 | 项 | 地址 |
 |----|------|
 | 代码仓库（Gitee 主仓） | https://gitee.com/liuchao_yue/agent-system |
 | GitHub 镜像 | https://github.com/Spirder-Man/agent-system |
 | 演示视频（B站） | https://www.bilibili.com/video/BV1ieeu66E1A |
-| 大赛作品介绍 | [docs/platform/os2026-作品介绍.md](docs/platform/os2026-作品介绍.md)（同目录 html / pdf） |
+| 设计文档 | [docs/platform/系统血谱.md](docs/platform/系统血谱.md) · [架构导向图](docs/platform/Agent1宏观架构导向图.md) |
 | 源码包 | [v0.1.0](docs/platform/release-notes-v0.1.0.md)（容器化 / CPU / GPU 三档，不含模型） |
 
 **技术栈**：Vue 3 · ASP.NET Core 8 · PostgreSQL 16 + pgvector · llama.cpp · Docker Compose · MIT 协议
@@ -80,7 +80,7 @@ curl http://localhost:5000/health/live
 
 浏览器打开 `http://localhost`，演示账号 `admin` / `changeme`（仅本地，勿用于生产）。在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
 
-没有 GPU 时用 `docker compose -f docker-compose.demo.yml up -d --build` 配合 `scripts/demo-compatibility`，储存禁忌直接走确定性规则引擎出结论（评委复现步骤见《作品介绍》附录 A）。
+没有 GPU 时用 `docker compose -f docker-compose.demo.yml up -d --build` 配合 `scripts/demo-compatibility`，储存禁忌直接走确定性规则引擎出结论。
 
 ## 架构与功能
 
@@ -114,7 +114,7 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 
 ## 近期进展
 
-- **2026-09-17** — 大赛演示视频口径切换到 B站（BV1ieeu66E1A），作品介绍 md / html / pdf 与 README 同源统一。
+- **2026-09-17** — 演示视频上线 B站（BV1ieeu66E1A），设计文档与 README 口径同源统一。
 - **2026-09-09** — v0.1.0 三档源码包发布（容器化 / CPU / GPU，不含模型权重）；工程操作系统落地：AGENTS.md 入口、端口与测试真源登记。
 
 ## 后续技术更新
@@ -135,7 +135,7 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 | Vue 3 前端 | 巡检 / 工单 / 审计页面闭环 |
 | 化工 / EHS 领域 | 国标条款入库、储存规则口径校验 |
 
-给 MIT 开源署名 + 完整架构经验 + 2026 上海开源软件应用创新大赛参赛经历。感兴趣直接开 Issue / PR，或 Gitee 私信联系负责人刘超越。
+给 MIT 开源署名 + 完整架构经验 + 可写进简历的开源竞赛与工程治理实践。感兴趣直接开 Issue / PR，或 Gitee 私信联系负责人刘超越。
 
 ## 愿景
 
