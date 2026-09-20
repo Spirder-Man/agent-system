@@ -1,98 +1,86 @@
-# Agent1 — 化工园区危化品合规审查 AI Agent
+# 苍卫 — 面向复杂高风险场景的可审计合规 Agent
 
-公开作品名：**苍卫** — 面向复杂高风险场景的可审计合规 Agent。当前验证场是化工园区危化品储存审查。工程与仓库名仍为 Agent1 / `agent-system`。
+> 法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。
+> LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**法规条款、储存禁忌和安全距离由确定性代码给出，大模型只解释和建议。** LLM 不可用时，门卫 + 责任链 + 规则引擎仍给出可审计结论。
+工程名 Agent1 / `agent-system`；当前验证场是化工园区危化品储存审查。
 
-面向化工园区 EHS / 企业安全员与安全管理部的合规审查辅助：两种危化品能否同库、危险类别与安全距离、巡检与工单、操作留痕。不是通用聊天机器人，也不是已交付的园区生产系统。
+## 项目简介
 
-- 仓库：[Gitee](https://gitee.com/liuchao_yue/agent-system) · [GitHub](https://github.com/Spirder-Man/agent-system) · 默认分支 `master`
-- 源码包：[v0.1.0](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0)（CPU / GPU / 容器化三档，不含模型）
-- 许可证：[LICENSE](LICENSE)（MIT） · 第三方：[NOTICE](NOTICE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-- 参与：[CONTRIBUTING.md](CONTRIBUTING.md) · 安全：[SECURITY.md](SECURITY.md) · 行为准则：[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- 工程阶段：[docs/platform/工程治理.md](docs/platform/工程治理.md)（第一阶段：文档 + 运维默认口 `:5000`；规则引擎/双通道未开改）
-- Agent / 目录 / 端口 / 测试真源：[AGENTS.md](AGENTS.md) · [目录地图](docs/platform/目录地图.md) · [运行时端口登记](docs/platform/运行时端口登记.md) · [测试台账](docs/platform/测试台账.md)
-- 等级保护口径：[docs/platform/等级保护口径.md](docs/platform/等级保护口径.md)（参照部分控制点，非已定级备案/测评）
+**苍卫**是一个可私有化部署的合规审查辅助系统，面向化工园区 EHS 与安全管理部：两种危化品能否同库、危险类别与安全距离、巡检与工单、操作留痕，都给出可追溯的结构化结论。
 
-```bash
-git clone https://gitee.com/liuchao_yue/agent-system.git
-# 或: git clone https://github.com/Spirder-Man/agent-system.git
-cd agent-system
-cp .env.example .env
+系统把「不能错的事实」和「可以生成的解释」拆成两条通道：
+
+- **事实通道** — C# 确定性代码输出法规编号、禁忌结论、安全距离；法规编号受白名单管控，模型幻觉进来的 GB 号出不了系统
+- **解释通道** — 大模型只做专业解读与操作建议，不得回写编号
+
+它不是通用聊天机器人，也不是已交付的园区生产系统；评委无 GPU 也能一条命令复现核心结论。
+
+| 项 | 地址 |
+|----|------|
+| 代码仓库（Gitee 主仓） | https://gitee.com/liuchao_yue/agent-system |
+| GitHub 镜像 | https://github.com/Spirder-Man/agent-system |
+| 演示视频（B站） | https://www.bilibili.com/video/BV1ieeu66E1A |
+| 大赛作品介绍 | [docs/platform/os2026-作品介绍.md](docs/platform/os2026-作品介绍.md)（同目录 html / pdf） |
+| 源码包 | [v0.1.0](docs/platform/release-notes-v0.1.0.md)（容器化 / CPU / GPU 三档，不含模型） |
+
+**技术栈**：Vue 3 · ASP.NET Core 8 · PostgreSQL 16 + pgvector · llama.cpp · Docker Compose · MIT 协议
+
+## 项目结构
+
+```
+agent-system/
+├── agent1-web/          # 前台：Vue 3 + Vite + Element Plus（Vite :5173 / Docker Nginx）
+├── Agent1.Api/          # REST API：路由、JWT 鉴权、健康检查（主机 :5000）
+├── Agent1/              # 核心库：规则引擎、RAG 检索、双通道编排、审计哈希链
+├── Agent1.Tests/        # xUnit 后端测试（CI 跑非 Integration 类别）
+├── knowledgebase/       # RAG 语料目录约定（国标全文不进 Git，种子在 SQL）
+├── db/                  # 数据库迁移与 schema；根目录 init_database.sql 供 demo compose 使用
+├── Data/                # 评测集 JSON（黄金答案）
+├── models/              # GGUF 模型清单与校验和（权重不随 Git 下发）
+├── scripts/             # 运维入口：docker-up / download-models / demo-compatibility 等
+├── docs/                # 文档：platform/ 跨模块规范，各模块说明书，infra/ 部署记录
+├── prompts/             # 历史提示词与角色配置
+├── docker-compose*.yml  # GPU 全栈 / CPU / 无 GPU demo / 观测 / staging 编排
+├── Dockerfile*          # API、Web、llama.cpp（CUDA / CPU）镜像构建
+└── .github/ .gitee/     # 双托管的 Issue 模板、PR 清单与 CI workflow
 ```
 
+数据流一句话：**浏览器 → agent1-web → Agent1.Api → Agent1 核心库 →（PostgreSQL + pgvector / llama.cpp）**。完整目录讲解见 [docs/platform/目录地图.md](docs/platform/目录地图.md)。
+
+## 目录
+
+- [项目简介](#项目简介)
+- [项目结构](#项目结构)
+- [启动](#启动)
+- [架构与功能](#架构与功能)
+- [项目背景](#项目背景)
+- [应用场景](#应用场景)
+- [近期进展](#近期进展)
+- [后续技术更新](#后续技术更新)
+- [与我们同行](#与我们同行)
+- [愿景](#愿景)
+- [边界](#边界)
+- [文档](#文档)
+
 ## 启动
-
-演示账号仅本地使用，勿用于生产：`admin` / `changeme`
-
-分发形态与前提条件见 [开源项目分发落地方案](docs/infra/deploy/开源项目分发落地方案.md)。当前默认仍是**本机构建**镜像；不要使用 [docker-compose.release.yml.example](docker-compose.release.yml.example) 去 `pull`（远程仓库尚未发布）。
-
-### 路径 1 — 有网 GPU（推荐）
 
 需要 NVIDIA GPU、Docker Compose V2，以及 `models/` 下的 GGUF（清单见 [models/README.md](models/README.md)）。首次会构建 CUDA llama 镜像，约 10–30 分钟。步骤详见 [Docker 容器化一键部署](docs/infra/deploy/Docker容器化一键部署.md)。
 
 ```bash
-# 编辑 .env：DB_PASSWORD、JWT_KEY；Windows 无管理员权限时设 WEB_PORT=8088
+git clone https://gitee.com/liuchao_yue/agent-system.git
+cd agent-system
+cp .env.example .env         # 编辑 DB_PASSWORD、JWT_KEY
 powershell -File scripts/download-models.ps1   # 或 bash scripts/download-models.sh
-# Linux / 有卡:
-bash scripts/docker-up.sh gpu
-# Windows:
-# powershell -ExecutionPolicy Bypass -File scripts/docker-up.ps1 gpu
+bash scripts/docker-up.sh gpu                  # Windows: powershell -File scripts/docker-up.ps1 gpu
 curl http://localhost:5000/health/live
 ```
 
-浏览器打开 `http://localhost`（或 `.env` 的 `WEB_PORT`）。登录后在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
+浏览器打开 `http://localhost`，演示账号 `admin` / `changeme`（仅本地，勿用于生产）。在储存兼容性页查询甲醇与硝酸：应返回禁止同库，并给出 **GB 15603** 出处。
 
-### 路径 2 — 无 GPU 演示
-
-没有 GPU 时用 [docker-compose.demo.yml](docker-compose.demo.yml)：只启动 PostgreSQL 16 + API，不启动 llama.cpp。环境变量 `LLM_OPTIONAL=true`，储存禁忌走确定性规则引擎。
-
-```bash
-docker compose -f docker-compose.demo.yml up -d --build
-bash scripts/demo-compatibility.sh
-# Windows 无 bash：
-# powershell -ExecutionPolicy Bypass -File scripts/demo-compatibility.ps1
-cd agent1-web && npm install && npm run dev
-```
-
-- API：`http://localhost:5000`（健康检查 `GET /health/live`）
-- 前端：Vite 默认 `http://localhost:5173`
-- 自检脚本会登录后请求 `POST /api/Compliance/storage/compatibility`，同样应看到禁配与 GB 15603
-
-无 GPU 但需要带 llama.cpp 的完整栈时，叠 [docker-compose.cpu.yml](docker-compose.cpu.yml)（`-ngl 0`，仍要 8B + embed 两件 GGUF）：
-
-```bash
-bash scripts/docker-up.sh cpu
-# 或: powershell -File scripts/docker-up.ps1 cpu
-```
-
-无 Docker 时：
-
-```bash
-cd agent1-web && npm install && npm run dev:mock   # 只看 UI，不需要后端
-dotnet test Agent1.Tests --filter "Category!=Integration"
-```
-
-本机有 .NET SDK、已有 PostgreSQL 时：
-
-```bash
-# 无 GPU 时在 .env 设 LLM_OPTIONAL=true
-dotnet run --project Agent1.Api
-cd agent1-web && npm run dev
-```
-
-### 路径 3 — 断网 / 大赛离线包
-
-源码仓**不含** `docker save` 的 `.tar`。断网评委机使用仓库外的 `容器化部署/` 目录（与本 Git 仓并列，不入库）。
-
-- 正式离线包只需 4 个**运行** tar：`agent1-llama-cuda`、`agent-system-api`、`agent1-web`、`pgvector-pg16`。CUDA devel 编译链不要随包分发。
-- 离线包里的 `agent1-llama-cuda.tar` **仍不是**打过 `0.1.0` 的正式发布物。源码仓 `Dockerfile.llama*` 钉 llama.cpp **b5512**，这是构建目标，不是「已用本 Dockerfile 在 4090 重编并 `docker save`」。
-- **RTX 3070（2026-09-05/06）**：第一波缺 `libllama.so`（exit 127）；第二波 8B 可推理，vision 仍拒 `--mmproj`。见 [3070 实测](docs/infra/2026-09-06_RTX3070容器实测记录.md)。
-- **飞致云 RTX 4090 离线包（2026-09-07/08）**：六容器含 `llama-vision` 健康；`gpu-quick` 通过；`gpu-full` 因 L2 缓存未过，本轮总判定未通过。见 [五层两档说明](docs/infra/2026-09-07_飞致云五层两档测试说明.md) 与 [gpu-full 对比报告](docs/infra/2026-09-07_飞致云4090_gpu-full深度分析对比报告.md)。
-- 无 GPU 评委路径为路径 2。有卡复现用仓库外离线包或路径 1。4090 离线包状态与 3070 实测不同。
-- 模型与语料在离线包的 `cpu/models`、`cpu/knowledgebase`。
+没有 GPU 时用 `docker compose -f docker-compose.demo.yml up -d --build` 配合 `scripts/demo-compatibility`，储存禁忌直接走确定性规则引擎出结论（评委复现步骤见《作品介绍》附录 A）。
 
 ## 架构与功能
 
@@ -103,21 +91,15 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 ```
 
 - **双通道**：法规号、储存禁忌、安全距离由 C# 工具链路给出；大模型只做专业解读与建议。`RegulationRefs` 为法规编号白名单，白名单之外的 GB 号会被删除。
-- **降级**：Function Calling 违约、LLM 熔断或 `LLM_OPTIONAL=true` 时，切换 `DeterministicRuleEngine`，结构化结论不依赖生成文本。
-- **检索**：中文化工短查询用 NGram + 内存 BM25，向量检索用 pgvector。
-- **身份与审计**：JWT 角色 `admin` / `auditor` / `viewer`；操作写入 `audit_logs`，应用层 SHA256 哈希链。
+- **检索算法**：中文化工短查询用 NGram + 内存 BM25 稀疏检索，语义召回用 pgvector 向量检索，混合融合后再经重排序。
 
-已有界面：登录 `/login`、储存兼容性 `/storage/compatibility`、合规检查 `/compliance`、巡检计划与报告、整改工单、危化品查询、审计日志 `/audit`（当前路由以 admin 为主）。应急与知识图谱页面和接口已存在，深度能力仍在演进，不作生产承诺。
-
-## 项目介绍与招募
-
-### 背景：复杂场景要的不是更会说话的模型
+## 项目背景
 
 工业现场与合规审查要同时满足三件事：能用自然语言提问、结论必须可追溯、模型或 GPU 挂了仍能给出结构化结果。只把大模型接进对话框，解决不了后两件——编号类、配伍类、阈值类事实如果由模型现场生成，对话记录很难当作业依据。
 
-苍卫的做法是把两者拆开：**事实通道**由 C# 确定性代码输出法规号、禁忌结论、安全距离；**解释通道**由大模型给出解读与建议，且 `RegulationRefs` 白名单之外的 GB 号会被直接删除。模型幻觉进来的标准编号，出不了系统。
+苍卫的做法是把两者拆开：事实由确定性代码给出，模型只解释和建议。化工园区储存审查被选作验证场，是因为它把上述矛盾压在一条可复现的问题上：两种物质能不能同库、依据哪条标准编号。
 
-### 应用场景与实际用途
+## 应用场景
 
 验证场为化工园区危化品储存审查（种子库仿真，可一条命令复现）：
 
@@ -128,34 +110,34 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 | 合规检查、巡检与工单 | 安全管理部 | 巡检辅助判断、计划/轮次/报告、整改流转 |
 | 操作审计 | admin | `audit_logs` + SHA256 哈希链，每条结论可回溯来源 |
 
-同一套「事实不交给模型」的架构可迁移到其他高风险合规场景：作业票审批、仓储布局核查、监管报送辅助。定位是审查辅助，不替代持证人员的法定职责。
+同一套「事实不交给模型」的架构可迁移到其他高风险合规场景：作业票审批、仓储布局核查、监管报送辅助。
 
-### 近期进展
+## 近期进展
 
 - **2026-09-17** — 大赛演示视频口径切换到 B站（BV1ieeu66E1A），作品介绍 md / html / pdf 与 README 同源统一。
-- **2026-09-09** — v0.1.0 三档源码包发布（容器化 / CPU / GPU，不含模型权重）；工程操作系统落地：AGENTS.md 入口、端口与测试真源登记、脚本防散落。
+- **2026-09-09** — v0.1.0 三档源码包发布（容器化 / CPU / GPU，不含模型权重）；工程操作系统落地：AGENTS.md 入口、端口与测试真源登记。
 
-### 后续技术更新
+## 后续技术更新
 
 - 应急与知识图谱页面从「界面已有」走向深度能力闭环。
 - ERP / WMS / EHS 集成接口从预留走向真实数据对接。
 - 评测集扩充与规则引擎种子覆盖扩展（更多物质配对与 GB 30000 危险类别）。
 - 审计与角色权限细化（auditor / viewer 视角页面）。
 
-### 🙋 招人
+## 与我们同行
 
-项目正从「可复现的验证场」走向「可落地的生产系统」，长期招募：
+项目正从「可复现的验证场」走向「可落地的生产系统」，欢迎以下方向的伙伴加入：
 
-| 角色 | 你会做什么 |
+| 方向 | 你会做什么 |
 |------|-----------|
 | C#/.NET 后端 | 规则引擎扩展、ERP/WMS/EHS 集成接口 |
 | AI/RAG 工程师 | 混合检索调优、切块策略、评测集建设 |
 | Vue 3 前端 | 巡检 / 工单 / 审计页面闭环 |
-| 化工 / EHS 领域伙伴 | 国标条款入库、储存规则口径校验 |
+| 化工 / EHS 领域 | 国标条款入库、储存规则口径校验 |
 
-给 MIT 开源署名 + 完整架构经验 + 2026 上海开源软件应用创新大赛参赛经历。感兴趣直接开 Issue / PR，或评论区联系负责人刘超越。
+给 MIT 开源署名 + 完整架构经验 + 2026 上海开源软件应用创新大赛参赛经历。感兴趣直接开 Issue / PR，或 Gitee 私信联系负责人刘超越。
 
-### 愿景
+## 愿景
 
 > **让事实经得起核对，让模型只说真话。**
 > 愿每一次「能不能同库」的提问，都有一条可审计的编号在背后。
@@ -163,30 +145,11 @@ PostgreSQL 16 + pgvector    llama.cpp（完整部署）    规则引擎（无 GP
 ## 边界
 
 - 仅作合规审查辅助，不替代持证安全管理人员的法定职责。
-- **本仓库不包含国家标准全文。** 远程克隆缺的是国标正文和向量，不是甲醇×硝酸这条验收。结构化种子在 `init_database.sql` 与 `db/migrations/002_chemical_knowledge_graph.sql`；虚构园区规定/案例在 `knowledgebase/园区规则/` 与 `knowledgebase/历史案例/`。国标全文自备后放入 `knowledgebase/国标/`，或在 `.env` 把 `KNOWLEDGE_BASE_PATH` 指到本机语料（例如仓库外的 `化工知识库`）。向量由运行时 embedding 写入 pgvector，不随 Git 下发。说明见 [knowledgebase/README.md](knowledgebase/README.md)。
-- 本仓库不是已定级、已备案或已测评的网络安全等级保护对象，见 [等级保护口径](docs/platform/等级保护口径.md)。
-- 未对接真实 ERP / WMS / EHS 生产数据。
-- 生产口令只写本机 `.env`，不要提交。必填：`JWT_KEY`（不少于 32 字符）、`DB_PASSWORD`、`AUTH_ACCOUNTS_JSON`。
+- 仓库不含国家标准全文（结构化种子在 SQL，国标原文自备合法副本）；不是已定级备案或已测评的等保对象。
+- 未对接真实 ERP / WMS / EHS 生产数据；生产口令只写本机 `.env`，不要提交。
 
 ## 文档
 
-按模块找说明书：[docs/README.md](docs/README.md)（Gitee 上搜 `os2026` 也能落到大赛材料）。
-
-| 模块 / 用途 | 文件 |
-|------|------|
-| 源码包 v0.1.0 | [docs/platform/release-notes-v0.1.0.md](docs/platform/release-notes-v0.1.0.md) · [GitHub](https://github.com/Spirder-Man/agent-system/releases/tag/v0.1.0) · [Gitee](https://gitee.com/liuchao_yue/agent-system/releases/tag/v0.1.0) |
-| 大赛作品介绍 | [docs/platform/os2026-作品介绍.md](docs/platform/os2026-作品介绍.md)（同目录 html / pdf） |
-| 演示视频 | https://www.bilibili.com/video/BV1ieeu66E1A （B站；原始 mp4 在 Gitee Release，不进 Git） |
-| 核心库 | [docs/Agent1/说明书.md](docs/Agent1/说明书.md) |
-| HTTP API | [docs/Agent1.Api/说明书.md](docs/Agent1.Api/说明书.md) |
-| 前端 | [docs/agent1-web/说明书.md](docs/agent1-web/说明书.md) |
-| E2E | [docs/e2e/说明书.md](docs/e2e/说明书.md) |
-| 后端测试 | [docs/Agent1.Tests/说明书.md](docs/Agent1.Tests/说明书.md) |
-| 数据库 | [docs/db/说明书.md](docs/db/说明书.md) |
-| 部署 / GPU | [docs/infra/说明书.md](docs/infra/说明书.md) |
-| 近期变更 | [docs/platform/CHANGELOG.md](docs/platform/CHANGELOG.md) |
-| 一键部署 | [docs/infra/deploy/Docker容器化一键部署.md](docs/infra/deploy/Docker容器化一键部署.md) |
-| 4090 两档测试 | [docs/infra/2026-09-07_飞致云五层两档测试说明.md](docs/infra/2026-09-07_飞致云五层两档测试说明.md) |
-| 知识库三层数据 | [knowledgebase/README.md](knowledgebase/README.md)（国标全文不进 Git） |
-| 工程治理 | [docs/platform/工程治理.md](docs/platform/工程治理.md) · [scripts/README.md](scripts/README.md) |
-| 参与与安全 | [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
+- 按模块找说明书：[docs/README.md](docs/README.md) · 源码包 v0.1.0：[release-notes](docs/platform/release-notes-v0.1.0.md)
+- 近期变更：[docs/platform/CHANGELOG.md](docs/platform/CHANGELOG.md) · 工程治理：[docs/platform/工程治理.md](docs/platform/工程治理.md) · [AGENTS.md](AGENTS.md)
+- 参与与安全：[CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
